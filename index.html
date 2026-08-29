@@ -775,26 +775,32 @@
       .version-choice{padding:17px}
     }
 
-  </style>
+  
+  .view-switchbar{background:#063d22;color:#fff;padding:8px 18px;font-size:.92rem;display:flex;justify-content:flex-end;align-items:center;gap:12px}
+  .view-switchbar a{color:#ffd928;font-weight:800;text-decoration:none;background:rgba(255,255,255,.12);padding:6px 12px;border-radius:999px}
+  @media(max-width:900px){.desktop-view-switch{display:none}}
+</style>
+
+<script>
+(function(){
+  try {
+    const params = new URLSearchParams(location.search);
+    if (params.get('desktop') === '1') {
+      localStorage.setItem('fkkViewPreference','desktop');
+      return;
+    }
+    const pref = localStorage.getItem('fkkViewPreference');
+    const isMobile = window.matchMedia('(max-width: 900px)').matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if (pref === 'mobile' || (!pref && isMobile)) {
+      location.replace('mobile.html');
+    }
+  } catch(e) {}
+})();
+</script>
 </head>
 <body>
 
-<div class="version-gate" id="versionGate" role="dialog" aria-modal="true" aria-labelledby="versionTitle">
-  <div class="version-card">
-    <div class="version-card-top">
-      <img src="assets/fkk-logo.jpeg" alt="FKK Logo">
-      <h2 id="versionTitle">Herzlich willkommen beim FKK!</h2>
-      <p>Welche Ansicht möchten Sie besuchen? Wählen Sie die für Ihr Gerät passende Version.</p>
-    </div>
-    <div class="version-actions">
-      <button class="version-choice desktop" id="chooseDesktop" type="button"><span>🖥️</span>Desktop-Version<small>Für PC, Laptop & große Displays</small></button>
-      <a class="version-choice mobile" href="mobile.html"><span>📱</span>Mobile Version<small>Optimiert für Smartphone & Tablet</small></a>
-    </div>
-    <div class="version-note">Die Ansicht kann später jederzeit gewechselt werden.</div>
-  </div>
-</div>
-
-
+<div class="view-switchbar desktop-view-switch">🖥️ Desktop-Ansicht <a href="mobile.html" id="switchToMobile">Mobile</a></div>
 <div class="topbar">
   <div class="topbar-inner">
     <span><strong>FKK</strong> – seit 1950 für Wesel</span>
@@ -1187,7 +1193,7 @@
         <small>Wesel · seit 1950</small>
       </div>
     </div>
-    <div style="text-align:right"><a class="contact-mail" href="mailto:Protokoll.fkk@gmx.de">✉ Protokoll.fkk@gmx.de</a><br><small>© 2026 Feldmarker Karnevals-Komitee e.V. · Wesel</small><br><small><a href="mobile.html" style="text-decoration:underline">📱 Zur Mobile-Version</a></small></div>
+    <div style="text-align:right"><a class="contact-mail" href="mailto:Protokoll.fkk@gmx.de">✉ Protokoll.fkk@gmx.de</a><br><small>© 2026 Feldmarker Karnevals-Komitee e.V. · Wesel</small><br><small><a href="mobile.html" id="footerSwitchToMobile" style="text-decoration:underline">📱 Zur Mobile-Version</a></small></div>
   </div>
 </footer>
 
@@ -1256,17 +1262,14 @@
   })();
 
 
-  // Versionsauswahl: Desktop bleibt auf dieser Seite, Mobile öffnet mobile.html.
+  // Ansicht manuell wechseln und Auswahl merken.
   (function(){
-    const gate = document.getElementById('versionGate');
-    const desktop = document.getElementById('chooseDesktop');
-    if(!gate || !desktop) return;
-    if(new URLSearchParams(location.search).get('desktop') === '1'){ gate.classList.add('hidden'); return; }
-    desktop.addEventListener('click', function(){
-      gate.classList.add('hidden');
-      document.body.style.overflow = '';
+    const links = [document.getElementById('switchToMobile'), document.getElementById('footerSwitchToMobile')].filter(Boolean);
+    links.forEach(function(link){
+      link.addEventListener('click', function(){
+        try { localStorage.setItem('fkkViewPreference','mobile'); } catch(e) {}
+      });
     });
-    document.body.style.overflow = 'hidden';
   })();
 
 </script>

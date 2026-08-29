@@ -838,7 +838,7 @@
     }
     body.mobile-site .session-countdown-copy .small{font-size:.64rem;letter-spacing:.11em}
     body.mobile-site .session-countdown-copy h2{font-size:1rem;margin:3px 0 0;line-height:1.22}
-    body.mobile-site .session-countdown-copy p{display:none}
+    body.mobile-site .session-countdown-copy p{display:block;margin-top:8px;font-size:.8rem;line-height:1.35;color:rgba(255,255,255,.92)}
     body.mobile-site .countdown-grid{grid-template-columns:repeat(4,1fr);gap:5px}
     body.mobile-site .countdown-unit{padding:7px 2px;border-radius:10px}
     body.mobile-site .countdown-unit strong{font-size:1rem}
@@ -978,7 +978,7 @@
 </head>
 <body class="mobile-site">
 <div id="top"></div>
-<div class="mobile-switchbar">📱 Mobile Ansicht <a href="index.html?desktop=1">Desktop</a></div>
+<div class="mobile-switchbar">📱 Mobile Ansicht <a href="index.html?desktop=1" id="switchToDesktop">Desktop</a></div>
 
 <div class="topbar">
   <div class="topbar-inner">
@@ -1380,7 +1380,7 @@
         <small>Wesel · seit 1950</small>
       </div>
     </div>
-    <div style="text-align:right"><a class="contact-mail" href="mailto:Protokoll.fkk@gmx.de">✉ Protokoll.fkk@gmx.de</a><br><small>© 2026 Feldmarker Karnevals-Komitee e.V. · Wesel</small><br><small><a href="index.html?desktop=1" style="text-decoration:underline">🖥️ Zur Desktop-Version</a></small></div>
+    <div style="text-align:right"><a class="contact-mail" href="mailto:Protokoll.fkk@gmx.de">✉ Protokoll.fkk@gmx.de</a><br><small>© 2026 Feldmarker Karnevals-Komitee e.V. · Wesel</small><br><small><a href="index.html?desktop=1" id="footerSwitchToDesktop" style="text-decoration:underline">🖥️ Zur Desktop-Version</a></small></div>
   </div>
 </footer>
 
@@ -1450,6 +1450,19 @@
 
 
 
+
+  // Desktop-Ansicht manuell wählen und Auswahl merken.
+  (function(){
+    const links = [document.getElementById('switchToDesktop'), document.getElementById('footerSwitchToDesktop')].filter(Boolean);
+    links.forEach(function(link){
+      link.addEventListener('click', function(){
+        try { localStorage.setItem('fkkViewPreference','desktop'); } catch(e) {}
+      });
+    });
+    try {
+      if(!localStorage.getItem('fkkViewPreference')) localStorage.setItem('fkkViewPreference','mobile');
+    } catch(e) {}
+  })();
 </script>
 
 </body>

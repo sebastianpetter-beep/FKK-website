@@ -13,3 +13,11 @@ V9 Mobile optimiert:
 - kleinere Typografie und Abstände
 - kompaktere Tanzgruppen-, Vorstand-, Album- und Kontaktkarten
 - flachere mobile Bottom-Navigation
+
+
+V10:
+- Automatische Erkennung von Smartphone/Tablet und Desktop beim Aufruf.
+- Mobile Geräte werden automatisch auf mobile.html weitergeleitet.
+- Wechsel zwischen Mobile und Desktop bleibt jederzeit möglich und wird im Browser gemerkt.
+- Hinweis auf Jörg II. & Anke I. im mobilen Countdown wieder sichtbar.
+- Impressum noch nicht ergänzt; separat nachtragen.
