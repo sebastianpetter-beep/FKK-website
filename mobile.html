@@ -787,27 +787,198 @@
     .mobile-bottom-nav a span{font-size:1.25rem}
     .mobile-bottom-nav a.join{background:var(--yellow);color:#1d261d}
 
+
+
+    /* V9 – optimierte Smartphone-Darstellung */
+    body.mobile-site{
+      background:#f6f8f6;
+      padding-bottom:62px;
+      font-size:16px;
+      overflow-x:hidden;
+    }
+    body.mobile-site .mobile-switchbar{
+      min-height:28px;
+      padding:5px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      font-size:.7rem;
+      letter-spacing:.01em;
+      position:relative;
+      z-index:70;
+    }
+    body.mobile-site .mobile-switchbar a{
+      text-decoration:none;
+      background:rgba(255,255,255,.12);
+      padding:4px 9px;
+      border-radius:999px;
+    }
+    body.mobile-site header{top:0}
+    body.mobile-site .nav{
+      min-height:58px;
+      width:calc(100% - 20px);
+      gap:8px;
+    }
+    body.mobile-site .brand{gap:9px;min-width:0}
+    body.mobile-site .brand img{width:38px;height:38px;flex:0 0 38px}
+    body.mobile-site .brand-text{
+      font-size:.78rem;
+      line-height:1.13;
+      max-width:235px;
+      white-space:normal;
+    }
+    body.mobile-site .brand-text small{font-size:.62rem;margin-top:2px}
+    body.mobile-site .menu-btn{width:42px;height:42px;border-radius:13px;font-size:1.3rem;flex:0 0 42px}
+    body.mobile-site .nav-links{top:62px}
+
+    body.mobile-site .session-countdown-inner{
+      width:calc(100% - 24px);
+      padding:12px 0 13px;
+      gap:10px;
+    }
+    body.mobile-site .session-countdown-copy .small{font-size:.64rem;letter-spacing:.11em}
+    body.mobile-site .session-countdown-copy h2{font-size:1rem;margin:3px 0 0;line-height:1.22}
+    body.mobile-site .session-countdown-copy p{display:none}
+    body.mobile-site .countdown-grid{grid-template-columns:repeat(4,1fr);gap:5px}
+    body.mobile-site .countdown-unit{padding:7px 2px;border-radius:10px}
+    body.mobile-site .countdown-unit strong{font-size:1rem}
+    body.mobile-site .countdown-unit span{font-size:.5rem;margin-top:3px;letter-spacing:.03em}
+
+    body.mobile-site .hero{
+      min-height:390px;
+      background-position:center;
+    }
+    body.mobile-site .hero-inner{
+      width:calc(100% - 32px);
+      padding:44px 0 62px;
+    }
+    body.mobile-site .eyebrow{font-size:.72rem;padding:7px 10px}
+    body.mobile-site .hero h1{font-size:2.25rem;line-height:1;margin:14px 0 12px}
+    body.mobile-site .hero p{font-size:.94rem;line-height:1.48;margin-bottom:20px;max-width:94%}
+    body.mobile-site .hero-actions{gap:8px}
+    body.mobile-site .btn{min-height:44px;padding:0 15px;border-radius:12px;font-size:.9rem}
+    body.mobile-site .hero-badge{font-size:.76rem;padding:8px 11px;margin-top:12px}
+
+    body.mobile-site .quickbar{
+      width:calc(100% - 24px);
+      margin:-34px auto 0;
+      border-radius:16px;
+    }
+    body.mobile-site .quick{padding:12px 14px;gap:11px}
+    body.mobile-site .quick-icon{width:38px;height:38px;border-radius:11px;font-size:1.05rem}
+    body.mobile-site .quick strong{font-size:.9rem;margin-bottom:2px}
+    body.mobile-site .quick span{font-size:.78rem;line-height:1.32}
+
+    body.mobile-site main section{
+      width:calc(100% - 30px);
+      padding:46px 0;
+    }
+    body.mobile-site section{padding-left:0!important;padding-right:0!important}
+    body.mobile-site .section-head{margin-bottom:20px}
+    body.mobile-site .kicker{font-size:.67rem;letter-spacing:.11em}
+    body.mobile-site .section-head h2,
+    body.mobile-site .about-copy h2{
+      font-size:1.72rem;
+      line-height:1.08;
+      letter-spacing:-.02em;
+    }
+    body.mobile-site .section-head h2::after{width:70px;height:5px;margin-top:9px}
+    body.mobile-site .section-head p{font-size:.9rem;line-height:1.52;margin-top:12px}
+
+    body.mobile-site .cards{gap:14px}
+    body.mobile-site .card{padding:18px;border-radius:18px}
+    body.mobile-site .card-icon{width:44px;height:44px;border-radius:13px;margin-bottom:13px}
+    body.mobile-site .card h3{font-size:1.12rem;margin-bottom:7px}
+    body.mobile-site .card p{font-size:.9rem;line-height:1.5}
+    body.mobile-site .card a{font-size:.9rem;margin-top:12px}
+
+    body.mobile-site .about-wrap{gap:22px}
+    body.mobile-site .about-logo{padding:24px;border-radius:20px}
+    body.mobile-site .about-logo img{width:min(250px,78vw)}
+    body.mobile-site .about-copy p{font-size:.92rem;line-height:1.58;margin-bottom:12px}
+    body.mobile-site .stats{grid-template-columns:repeat(3,1fr);gap:7px;margin-top:18px}
+    body.mobile-site .stat{padding:11px 4px;border-radius:12px}
+    body.mobile-site .stat strong{font-size:1.25rem}
+    body.mobile-site .stat span{font-size:.66rem}
+
+    body.mobile-site .association-box{padding:18px;border-radius:18px;gap:15px}
+    body.mobile-site .association-box img{max-width:92px}
+    body.mobile-site .association-box h3{font-size:1.2rem}
+    body.mobile-site .association-box p{font-size:.88rem;line-height:1.5}
+
+    body.mobile-site .board-photo{border-radius:18px;margin:18px 0 22px}
+    body.mobile-site .board-block{padding:17px;border-radius:18px}
+    body.mobile-site .board-block h3{font-size:1.08rem;margin-bottom:12px}
+    body.mobile-site .people-grid{gap:9px}
+    body.mobile-site .person{padding:12px;border-radius:13px}
+    body.mobile-site .person strong{font-size:.92rem}
+    body.mobile-site .person span{font-size:.79rem}
+
+    body.mobile-site .dance-grid{gap:18px}
+    body.mobile-site .dance-card{border-radius:18px}
+    body.mobile-site .dance-card img,
+    body.mobile-site .dance-placeholder{height:190px}
+    body.mobile-site .dance-copy{padding:16px}
+    body.mobile-site .dance-copy h3{font-size:1.18rem;margin-bottom:6px}
+    body.mobile-site .dance-copy p{font-size:.9rem;line-height:1.52}
+
+    body.mobile-site .album-feature{padding:15px;border-radius:18px;gap:19px}
+    body.mobile-site .album-cover{max-width:310px;width:100%;margin:auto}
+    body.mobile-site .album-cover img{border-radius:15px}
+    body.mobile-site .album-copy .release-chip{font-size:.76rem;padding:7px 9px;margin-bottom:10px}
+    body.mobile-site .album-copy h2{font-size:1.7rem;line-height:1.05}
+    body.mobile-site .album-copy p{font-size:.9rem;line-height:1.5}
+    body.mobile-site .streaming-logos{gap:7px}
+    body.mobile-site .stream-logo{min-height:42px;padding:7px 9px;border-radius:10px;font-size:.75rem;gap:6px}
+    body.mobile-site .stream-logo .mark{width:24px;height:24px;flex-basis:24px;font-size:.75rem}
+
+    body.mobile-site .statute-box{padding:18px;border-radius:18px;gap:14px}
+    body.mobile-site .statute-box h3{font-size:1.18rem}
+    body.mobile-site .statute-box p{font-size:.9rem;line-height:1.5}
+    body.mobile-site .statute-points{margin:14px 0;gap:7px}
+    body.mobile-site .statute-point{padding:10px 11px;border-radius:10px;font-size:.82rem}
+
+    body.mobile-site .event-box{grid-template-columns:62px 1fr;gap:11px;padding:15px;border-radius:18px;text-align:left}
+    body.mobile-site .date-box{width:62px;height:62px;border-radius:15px}
+    body.mobile-site .date-box b{font-size:1.45rem}
+    body.mobile-site .date-box span{font-size:.62rem;margin-top:-7px}
+    body.mobile-site .event-box h3{font-size:1.1rem}
+    body.mobile-site .event-box p{font-size:.82rem;line-height:1.45}
+    body.mobile-site .event-box .btn{grid-column:1/-1}
+
+    body.mobile-site .contact-wrap{padding:15px;border-radius:18px;gap:16px}
+    body.mobile-site .contact-info{padding:18px;border-radius:15px}
+    body.mobile-site .contact-info h3{font-size:1.18rem}
+    body.mobile-site .contact-info p{font-size:.88rem;line-height:1.5}
+    body.mobile-site .contact-form{gap:11px}
+    body.mobile-site .contact-form input,
+    body.mobile-site .contact-form textarea{padding:11px 12px;font-size:.9rem}
+
+    body.mobile-site .cta{padding:0 15px 38px}
+    body.mobile-site .cta-inner{width:100%;border-radius:18px}
+    body.mobile-site .cta-copy{padding:20px}
+    body.mobile-site .cta-copy h2{font-size:1.6rem}
+    body.mobile-site .cta-copy p{font-size:.9rem}
+
+    body.mobile-site footer{padding:28px 15px 18px}
+    body.mobile-site .footer-inner{width:100%}
+
+    body.mobile-site .mobile-bottom-nav{grid-template-columns:repeat(4,1fr)}
+    body.mobile-site .mobile-bottom-nav a{min-height:56px;font-size:.6rem;gap:1px}
+    body.mobile-site .mobile-bottom-nav a span{font-size:1.05rem}
+
+    @media(max-width:390px){
+      body.mobile-site .brand-text{max-width:205px;font-size:.72rem}
+      body.mobile-site .hero h1{font-size:2.05rem}
+      body.mobile-site .stats{grid-template-columns:1fr}
+      body.mobile-site .stream-logo{font-size:.7rem}
+    }
+
   </style>
 </head>
 <body class="mobile-site">
 <div id="top"></div>
-<div class="mobile-switchbar">📱 Mobile Version · <a href="index.html?desktop=1">zur Desktop-Version wechseln</a></div>
-
-<div class="version-gate" id="versionGate" role="dialog" aria-modal="true" aria-labelledby="versionTitle">
-  <div class="version-card">
-    <div class="version-card-top">
-      <img src="assets/fkk-logo.jpeg" alt="FKK Logo">
-      <h2 id="versionTitle">Herzlich willkommen beim FKK!</h2>
-      <p>Welche Ansicht möchten Sie besuchen? Wählen Sie die für Ihr Gerät passende Version.</p>
-    </div>
-    <div class="version-actions">
-      <button class="version-choice desktop" id="chooseDesktop" type="button"><span>🖥️</span>Desktop-Version<small>Für PC, Laptop & große Displays</small></button>
-      <a class="version-choice mobile" href="mobile.html"><span>📱</span>Mobile Version<small>Optimiert für Smartphone & Tablet</small></a>
-    </div>
-    <div class="version-note">Die Ansicht kann später jederzeit gewechselt werden.</div>
-  </div>
-</div>
-
+<div class="mobile-switchbar">📱 Mobile Ansicht <a href="index.html?desktop=1">Desktop</a></div>
 
 <div class="topbar">
   <div class="topbar-inner">

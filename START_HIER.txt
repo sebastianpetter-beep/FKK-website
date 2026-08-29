@@ -5,3 +5,11 @@ V8 MOBILE:
 - Mobile Version: mobile.html, speziell fuer Smartphone optimiert.
 - Auf Mobile gibt es eine feste Schnellnavigation unten.
 - Wechsel zwischen Desktop und Mobile ist jederzeit moeglich.
+
+
+V9 Mobile optimiert:
+- Willkommens-Auswahl nur auf index.html, nicht mehr doppelt in mobile.html
+- kompakter Header und Countdown
+- kleinere Typografie und Abstände
+- kompaktere Tanzgruppen-, Vorstand-, Album- und Kontaktkarten
+- flachere mobile Bottom-Navigation
