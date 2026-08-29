@@ -1,0 +1,16 @@
+FKK Webseite – Gesamtstand V7
+
+1. ZIP-Datei entpacken.
+2. index.html doppelklicken.
+3. Die Webseite läuft weiterhin lokal/offline im Browser.
+
+Neu in V7:
+- Großes Album-Special zur Session 2026/27
+- Release-Datum: 02. Oktober 2026
+- Albumcover eingebaut
+- Streaming-Anbieter als Logo-Kacheln: Spotify, Apple Music, Amazon Music, YouTube Music, Deezer
+- BDK-Mitgliedschaft mit offiziellem hochgeladenen BDK-Logo ergänzt
+- Album-Teaser unter „Aktuelles“ und eigener Menüpunkt „Album“
+
+Hinweis Kontaktformular:
+In der Offline-Version öffnet „Nachricht senden“ das lokale E-Mail-Programm. Für direkten Versand aus dem Formular benötigen wir später die Server-/Backend-Version.

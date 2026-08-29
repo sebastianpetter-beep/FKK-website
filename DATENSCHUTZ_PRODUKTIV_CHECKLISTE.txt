@@ -1,0 +1,28 @@
+FKK Online-Mitgliedsanmeldung - Datenschutz-/Produktiv-Checkliste
+
+Bereits in dieser Demo umgesetzt:
+- IBAN wird beim Tippen automatisch in 4er-Gruppen formatiert.
+- Kein IBAN-Beispiel/Placeholder im Eingabefeld.
+- Formale IBAN-Prüfung (MOD-97).
+- Separate Kenntnisnahme der Datenschutzhinweise.
+- SEPA-Erklärung und Antrag werden getrennt nachvollziehbar bestätigt.
+- Offline-Demo speichert oder versendet keine Daten.
+
+Vor Veröffentlichung zwingend konkret einzutragen/zu klären:
+1. Verantwortlicher nach DSGVO mit vollständiger postalischer Anschrift und Kontaktmöglichkeit.
+2. Konkrete Rechtsgrundlagen je Verarbeitung.
+3. Empfänger/Kategorien von Empfängern (z.B. Bank, Hosting/Auftragsverarbeiter).
+4. Konkrete Speicher- und Löschfristen.
+5. Betroffenenrechte und Beschwerderecht bei der zuständigen Aufsichtsbehörde.
+6. Hosting ausschließlich über HTTPS und geschützte serverseitige Speicherung.
+7. Rollen-/Rechtekonzept für Vorstandsmitglieder.
+8. Auftragsverarbeitungsvertrag mit dem Hoster, soweit erforderlich.
+9. Gläubiger-Identifikationsnummer des FKK und System für eindeutige Mandatsreferenzen.
+10. Mit der kontoführenden Bank klären, welche Form des elektronischen SEPA-Mandats akzeptiert wird.
+11. Keine öffentlich erreichbaren PDF-Dateien mit Mitglieds-/Bankdaten.
+12. Backup-, Lösch- und Zugriffskonzept dokumentieren.
+
+Hinweis:
+Diese technische Umsetzung kann rechtliche Beratung nicht ersetzen. Vor dem Produktivbetrieb sollten
+Datenschutzerklärung, SEPA-Mandat und konkrete Serverprozesse anhand der tatsächlichen Vereinsdaten
+und des verwendeten Hosters final geprüft werden.

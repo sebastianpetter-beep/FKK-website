@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FKK Online-Mitgliedsantrag – Demo</title>
+<style>
+:root{--g:#087b35;--gd:#045323;--gs:#eef7f1;--y:#ffd51f;--r:#c9152e;--t:#202420;--m:#667069}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f5f7f5;color:var(--t)}
+.top{height:8px;background:linear-gradient(90deg,#ffd51f,#c9152e,#12a7b4,#087b35,#ff7a1a,#ffd51f,#c9152e,#087b35)}
+header{background:#fff;border-bottom:1px solid #e4e9e5}.nav{max-width:1050px;margin:auto;padding:12px 20px;display:flex;align-items:center;gap:13px}
+.nav img{width:58px;height:58px;border-radius:50%;object-fit:cover}.nav b{color:var(--gd);font-size:18px}.nav small{display:block;color:var(--m);margin-top:3px}
+.hero{background:linear-gradient(90deg,rgba(0,55,22,.93),rgba(0,80,32,.72)),url('assets/fkk-header.jpeg') center/cover;color:#fff;padding:48px 20px 64px}
+.hero>div{max-width:900px;margin:auto}.hero h1{font-size:clamp(35px,6vw,58px);margin:8px 0}.hero h1 span{color:var(--y)}.hero p{max-width:700px;line-height:1.6}
+.wrap{max-width:900px;margin:-30px auto 60px;padding:0 18px}.card{background:#fff;border-radius:24px;box-shadow:0 18px 45px #0002;overflow:hidden}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);background:#fafafa;border-bottom:1px solid #e5e9e6}.step{padding:15px 8px;text-align:center;font-weight:700;color:#888;font-size:13px}.step.on{color:var(--gd);border-bottom:4px solid var(--y);background:#fff}
+form{padding:28px}.section{display:none}.section.on{display:block}h2{color:var(--gd);margin-top:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.full{grid-column:1/-1}
+label{font-weight:700;font-size:14px;display:block;margin-bottom:6px}input,select{width:100%;padding:13px;border:1px solid #dce3de;border-radius:12px;font:inherit;font-size:16px}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:12px}.choice label{border:2px solid #dce3de;border-radius:14px;padding:15px;cursor:pointer}.choice input{width:auto;margin-right:8px}.fee{margin-top:15px;background:var(--gs);border-left:5px solid var(--g);padding:14px;border-radius:10px;line-height:1.5}
+.check{display:flex;gap:10px;align-items:flex-start;margin:14px 0}.check input{width:auto;margin-top:4px}.actions{display:flex;justify-content:space-between;gap:10px;margin-top:25px;flex-wrap:wrap}
+button{border:0;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer}.primary{background:var(--y);color:#243024}.secondary{background:var(--gs);color:var(--gd)}
+.summary{border:1px solid #dce3de;border-radius:15px;overflow:hidden}.row{display:grid;grid-template-columns:190px 1fr;border-bottom:1px solid #e8ece9}.row:last-child{border:0}.row b,.row span{padding:10px}.row b{background:var(--gs);color:var(--gd)}
+.success{display:none;text-align:center;padding:35px}.success.on{display:block}.success .tick{font-size:52px}.note{color:var(--m);font-size:13px;line-height:1.5}
+@media(max-width:650px){.grid,.choice{grid-template-columns:1fr}.full{grid-column:auto}.steps{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}.row b{padding-bottom:3px}.row span{padding-top:3px}}
+@media print{.top,header,.hero,.steps,.actions,.no-print{display:none!important}body{background:#fff}.wrap{margin:0;max-width:none;padding:0}.card{box-shadow:none;border-radius:0}.section{display:none!important}.section#review{display:block!important}form{padding:0}.summary{border-color:#999}h2:before{content:"Feldmarker Karnevals-Komitee e.V. – ";color:#087b35}}
+</style>
+</head>
+<body>
+<div class="top"></div>
+<header><div class="nav"><img src="assets/fkk-logo.jpeg"><div><b>Feldmarker Karnevals-Komitee e.V.</b><small>Online-Mitgliedsantrag · Demo</small></div></div></header>
+<section class="hero"><div><div>🎭 Willkommen beim FKK</div><h1>Mitglied <span>werden.</span></h1><p>Fülle deinen Antrag bequem online aus. Am Ende erhältst du eine fertige Zusammenfassung deiner Angaben als PDF für deine Unterlagen.</p></div></section>
+<div class="wrap"><div class="card">
+<div class="steps"><div class="step on">1 · Mitgliedschaft</div><div class="step">2 · Persönliche Daten</div><div class="step">3 · SEPA</div><div class="step">4 · Prüfen</div></div>
+<form id="f">
+<section class="section on" data-i="0"><h2>Welche Mitgliedschaft möchtest du?</h2>
+<div class="choice">
+<label><input type="radio" name="art" value="Aktiv" checked> <b>Aktives Mitglied</b><br><small>Teil des aktiven Vereinslebens</small></label>
+<label><input type="radio" name="art" value="Passiv"> <b>Passives Mitglied</b><br><small>Den Verein unterstützen</small></label>
+</div>
+<div class="fee" id="fee">Aktive Einzelmitglieder: <b>66,- € jährlich</b>. Ehepaare: 99,- €. Jugendliche bis 16: 22,- €, bis 18: 33,- €.</div>
+<div class="actions"><span></span><button type="button" class="primary next">Weiter →</button></div></section>
+
+<section class="section" data-i="1"><h2>Persönliche Angaben</h2><div class="grid">
+<div><label>Vorname *</label><input name="vorname" required></div><div><label>Nachname *</label><input name="nachname" required></div>
+<div class="full"><label>Adresse *</label><input name="adresse" placeholder="Straße, Hausnummer, PLZ, Ort" required></div>
+<div><label>Telefonnummer *</label><input name="telefon" required></div><div><label>E-Mail *</label><input type="email" name="email" required></div>
+<div><label>Geburtsdatum *</label><input type="date" name="geburt" required></div><div><label>Ehepartner – Geburtsdatum</label><input type="date" name="ehe"></div>
+</div><div class="actions"><button type="button" class="secondary prev">← Zurück</button><button type="button" class="primary next">Weiter →</button></div></section>
+
+<section class="section" data-i="2"><h2>Bankverbindung & Zustimmung</h2><div class="grid"><div class="full"><label>IBAN *</label><input name="iban" id="iban" inputmode="text" autocomplete="off" maxlength="34" required></div></div>
+<div class="fee">Der Beitrag wird laut Aufnahmeantrag halbjährlich zum <b>1. Mai</b> und <b>1. November</b> abgebucht.</div>
+<label class="check"><input type="checkbox" name="sepa" required><span>Ich ermächtige das Feldmarker Karnevals-Komitee e.V., die fälligen Mitgliedsbeiträge entsprechend dem erteilten SEPA-Lastschriftmandat von meinem Konto einzuziehen. *</span></label>
+<label class="check"><input type="checkbox" name="zeremonie" required><span>Ich habe den Hinweis zur humorvollen Aufnahmezeremonie zur Kenntnis genommen. *</span></label>
+<div class="fee"><b>Datenschutzinformation zur Antragstellung</b><br>
+Die eingegebenen Daten werden ausschließlich zur Bearbeitung des Mitgliedsantrags, zur Mitgliederverwaltung und - soweit erforderlich - zur Beitragsabwicklung verarbeitet. Bankdaten werden nur für die Beitragsabwicklung verwendet. Die vollständigen Informationen nach Art. 13 DSGVO müssen in der veröffentlichten Version mit den konkreten Kontaktdaten des Verantwortlichen, Speicherdauern, Empfängern und Betroffenenrechten ergänzt werden.</div>
+<label class="check"><input type="checkbox" name="privacyread" required><span>Ich bestätige, dass ich die Datenschutzhinweise zur Kenntnis genommen habe. *</span></label>
+<div class="actions"><button type="button" class="secondary prev">← Zurück</button><button type="button" class="primary next">Angaben prüfen →</button></div></section>
+
+<section class="section" id="review" data-i="3"><h2>Dein Aufnahmeantrag</h2><p>Bitte prüfe deine Angaben. Diese Daten werden später in die fertige PDF übernommen.</p><div class="summary" id="summary"></div>
+<div class="fee"><b>Beitragsinformationen:</b> Aktive Einzelmitglieder 66,- € jährlich; Ehepaare 99,- €; Jugendliche bis 16 Jahre 22,- €; Jugendliche bis 18 Jahre 33,- €; passive Mitglieder 15,- € jährlich.</div>
+<label class="check no-print"><input type="checkbox" id="finalok"><span>Ich bestätige, dass meine Angaben richtig sind.</span></label>
+<div class="actions no-print"><button type="button" class="secondary prev">← Ändern</button><button type="submit" class="primary">Antrag absenden</button></div>
+<p class="note">Demo: Es werden keine Daten an einen Server übertragen. Die Datenschutz-Bestätigung dokumentiert die Kenntnisnahme der Informationen und ist keine pauschale DSGVO-Einwilligung.</p></section>
+</form>
+<div class="success" id="success"><div class="tick">🎉</div><h2>Herzlich willkommen beim FKK!</h2><p>Dein Antrag wurde in dieser Demo erfolgreich vorbereitet.</p><p>In der späteren Online-Version wird an dieser Stelle automatisch deine persönliche PDF erzeugt.</p><p class="note"><b>Produktivbetrieb:</b> Übertragung nur über HTTPS; keine IBAN in URLs oder Browser-Speicher; serverseitige Zugriffskontrolle; definierte Lösch- und Aufbewahrungsfristen; Protokollierung des Antrags und sichere PDF-Bereitstellung.</p><button type="button" class="primary" id="print">Muster-Zusammenfassung als PDF drucken</button></div>
+</div></div>
+<script>
+const root=document, form=root.getElementById('f'), sections=[...root.querySelectorAll('.section')], steps=[...root.querySelectorAll('.step')]; let i=0;
+function show(n){i=Math.max(0,Math.min(3,n));sections.forEach((s,x)=>s.classList.toggle('on',x===i));steps.forEach((s,x)=>s.classList.toggle('on',x===i));if(i===3)review();window.scrollTo({top:0,behavior:'smooth'})}
+function validSection(){if(i===2 && ibanEl.value && !ibanChecksumValid(ibanEl.value)){ibanEl.setCustomValidity('Bitte prüfe die IBAN. Die eingegebene IBAN ist formal nicht gültig.');ibanEl.reportValidity();return false} const req=[...sections[i].querySelectorAll('[required]')];for(const el of req){if(!el.checkValidity()){el.reportValidity();return false}}return true}
+root.querySelectorAll('.next').forEach(b=>b.addEventListener('click',()=>{if(validSection())show(i+1)}));root.querySelectorAll('.prev').forEach(b=>b.addEventListener('click',()=>show(i-1)));
+function val(n){const e=form.elements[n];return e?e.value:''}
+function fmtDate(v){if(!v)return '—';const [y,m,d]=v.split('-');return `${d}.${m}.${y}`}
+function review(){const art=form.querySelector('input[name=art]:checked').value;const rows=[
+['Mitgliedschaft',art],['Vorname, Nachname',`${val('vorname')} ${val('nachname')}`],['Adresse',val('adresse')],['Telefon',val('telefon')],['E-Mail',val('email')],['Geburtsdatum',fmtDate(val('geburt'))],['Ehepartner Geburtsdatum',fmtDate(val('ehe'))],['IBAN',val('iban')],['SEPA-Zustimmung','Ja'],['Antragsdatum',new Date().toLocaleDateString('de-DE')]];
+root.getElementById('summary').innerHTML=rows.map(r=>`<div class="row"><b>${r[0]}</b><span>${r[1]||'—'}</span></div>`).join('')}
+
+const ibanEl=document.getElementById('iban');
+function formatIban(raw){
+  const clean=raw.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,34);
+  return clean.replace(/(.{4})/g,'$1 ').trim();
+}
+function ibanChecksumValid(formatted){
+  const iban=formatted.replace(/\s/g,'').toUpperCase();
+  if(iban.length<15 || iban.length>34 || !/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(iban)) return false;
+  const rearranged=iban.slice(4)+iban.slice(0,4);
+  let rem=0;
+  for(const ch of rearranged){
+    const part=(ch>='A'&&ch<='Z') ? String(ch.charCodeAt(0)-55) : ch;
+    for(const d of part) rem=(rem*10+Number(d))%97;
+  }
+  return rem===1;
+}
+ibanEl.addEventListener('input',()=>{
+  const start=ibanEl.selectionStart||0;
+  const before=ibanEl.value;
+  ibanEl.value=formatIban(before);
+  ibanEl.setCustomValidity('');
+});
+ibanEl.addEventListener('blur',()=>{
+  if(ibanEl.value && !ibanChecksumValid(ibanEl.value)){
+    ibanEl.setCustomValidity('Bitte prüfe die IBAN. Die eingegebene IBAN ist formal nicht gültig.');
+  } else ibanEl.setCustomValidity('');
+});
+
+form.addEventListener('submit',e=>{e.preventDefault();if(!root.getElementById('finalok').checked){alert('Bitte bestätige zuerst die Richtigkeit deiner Angaben.');return}form.style.display='none';root.querySelector('.steps').style.display='none';root.getElementById('success').classList.add('on')});
+root.getElementById('print').addEventListener('click',()=>{form.style.display='block';root.getElementById('success').classList.remove('on');show(3);setTimeout(()=>window.print(),100)});
+document.querySelectorAll('input[name=art]').forEach(r=>r.addEventListener('change',()=>{document.getElementById('fee').innerHTML=r.value==='Passiv'?'Passive Mitglieder: <b>15,- € jährlich</b>.':'Aktive Einzelmitglieder: <b>66,- € jährlich</b>. Ehepaare: 99,- €. Jugendliche bis 16: 22,- €, bis 18: 33,- €.'}));
+</script>
+</body></html>
