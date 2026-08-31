@@ -1549,5 +1549,33 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 
+
+<script>
+/* V16 portrait hints */
+document.addEventListener('DOMContentLoaded', function(){
+  const people = [
+    ['Sebastian Bassanese','Präsident','sebastian-bassanese.html'],
+    ['Sabrina Müller','Zeremonienmeisterin','sabrina-mueller.html'],
+    ['Oliver Heselmann','Tanztrainer','oliver-heselmann.html']
+  ];
+  people.forEach(([name, role, url]) => {
+    const els = [...document.querySelectorAll('div,article,li')].filter(el => {
+      const t=(el.textContent||'').replace(/\s+/g,' ').trim();
+      return t.includes(name) && t.includes(role);
+    }).sort((a,b)=>a.textContent.length-b.textContent.length);
+    const target=els[0];
+    if(!target) return;
+    if(!target.querySelector('.portrait-hint')){
+      const hint=document.createElement('div');
+      hint.className='portrait-hint';
+      hint.textContent='→ Portrait ansehen';
+      hint.style.cssText='margin-top:7px;font-size:.78rem;font-weight:800;color:#c9152b;letter-spacing:.01em;';
+      target.appendChild(hint);
+    }
+    target.style.cursor='pointer';
+  });
+});
+</script>
+
 </body>
 </html>
