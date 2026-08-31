@@ -23,6 +23,7 @@ button{border:0;border-radius:12px;padding:12px 18px;font-weight:800;cursor:poin
 .success{display:none;text-align:center;padding:35px}.sendstatus{display:none;margin:16px 0;padding:13px;border-radius:10px;font-weight:700}.sendstatus.on{display:block}.sendstatus.err{background:#fff0f0;color:#9b1c1c;border:1px solid #efb6b6}.sendstatus.wait{background:#fff8df;color:#6b5600;border:1px solid #ead889;line-height:1.5}.sendstatus.wait .loader{display:inline-block;width:18px;height:18px;border:3px solid rgba(107,86,0,.25);border-top-color:#6b5600;border-radius:50%;animation:fkkspin .8s linear infinite;vertical-align:-4px;margin-right:9px}@keyframes fkkspin{to{transform:rotate(360deg)}}button:disabled{opacity:.65;cursor:wait}.welcome-frame{width:100%;min-height:950px;border:0;border-radius:14px;background:#fff;margin-top:18px}.success.on{display:block}.success .tick{font-size:52px}.note{color:var(--m);font-size:13px;line-height:1.5}
 @media(max-width:650px){.grid,.choice{grid-template-columns:1fr}.full{grid-column:auto}.steps{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}.row b{padding-bottom:3px}.row span{padding-top:3px}}
 @media print{.top,header,.hero,.steps,.actions,.no-print{display:none!important}body{background:#fff}.wrap{margin:0;max-width:none;padding:0}.card{box-shadow:none;border-radius:0}.section{display:none!important}.section#review{display:block!important}form{padding:0}.summary{border-color:#999}h2:before{content:"Feldmarker Karnevals-Komitee e.V. – ";color:#087b35}}
+footer{background:#053d1d;color:#fff;padding:20px}.foot{max-width:900px;margin:auto;text-align:center}.foot a{color:#fff;font-weight:700}
 </style>
 </head>
 <body>
@@ -54,8 +55,8 @@ button{border:0;border-radius:12px;padding:12px 18px;font-weight:800;cursor:poin
 <label class="check"><input type="checkbox" name="sepa" required><span>Ich ermächtige das Feldmarker Karnevals-Komitee e.V., die fälligen Mitgliedsbeiträge entsprechend dem erteilten SEPA-Lastschriftmandat von meinem Konto einzuziehen. *</span></label>
 <label class="check"><input type="checkbox" name="zeremonie" required><span>Ich habe den Hinweis zur humorvollen Aufnahmezeremonie zur Kenntnis genommen. *</span></label>
 <div class="fee"><b>Datenschutzinformation zur Antragstellung</b><br>
-Die eingegebenen Daten werden ausschließlich zur Bearbeitung des Mitgliedsantrags, zur Mitgliederverwaltung und - soweit erforderlich - zur Beitragsabwicklung verarbeitet. Bankdaten werden nur für die Beitragsabwicklung verwendet. Die vollständigen Informationen nach Art. 13 DSGVO müssen in der veröffentlichten Version mit den konkreten Kontaktdaten des Verantwortlichen, Speicherdauern, Empfängern und Betroffenenrechten ergänzt werden.</div>
-<label class="check"><input type="checkbox" name="privacyread" required><span>Ich bestätige, dass ich die Datenschutzhinweise zur Kenntnis genommen habe. *</span></label>
+Wir verarbeiten deine Angaben zur Bearbeitung des Aufnahmeantrags, zur Mitgliederverwaltung und - soweit erforderlich - zur Beitragsabwicklung. Dazu gehören bei Nutzung des Online-Antrags auch die von dir angegebene IBAN sowie technische Übermittlungsdaten. Ausführliche Informationen zu Zwecken, Rechtsgrundlagen, Empfängern, Speicherdauer, Render, Brevo und deinen Datenschutzrechten findest du in unserer <a href="datenschutz.html" target="_blank" rel="noopener noreferrer"><b>Datenschutzerklärung</b></a>.</div>
+<label class="check"><input type="checkbox" name="privacyread" required><span>Ich bestätige, dass ich die <a href="datenschutz.html" target="_blank" rel="noopener noreferrer">Datenschutzerklärung</a> zur Kenntnis genommen habe. *</span></label>
 <div class="actions"><button type="button" class="secondary prev">← Zurück</button><button type="button" class="primary next">Angaben prüfen →</button></div></section>
 
 <section class="section" id="review" data-i="3"><h2>Dein Aufnahmeantrag</h2><p>Bitte prüfe deine Angaben. Diese Daten werden später in die fertige PDF übernommen.</p><div class="summary" id="summary"></div>
@@ -73,6 +74,7 @@ Die eingegebenen Daten werden ausschließlich zur Bearbeitung des Mitgliedsantra
 <iframe id="welcomeFrame" class="welcome-frame" title="Willkommen beim FKK"></iframe>
 </div>
 </div></div>
+<footer><div class="foot"><a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a><br><small>© 2026 Feldmarker Karnevals-Komitee e.V. 1950 Wesel</small></div></footer>
 <script>
 const root=document, form=root.getElementById('f'), sections=[...root.querySelectorAll('.section')], steps=[...root.querySelectorAll('.step')]; let i=0;
 function show(n){i=Math.max(0,Math.min(3,n));sections.forEach((s,x)=>s.classList.toggle('on',x===i));steps.forEach((s,x)=>s.classList.toggle('on',x===i));if(i===3)review();window.scrollTo({top:0,behavior:'smooth'})}
