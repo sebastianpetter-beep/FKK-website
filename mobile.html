@@ -1528,41 +1528,24 @@ document.addEventListener('DOMContentLoaded',function(){
 
 
 <script>
+/* V15 board portraits */
 document.addEventListener('DOMContentLoaded',function(){
-  const candidates=[...document.querySelectorAll('div,article,li')].filter(el=>{
-    const t=(el.textContent||'').replace(/\s+/g,' ').trim();
-    return t.includes('Oliver Heselmann') && t.includes('Tanztrainer');
+ const links=[
+  ['Oliver Heselmann','Tanztrainer','oliver-heselmann.html'],
+  ['Sabrina Müller','Zeremonienmeisterin','sabrina-mueller.html']
+ ];
+ links.forEach(([name,role,url])=>{
+  const els=[...document.querySelectorAll('div,article,li')].filter(el=>{
+   const t=(el.textContent||'').replace(/\s+/g,' ').trim();
+   return t.includes(name)&&t.includes(role);
   }).sort((a,b)=>a.textContent.length-b.textContent.length);
-  const target=candidates[0];
+  const target=els[0];
   if(target){
-    target.style.cursor='pointer';
-    target.title='Portrait von Oliver Heselmann öffnen';
-    target.setAttribute('role','link');
-    target.setAttribute('tabindex','0');
-    target.addEventListener('click',e=>{if(!e.target.closest('a,button,input,select,textarea')) location.href='oliver-heselmann.html';});
-    target.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();location.href='oliver-heselmann.html';}});
+   target.style.cursor='pointer';target.title='Portrait von '+name+' öffnen';target.setAttribute('role','link');target.setAttribute('tabindex','0');
+   target.addEventListener('click',e=>{if(!e.target.closest('a,button,input,select,textarea'))location.href=url;});
+   target.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();location.href=url;}});
   }
-});
-</script>
-
-
-<script id="portrait-hint-script">
-document.addEventListener('DOMContentLoaded',function(){
-  function addPortraitHint(name){
-    const candidates=[...document.querySelectorAll('div,article,li')].filter(el=>{
-      const t=(el.textContent||'').replace(/\s+/g,' ').trim();
-      return t.includes(name);
-    }).sort((a,b)=>a.textContent.length-b.textContent.length);
-    const box=candidates[0];
-    if(!box || box.querySelector('.portrait-hint')) return;
-    const hint=document.createElement('div');
-    hint.className='portrait-hint';
-    hint.textContent='Zum Portrait →';
-    hint.style.cssText='margin-top:7px;font-size:.78rem;font-weight:800;color:#c9152b;letter-spacing:.01em;';
-    box.appendChild(hint);
-  }
-  addPortraitHint('Sebastian Bassanese');
-  addPortraitHint('Oliver Heselmann');
+ });
 });
 </script>
 
