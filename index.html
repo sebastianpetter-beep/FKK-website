@@ -1354,5 +1354,26 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 
+
+<script id="portrait-hint-script">
+document.addEventListener('DOMContentLoaded',function(){
+  function addPortraitHint(name){
+    const candidates=[...document.querySelectorAll('div,article,li')].filter(el=>{
+      const t=(el.textContent||'').replace(/\s+/g,' ').trim();
+      return t.includes(name);
+    }).sort((a,b)=>a.textContent.length-b.textContent.length);
+    const box=candidates[0];
+    if(!box || box.querySelector('.portrait-hint')) return;
+    const hint=document.createElement('div');
+    hint.className='portrait-hint';
+    hint.textContent='Zum Portrait →';
+    hint.style.cssText='margin-top:7px;font-size:.78rem;font-weight:800;color:#c9152b;letter-spacing:.01em;';
+    box.appendChild(hint);
+  }
+  addPortraitHint('Sebastian Bassanese');
+  addPortraitHint('Oliver Heselmann');
+});
+</script>
+
 </body>
 </html>
