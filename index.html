@@ -1335,5 +1335,24 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  const candidates=[...document.querySelectorAll('div,article,li')].filter(el=>{
+    const t=(el.textContent||'').replace(/\s+/g,' ').trim();
+    return t.includes('Oliver Heselmann') && t.includes('Tanztrainer');
+  }).sort((a,b)=>a.textContent.length-b.textContent.length);
+  const target=candidates[0];
+  if(target){
+    target.style.cursor='pointer';
+    target.title='Portrait von Oliver Heselmann öffnen';
+    target.setAttribute('role','link');
+    target.setAttribute('tabindex','0');
+    target.addEventListener('click',e=>{if(!e.target.closest('a,button,input,select,textarea')) location.href='oliver-heselmann.html';});
+    target.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();location.href='oliver-heselmann.html';}});
+  }
+});
+</script>
+
 </body>
 </html>
