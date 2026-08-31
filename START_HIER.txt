@@ -1,23 +1,11 @@
+FKK-Webseite V11 – Social Media
 
+Neu:
+- automatische Mobile-/Desktop-Erkennung bleibt erhalten
+- manueller Wechsel zwischen Mobile und Desktop bleibt jederzeit möglich
+- Social-Media-Bereich auf Desktop und Mobile
+- Foto und Vorstellung von Tim Bassanese als Social-Media-Verantwortlicher
+- direkte Links zu Facebook und Instagram
+- humorvoller 24/7-Hinweis
 
-V8 MOBILE:
-- Beim Start erscheint eine Auswahl Desktop-Version oder Mobile Version.
-- Mobile Version: mobile.html, speziell fuer Smartphone optimiert.
-- Auf Mobile gibt es eine feste Schnellnavigation unten.
-- Wechsel zwischen Desktop und Mobile ist jederzeit moeglich.
-
-
-V9 Mobile optimiert:
-- Willkommens-Auswahl nur auf index.html, nicht mehr doppelt in mobile.html
-- kompakter Header und Countdown
-- kleinere Typografie und Abstände
-- kompaktere Tanzgruppen-, Vorstand-, Album- und Kontaktkarten
-- flachere mobile Bottom-Navigation
-
-
-V10:
-- Automatische Erkennung von Smartphone/Tablet und Desktop beim Aufruf.
-- Mobile Geräte werden automatisch auf mobile.html weitergeleitet.
-- Wechsel zwischen Mobile und Desktop bleibt jederzeit möglich und wird im Browser gemerkt.
-- Hinweis auf Jörg II. & Anke I. im mobilen Countdown wieder sichtbar.
-- Impressum noch nicht ergänzt; separat nachtragen.
+Hinweis: Impressum und finale Datenschutzhinweise werden noch ergänzt.

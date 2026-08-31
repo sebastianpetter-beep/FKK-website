@@ -1507,5 +1507,24 @@
   })();
 </script>
 
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  const candidates=[...document.querySelectorAll('div,article,li')].filter(el=>{
+    const t=(el.textContent||'').replace(/\s+/g,' ').trim();
+    return t.includes('Sebastian Bassanese') && t.includes('Präsident');
+  }).sort((a,b)=>a.textContent.length-b.textContent.length);
+  const target=candidates[0];
+  if(target){
+    target.style.cursor='pointer';
+    target.title='Portrait von Sebastian Bassanese öffnen';
+    target.setAttribute('role','link');
+    target.setAttribute('tabindex','0');
+    target.addEventListener('click',e=>{if(!e.target.closest('a,button,input,select,textarea')) location.href='sebastian-bassanese.html';});
+    target.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();location.href='sebastian-bassanese.html';}});
+  }
+});
+</script>
+
 </body>
 </html>
