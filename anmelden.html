@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FKK Online-Mitgliedsantrag – Demo</title>
+<title>FKK Online-Mitgliedsantrag</title>
 <style>
 :root{--g:#087b35;--gd:#045323;--gs:#eef7f1;--y:#ffd51f;--r:#c9152e;--t:#202420;--m:#667069}
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f5f7f5;color:var(--t)}
@@ -20,18 +20,20 @@ label{font-weight:700;font-size:14px;display:block;margin-bottom:6px}input,selec
 .check{display:flex;gap:10px;align-items:flex-start;margin:14px 0}.check input{width:auto;margin-top:4px}.actions{display:flex;justify-content:space-between;gap:10px;margin-top:25px;flex-wrap:wrap}
 button{border:0;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer}.primary{background:var(--y);color:#243024}.secondary{background:var(--gs);color:var(--gd)}
 .summary{border:1px solid #dce3de;border-radius:15px;overflow:hidden}.row{display:grid;grid-template-columns:190px 1fr;border-bottom:1px solid #e8ece9}.row:last-child{border:0}.row b,.row span{padding:10px}.row b{background:var(--gs);color:var(--gd)}
-.success{display:none;text-align:center;padding:35px}.success.on{display:block}.success .tick{font-size:52px}.note{color:var(--m);font-size:13px;line-height:1.5}
+.success{display:none;text-align:center;padding:35px}.sendstatus{display:none;margin:16px 0;padding:13px;border-radius:10px;font-weight:700}.sendstatus.on{display:block}.sendstatus.err{background:#fff0f0;color:#9b1c1c;border:1px solid #efb6b6}.sendstatus.wait{background:#fff8df;color:#6b5600;border:1px solid #ead889;line-height:1.5}.sendstatus.wait .loader{display:inline-block;width:18px;height:18px;border:3px solid rgba(107,86,0,.25);border-top-color:#6b5600;border-radius:50%;animation:fkkspin .8s linear infinite;vertical-align:-4px;margin-right:9px}@keyframes fkkspin{to{transform:rotate(360deg)}}button:disabled{opacity:.65;cursor:wait}.welcome-frame{width:100%;min-height:950px;border:0;border-radius:14px;background:#fff;margin-top:18px}.success.on{display:block}.success .tick{font-size:52px}.note{color:var(--m);font-size:13px;line-height:1.5}
 @media(max-width:650px){.grid,.choice{grid-template-columns:1fr}.full{grid-column:auto}.steps{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}.row b{padding-bottom:3px}.row span{padding-top:3px}}
 @media print{.top,header,.hero,.steps,.actions,.no-print{display:none!important}body{background:#fff}.wrap{margin:0;max-width:none;padding:0}.card{box-shadow:none;border-radius:0}.section{display:none!important}.section#review{display:block!important}form{padding:0}.summary{border-color:#999}h2:before{content:"Feldmarker Karnevals-Komitee e.V. – ";color:#087b35}}
 </style>
 </head>
 <body>
 <div class="top"></div>
-<header><div class="nav"><img src="assets/fkk-logo.jpeg"><div><b>Feldmarker Karnevals-Komitee e.V.</b><small>Online-Mitgliedsantrag · Demo</small></div></div></header>
-<section class="hero"><div><div>🎭 Willkommen beim FKK</div><h1>Mitglied <span>werden.</span></h1><p>Fülle deinen Antrag bequem online aus. Am Ende erhältst du eine fertige Zusammenfassung deiner Angaben als PDF für deine Unterlagen.</p></div></section>
+<header><div class="nav"><img src="assets/fkk-logo.jpeg"><div><b>Feldmarker Karnevals-Komitee e.V.</b><small>Online-Mitgliedsantrag</small></div></div></header>
+<section class="hero"><div><div>🎭 Willkommen beim FKK</div><h1>Mitglied <span>werden.</span></h1><p>Fülle deinen Mitgliedsantrag bequem online aus. Nach dem Absenden wird der Antrag sicher an den FKK übermittelt und automatisch als PDF an den Verein gesendet.</p></div></section>
 <div class="wrap"><div class="card">
 <div class="steps"><div class="step on">1 · Mitgliedschaft</div><div class="step">2 · Persönliche Daten</div><div class="step">3 · SEPA</div><div class="step">4 · Prüfen</div></div>
 <form id="f">
+<div style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+<div id="sendstatus" class="sendstatus"></div>
 <section class="section on" data-i="0"><h2>Welche Mitgliedschaft möchtest du?</h2>
 <div class="choice">
 <label><input type="radio" name="art" value="Aktiv" checked> <b>Aktives Mitglied</b><br><small>Teil des aktiven Vereinslebens</small></label>
@@ -60,9 +62,16 @@ Die eingegebenen Daten werden ausschließlich zur Bearbeitung des Mitgliedsantra
 <div class="fee"><b>Beitragsinformationen:</b> Aktive Einzelmitglieder 66,- € jährlich; Ehepaare 99,- €; Jugendliche bis 16 Jahre 22,- €; Jugendliche bis 18 Jahre 33,- €; passive Mitglieder 15,- € jährlich.</div>
 <label class="check no-print"><input type="checkbox" id="finalok"><span>Ich bestätige, dass meine Angaben richtig sind.</span></label>
 <div class="actions no-print"><button type="button" class="secondary prev">← Ändern</button><button type="submit" class="primary">Antrag absenden</button></div>
-<p class="note">Demo: Es werden keine Daten an einen Server übertragen. Die Datenschutz-Bestätigung dokumentiert die Kenntnisnahme der Informationen und ist keine pauschale DSGVO-Einwilligung.</p></section>
+<p class="note">Mit dem Absenden werden deine Angaben verschlüsselt an unseren Server übertragen. Daraus wird der Mitgliedsantrag als PDF erzeugt und an den FKK übermittelt.</p></section>
 </form>
-<div class="success" id="success"><div class="tick">🎉</div><h2>Herzlich willkommen beim FKK!</h2><p>Dein Antrag wurde in dieser Demo erfolgreich vorbereitet.</p><p>In der späteren Online-Version wird an dieser Stelle automatisch deine persönliche PDF erzeugt.</p><p class="note"><b>Produktivbetrieb:</b> Übertragung nur über HTTPS; keine IBAN in URLs oder Browser-Speicher; serverseitige Zugriffskontrolle; definierte Lösch- und Aufbewahrungsfristen; Protokollierung des Antrags und sichere PDF-Bereitstellung.</p><button type="button" class="primary" id="print">Muster-Zusammenfassung als PDF drucken</button></div>
+<div class="success" id="success">
+<div class="tick">🎉</div>
+<h2>Antrag erfolgreich übermittelt!</h2>
+<p id="successText">Dein Mitgliedsantrag ist beim FKK eingegangen.</p>
+<p><b>Antragsnummer:</b> <span id="applicationNo">—</span></p>
+<p>Deine Willkommensmail wurde an die von dir angegebene E-Mail-Adresse gesendet.</p>
+<iframe id="welcomeFrame" class="welcome-frame" title="Willkommen beim FKK"></iframe>
+</div>
 </div></div>
 <script>
 const root=document, form=root.getElementById('f'), sections=[...root.querySelectorAll('.section')], steps=[...root.querySelectorAll('.step')]; let i=0;
@@ -103,8 +112,69 @@ ibanEl.addEventListener('blur',()=>{
   } else ibanEl.setCustomValidity('');
 });
 
-form.addEventListener('submit',e=>{e.preventDefault();if(!root.getElementById('finalok').checked){alert('Bitte bestätige zuerst die Richtigkeit deiner Angaben.');return}form.style.display='none';root.querySelector('.steps').style.display='none';root.getElementById('success').classList.add('on')});
-root.getElementById('print').addEventListener('click',()=>{form.style.display='block';root.getElementById('success').classList.remove('on');show(3);setTimeout(()=>window.print(),100)});
+form.addEventListener('submit',async e=>{
+e.preventDefault();
+if(!root.getElementById('finalok').checked){
+  alert('Bitte bestätige zuerst die Richtigkeit deiner Angaben.');
+  return;
+}
+if(!validSection()) return;
+
+const backend=(window.FKK_BACKEND_URL||'').replace(/\/+$/,'');
+if(!backend || backend.includes('DEIN-BACKEND')){
+  alert('Der Mitgliedsantrag-Server ist noch nicht verbunden.');
+  return;
+}
+
+const status=root.getElementById('sendstatus');
+status.className='sendstatus on wait';
+status.innerHTML='<span class="loader" aria-hidden="true"></span><b>Dein Mitgliedsantrag wird gerade übermittelt …</b><br><span>Bitte habe einen kleinen Moment Geduld. Die Bearbeitung kann bis zu etwa einer Minute dauern. Bitte schließe diese Seite nicht und sende den Antrag nicht erneut ab.</span>';
+  const submitBtn=form.querySelector('button[type="submit"]');
+  if(submitBtn){submitBtn.disabled=true;submitBtn.dataset.oldText=submitBtn.textContent;submitBtn.textContent='Antrag wird übermittelt …';}
+
+const payload={
+  art: form.querySelector('input[name=art]:checked').value,
+  vorname: val('vorname'),
+  nachname: val('nachname'),
+  adresse: val('adresse'),
+  telefon: val('telefon'),
+  email: val('email'),
+  geburt: val('geburt'),
+  ehe: val('ehe'),
+  iban: val('iban'),
+  sepa: !!form.elements['sepa'].checked,
+  zeremonie: !!form.elements['zeremonie'].checked,
+  privacyread: !!form.elements['privacyread'].checked,
+  finalok: true,
+  website: val('website')
+};
+
+try{
+  const res=await fetch(backend+'/api/antrag',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  });
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok || !data.ok){
+    throw new Error(data.error || 'Der Antrag konnte nicht versendet werden.');
+  }
+  status.className='sendstatus';
+  form.style.display='none';
+  root.querySelector('.steps').style.display='none';
+  root.getElementById('applicationNo').textContent=data.application_no || '—';
+  root.getElementById('success').classList.add('on');
+  root.getElementById('welcomeFrame').src=backend+'/welcome';
+  window.scrollTo({top:0,behavior:'smooth'});
+}catch(err){
+  const submitBtn=form.querySelector('button[type="submit"]');
+  if(submitBtn){submitBtn.disabled=false;submitBtn.textContent=submitBtn.dataset.oldText||'Antrag absenden';}
+  status.className='sendstatus on err';
+  status.textContent=err.message || 'Beim Versand ist ein Fehler aufgetreten.';
+}
+});
+
 document.querySelectorAll('input[name=art]').forEach(r=>r.addEventListener('change',()=>{document.getElementById('fee').innerHTML=r.value==='Passiv'?'Passive Mitglieder: <b>15,- € jährlich</b>.':'Aktive Einzelmitglieder: <b>66,- € jährlich</b>. Ehepaare: 99,- €. Jugendliche bis 16: 22,- €, bis 18: 33,- €.'}));
 </script>
+<script src="backend-config.js"></script>
 </body></html>
