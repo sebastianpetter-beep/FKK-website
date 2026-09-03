@@ -1026,6 +1026,22 @@
 @media(min-width:761px){
   .board-spacer-kelly{display:block !important;grid-column:2 !important;}
 }
+
+/* Vorstandsausrichtung */
+@media (min-width:901px){
+  .board-block.executive .people-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .board-block.executive .executive-left{grid-column:1;}
+  .board-block.executive .executive-right{grid-column:3;}
+}
+@media (min-width:621px) and (max-width:900px){
+  .board-block.executive .executive-left{grid-column:1;}
+  .board-block.executive .executive-right{grid-column:2;}
+}
+@media (max-width:620px){
+  .board-block.executive .executive-left,
+  .board-block.executive .executive-right{grid-column:1;}
+}
+
 </style>
 </head>
 <body class="mobile-site">
@@ -1250,15 +1266,15 @@
         <h3>Geschäftsführender Vorstand</h3>
         <div class="people-grid">
           <div class="person president"><strong>Sebastian Bassanese</strong><span>Präsident</span><a class="board-email" href="mailto:praesident@fkkwesel.de">praesident@fkkwesel.de</a></div>
-          <div class="person"><strong>Jörg Heselmann</strong><span>Geschäftsführer</span><a class="board-email" href="mailto:geschaeftsfuehrer@fkkwesel.de">geschaeftsfuehrer@fkkwesel.de</a></div>
-          <div class="person"><strong>Kelly Schlaak</strong><span>Schatzmeisterin</span><a class="board-email" href="mailto:schatzmeisterin@fkkwesel.de">schatzmeisterin@fkkwesel.de</a></div>
+          <div class="person executive-left"><strong>Jörg Heselmann</strong><span>Geschäftsführer</span><a class="board-email" href="mailto:geschaeftsfuehrer@fkkwesel.de">geschaeftsfuehrer@fkkwesel.de</a></div>
+          <div class="person executive-right"><strong>Kelly Schlaak</strong><span>Schatzmeisterin</span><a class="board-email" href="mailto:schatzmeisterin@fkkwesel.de">schatzmeisterin@fkkwesel.de</a></div>
         </div>
       </div>
       <div class="board-block">
         <h3>Weitere Vorstandsmitglieder</h3>
         <div class="people-grid">
           <div class="person"><strong>Raphael Wolf</strong><span>Vizepräsident</span></div>
-          <div class="person"><strong>Monika Krebbing</strong><span>Ehrenpräsidentin</span></div>
+          
           <div class="person"><strong>Maksim Bondarenko</strong><span>Schriftführer</span></div>
           <div class="person"><strong>Sabrina Müller</strong><span>Zeremonienmeisterin</span></div>
           <div class="person"><strong>Tobias Laader</strong><span>Wagenbaumeister</span></div>
@@ -1270,6 +1286,7 @@
       <div class="board-block advisory">
         <h3>Beratende Vorstandsmitglieder</h3>
         <div class="people-grid">
+          <div class="person"><strong>Monika Krebbing</strong><span>Ehrenpräsidentin</span></div>
           <div class="person"><strong>Eva Tenbergen</strong><span>Ehrengeschäftsführerin</span></div>
           <div class="person"><strong>Ingrid Laader</strong><span>Ehrenschatzmeisterin</span></div>
           <div class="person"><strong>Henn Laader</strong><span>Ehrenmitglied</span></div>
