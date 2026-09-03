@@ -1401,10 +1401,14 @@
       <div class="contact-info">
         <h3>Feldmarker Karnevals-Komitee e.V.</h3>
         <p>Deine Nachricht geht an unsere offizielle Kontaktadresse.</p>
-        <a href="mailto:Protokoll.fkk@gmx.de">✉ Protokoll.fkk@gmx.de</a>
+        <a href="mailto:praesident@fkkwesel.de">✉ praesident@fkkwesel.de</a>
       </div>
 
       <form class="contact-form" id="contactForm">
+        <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
+          <label for="contactWebsite">Website</label>
+          <input id="contactWebsite" name="website" type="text" tabindex="-1" autocomplete="off">
+        </div>
         <div>
           <label for="contactName">Name *</label>
           <input id="contactName" name="name" type="text" autocomplete="name" required>
@@ -1423,11 +1427,11 @@
         </div>
         <label class="contact-consent full">
           <input id="contactPrivacy" type="checkbox" required>
-          <span>Ich bin damit einverstanden, dass meine Angaben zur Bearbeitung meiner Anfrage verwendet werden. *</span>
+          <span>Ich habe die <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a> gelesen und bin damit einverstanden, dass meine Angaben zur Bearbeitung meiner Anfrage verwendet werden. *</span>
         </label>
         <div class="full" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-primary" type="submit">Nachricht senden</button>
-          <p class="contact-status" id="contactStatus" aria-live="polite">In der Offline-Version wird dein E-Mail-Programm mit der fertigen Nachricht geöffnet.</p>
+          <button class="btn btn-primary" id="contactSubmit" type="submit">Nachricht senden</button>
+          <p class="contact-status" id="contactStatus" aria-live="polite">Deine Nachricht wird direkt und sicher an uns übermittelt.</p>
         </div>
       </form>
     </div>
@@ -1472,6 +1476,7 @@
   </div>
 </footer>
 
+<script src="backend-config.js"></script>
 <script>
   const menuBtn = document.getElementById('menuBtn');
   const navLinks = document.getElementById('navLinks');
@@ -1488,22 +1493,55 @@
     });
   });
 
-  // Kontaktformular: Offline-Version öffnet das lokale E-Mail-Programm mit vorausgefüllter Nachricht.
+  // Kontaktformular: direkter Versand über das FKK-Backend / Brevo.
   (function(){
     const form = document.getElementById('contactForm');
     const status = document.getElementById('contactStatus');
+    const submit = document.getElementById('contactSubmit');
     if(!form) return;
-    form.addEventListener('submit', function(e){
+
+    const BACKEND_URL = (window.FKK_BACKEND_URL || 'https://fkk-mitgliedsantrag-backend.onrender.com').replace(/\/+$/,'');
+
+    form.addEventListener('submit', async function(e){
       e.preventDefault();
       if(!form.reportValidity()) return;
-      const name = document.getElementById('contactName').value.trim();
-      const email = document.getElementById('contactEmail').value.trim();
-      const subject = document.getElementById('contactSubject').value.trim();
-      const message = document.getElementById('contactMessage').value.trim();
-      const body = `Name: ${name}\nE-Mail: ${email}\n\nNachricht:\n${message}`;
-      const mailto = 'mailto:Protokoll.fkk@gmx.de?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-      status.textContent = 'Dein E-Mail-Programm wird geöffnet. Bitte die vorbereitete Nachricht dort noch absenden.';
-      window.location.href = mailto;
+
+      const payload = {
+        name: document.getElementById('contactName').value.trim(),
+        email: document.getElementById('contactEmail').value.trim(),
+        subject: document.getElementById('contactSubject').value.trim(),
+        message: document.getElementById('contactMessage').value.trim(),
+        privacy: !!document.getElementById('contactPrivacy').checked,
+        website: document.getElementById('contactWebsite') ? document.getElementById('contactWebsite').value.trim() : ''
+      };
+
+      submit.disabled = true;
+      submit.textContent = 'Wird gesendet …';
+      status.textContent = 'Deine Nachricht wird gerade übermittelt. Bitte einen Moment Geduld.';
+
+      try{
+        const response = await fetch(BACKEND_URL + '/api/kontakt', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json().catch(()=>({}));
+        if(!response.ok || !result.ok){
+          throw new Error(result.error || 'Die Nachricht konnte nicht gesendet werden.');
+        }
+
+        form.reset();
+        status.textContent = 'Vielen Dank! Deine Nachricht wurde erfolgreich an uns übermittelt.';
+        status.style.color = '#0a6b34';
+      }catch(err){
+        console.error(err);
+        status.textContent = 'Das hat leider nicht geklappt. Bitte versuche es später erneut oder schreibe an praesident@fkkwesel.de.';
+        status.style.color = '#b42318';
+      }finally{
+        submit.disabled = false;
+        submit.textContent = 'Nachricht senden';
+      }
     });
   })();
 
