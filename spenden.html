@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spenden – Feldmarker Karnevals-Komitee e.V.</title>
+<style>
+:root{
+  --green:#087b3c; --green-dark:#075f31; --red:#c7192d;
+  --gold:#f4c400; --ink:#1d2520; --muted:#68716b; --bg:#f3f5f2;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+.hero{background:linear-gradient(135deg,var(--green-dark),var(--green));color:#fff;padding:58px 20px 52px;border-bottom:8px solid var(--gold)}
+.wrap{max-width:1050px;margin:auto}
+.ey{font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#ffe26c;font-size:.82rem}
+h1{font-size:clamp(2.6rem,6vw,4.8rem);line-height:1.03;margin:.35rem 0 1rem}
+.hero p{max-width:760px;font-size:1.15rem}
+.btn{display:inline-block;text-decoration:none;font-weight:800;padding:12px 18px;border-radius:999px;background:var(--gold);color:#172018;margin-top:14px;border:0;cursor:pointer}
+main{padding:34px 20px 70px}
+.intro,.card,.note{background:#fff;border-radius:25px;padding:30px;box-shadow:0 12px 34px rgba(0,0,0,.07)}
+.intro{margin-top:-22px;border-top:5px solid var(--red);text-align:center}
+.intro h2,.card h2{margin:.1rem 0 .8rem;font-size:clamp(1.6rem,3vw,2.25rem)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:24px}
+.card{position:relative;overflow:hidden}
+.card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--green)}
+.card.paypal:before{background:var(--gold)}
+.label{font-size:.8rem;font-weight:900;text-transform:uppercase;letter-spacing:.09em;color:var(--green-dark)}
+.data{background:#f6f8f6;border:1px solid #e1e7e2;border-radius:16px;padding:17px;margin:17px 0}
+.row{margin:0 0 12px}.row:last-child{margin-bottom:0}
+.row span{display:block;color:var(--muted);font-size:.84rem;font-weight:700}
+.row strong{display:block;font-size:1.05rem;overflow-wrap:anywhere}
+.copy{font-weight:800;border:0;background:#edf7f0;color:var(--green-dark);padding:10px 14px;border-radius:12px;cursor:pointer}
+.copy:hover{background:#e1f1e5}
+.projects{margin-top:24px;background:#fffdf5;border:2px solid var(--gold);border-radius:25px;padding:28px;text-align:center}
+.projects h2{margin-top:0}
+.project-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+.project{background:#fff;border:1px solid #ebe7d5;border-radius:16px;padding:15px;font-weight:800}
+.note{margin-top:24px;box-shadow:none;border:1px solid #e0e5e1;font-size:.94rem;color:#4e5851}
+.footer{text-align:center;color:var(--muted);padding:0 20px 40px;font-size:.9rem}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#172018;color:#fff;padding:10px 16px;border-radius:999px;display:none;z-index:10}
+@media(max-width:760px){.grid,.project-grid{grid-template-columns:1fr}.intro,.card,.projects,.note{padding:22px}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="ey">Feldmarker Karnevals-Komitee e.V.</div>
+    <h1>Gemeinsam für unseren FKK</h1>
+    <p>Mit einer Spende unterstützt du unsere Vereinsarbeit und hilfst dabei, Tradition, Nachwuchs und neue Projekte in der Feldmark lebendig zu halten.</p>
+    <a class="btn" href="index.html">← Zur Startseite</a>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+  <section class="intro">
+    <h2>Jede Unterstützung hilft</h2>
+    <p>Ob kleiner oder großer Betrag – deine Unterstützung kommt unserer Vereinsarbeit zugute. Damit können wir unter anderem unsere Tanzgruppen, den Wagenbau, Veranstaltungen und besondere Projekte des Feldmarker Karnevals unterstützen.</p>
+  </section>
+
+  <div class="grid">
+    <section class="card paypal">
+      <div class="label">Spenden mit PayPal</div>
+      <h2>Einfach über PayPal senden</h2>
+      <p>Öffne PayPal und wähle „Geld senden“. Als Empfänger verwendest du unsere PayPal-Adresse:</p>
+      <div class="data">
+        <div class="row">
+          <span>PayPal-Adresse</span>
+          <strong id="paypal">protokoll.fkk@gmx.de</strong>
+        </div>
+      </div>
+      <button class="copy" onclick="copyText('paypal','PayPal-Adresse kopiert')">PayPal-Adresse kopieren</button>
+      <p style="font-size:.9rem;color:var(--muted);margin-top:16px">Bitte prüfe vor dem Absenden in PayPal noch einmal, ob der richtige Empfänger angezeigt wird.</p>
+    </section>
+
+    <section class="card">
+      <div class="label">Spenden per Überweisung</div>
+      <h2>Direkt auf unser Vereinskonto</h2>
+      <div class="data">
+        <div class="row"><span>Bank</span><strong>Volksbank Rhein Lippe</strong></div>
+        <div class="row"><span>IBAN</span><strong id="iban">DE55 3566 0599 4000 1420 13</strong></div>
+        <div class="row"><span>BIC</span><strong id="bic">GENODED1RLW</strong></div>
+        <div class="row"><span>Verwendungszweck</span><strong>Spende FKK</strong></div>
+      </div>
+      <button class="copy" onclick="copyText('iban','IBAN kopiert')">IBAN kopieren</button>
+    </section>
+  </div>
+
+  <section class="projects">
+    <h2>Wofür wir Unterstützung einsetzen</h2>
+    <div class="project-grid">
+      <div class="project">Tanzgruppen & Nachwuchs</div>
+      <div class="project">Wagenbau</div>
+      <div class="project">Vereinsveranstaltungen</div>
+      <div class="project">Neue Vereinsprojekte</div>
+    </div>
+    <p>Damit aus Ideen Erlebnisse werden – für unsere Mitglieder, für die Feldmark und für den Karneval in Wesel.</p>
+  </section>
+
+  <section class="note">
+    <strong>Hinweis:</strong> Wenn du für deine Spende eine Spendenbescheinigung benötigst, nimm bitte Kontakt mit dem Verein auf. Wir prüfen dann, welche Unterlagen wir dir für deine konkrete Spende ausstellen können.
+  </section>
+</div>
+</main>
+
+<div class="footer">Feldmarker Karnevals-Komitee e.V. · Wesel</div>
+<div class="toast" id="toast"></div>
+
+<script>
+function copyText(id,msg){
+  const value=document.getElementById(id).innerText.replace(/\s+/g,' ').trim();
+  navigator.clipboard.writeText(value).then(()=>{
+    const t=document.getElementById('toast');
+    t.textContent=msg;
+    t.style.display='block';
+    setTimeout(()=>t.style.display='none',1800);
+  });
+}
+</script>
+</body>
+</html>
