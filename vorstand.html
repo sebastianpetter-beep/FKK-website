@@ -42,7 +42,7 @@ main{min-width:0}.hero{background:linear-gradient(135deg,var(--gd),var(--g));col
 <main>
 <section id="dashboard" class="page active">
 <div class="hero"><h1>Willkommen in der Vorstandszentrale</h1><p>Mitglieder, Anträge, Jubiläen und Vereinskommunikation an einem Ort.</p></div>
-<div class="cards"><div class="card"><strong id="memberCount">155</strong><span>Mitglieder im aktuellen Import</span></div><div class="card warn"><strong id="missingCount">–</strong><span>Datensätze unvollständig</span></div><div class="card"><strong id="appCount">3</strong><span>aktuelle Online-Anträge</span></div><div class="card danger"><strong>0</strong><span>offene Kündigungen</span></div></div>
+<div class="cards"><div class="card"><strong id="memberCount">–</strong><span>Mitglieder</span></div><div class="card warn"><strong id="missingCount">–</strong><span>Datensätze unvollständig</span></div><div class="card"><strong id="appCount">–</strong><span>aktuelle Online-Anträge</span></div><div class="card danger"><strong id="resignationCount">–</strong><span>offene Kündigungen</span></div></div>
 <div class="panel"><div class="panel-head"><h2>⚠️ Fehlende Mitgliedsdaten</h2><button class="btn yellow" onclick="go('members','missing')">Unvollständige anzeigen</button></div><p>Das Portal prüft künftig automatisch Eintrittsdatum, Status, Anschrift, Geburtsdatum, E-Mail/Telefon und IBAN. Fehlende Werte bleiben sichtbar, bis sie ergänzt wurden.</p></div>
 <div class="panel"><div class="panel-head"><h2>🎭 Nächste närrische Jubiläen</h2><button class="btn" onclick="go('jubilee')">Alle Jubiläen</button></div><p>Berechnet werden 11 · 22 · 33 · 44 · 55 · 66 · 77 · 88 · 99 · 111 Jahre ab Eintrittsdatum.</p></div>
 </section>
@@ -60,6 +60,7 @@ const TOKEN_KEY="fkk_portal_token";
 const inviteToken=new URLSearchParams(location.search).get("invite");
 if(inviteToken){
   document.getElementById("loginGate").classList.add("hidden");
+    await loadPortalData();
   document.getElementById("activateGate").classList.remove("hidden");
 }
 document.getElementById("activateForm").addEventListener("submit",async e=>{
@@ -83,6 +84,19 @@ async function api(path,options={}){
   if(token)headers.Authorization="Bearer "+token;
   return fetch(API+path,{...options,headers});
 }
+function esc(v){return String(v??"").replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[s]))}
+function fmtDate(v){if(!v)return "–";const d=new Date(v+"T00:00:00");return d.toLocaleDateString("de-DE")}
+async function loadDashboard(){
+  const r=await api("/api/portal/dashboard");if(!r.ok)return;
+  const d=await r.json();memberCount.textContent=d.member_count;missingCount.textContent=d.incomplete_count;appCount.textContent=d.application_count;resignationCount.textContent=d.resignation_count;
+}
+async function loadMembers(){
+  const r=await api("/api/portal/members");if(!r.ok)return;
+  const d=await r.json(),body=document.getElementById("membersBody");
+  if(!d.members.length){body.innerHTML='<tr><td colspan="6" class="empty">Noch keine Mitglieder importiert.</td></tr>';return}
+  body.innerHTML=d.members.map(m=>{const entry=m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–");const jub=m.next_jubilee?(m.next_jubilee.years+" Jahre · "+m.next_jubilee.year):"⚠ Eintritt fehlt";const miss=m.data_complete?'<span class="badge">Vollständig</span>':'<span class="badge miss">'+m.missing_fields.length+' fehlen</span>';return '<tr data-status="'+esc((m.current_status||"").toLowerCase())+'" data-missing="'+(!m.data_complete)+'"><td><b>'+esc(m.first_name+" "+m.last_name)+'</b><br><small>'+esc(m.email||"")+'</small></td><td><span class="badge '+(m.current_status==="Passiv"?"passiv":"")+'">'+esc(m.current_status||"Ungeklärt")+'</span></td><td>'+esc(entry)+'</td><td>'+esc(jub)+'</td><td>'+miss+'</td><td><button class="btn" disabled>Details</button></td></tr>'}).join("");
+}
+async function loadPortalData(){await Promise.all([loadDashboard(),loadMembers()])}
 async function checkPortal(){
   const token=sessionStorage.getItem(TOKEN_KEY);
   if(!token)return;
