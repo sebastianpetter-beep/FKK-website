@@ -184,7 +184,14 @@ function mailRecipients(){
 function refreshMailRecipients(){
   const members=(window.portalMembers||[]).filter(function(m){return !m.archived&&m.email;});
   const single=document.getElementById("mailSingle");
-  if(single) single.innerHTML=members.map(function(m){return '<option value="'+m.id+'">'+esc(m.first_name+" "+m.last_name)+'</option>';}).join("");
+  const previous=single?single.value:"";
+  if(single){
+    const needsBuild=single.options.length!==members.length||members.some(function(m,i){return !single.options[i]||Number(single.options[i].value)!==Number(m.id);});
+    if(needsBuild){
+      single.innerHTML=members.map(function(m){return '<option value="'+m.id+'">'+esc(m.first_name+" "+m.last_name)+'</option>';}).join("");
+      if(previous&&members.some(function(m){return String(m.id)===String(previous);})) single.value=previous;
+    }
+  }
   const target=document.getElementById("mailTarget");
   const wrap=document.getElementById("mailSingleWrap");
   if(target&&wrap) wrap.classList.toggle("hidden",target.value!=="single");
