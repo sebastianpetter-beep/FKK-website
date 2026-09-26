@@ -46,7 +46,7 @@ main{min-width:0}.hero{background:linear-gradient(135deg,var(--gd),var(--g));col
 <div class="panel"><div class="panel-head"><h2>⚠️ Fehlende Mitgliedsdaten</h2><button class="btn yellow" onclick="go('members','missing')">Unvollständige anzeigen</button></div><p>Das Portal prüft künftig automatisch Eintrittsdatum, Status, Anschrift, Geburtsdatum, E-Mail/Telefon und IBAN. Fehlende Werte bleiben sichtbar, bis sie ergänzt wurden.</p></div>
 <div class="panel"><div class="panel-head"><h2>🎭 Nächste närrische Jubiläen</h2><button class="btn" onclick="go('jubilee')">Alle Jubiläen</button></div><div id="dashboardJubilees"><p>Jubiläen werden geladen …</p></div></div>
 </section>
-<section id="members" class="page"><div class="panel"><div class="panel-head"><h2>👥 Mitgliederregister</h2><div class="toolbar"><input id="search" placeholder="Name suchen…"><select id="filter"><option value="all">Alle</option><option value="missing">Daten fehlen</option><option value="aktiv">Aktiv</option><option value="passiv">Passiv</option><option value="archiv">Archiv</option></select><button class="btn">+ Mitglied</button></div></div><div class="note">V1-Grundgerüst: Die 155 Datensätze werden im nächsten Schritt serverseitig importiert. IBANs werden nicht in diese öffentliche HTML-Datei geschrieben.</div><div class="tablewrap"><div class="card" style="margin-bottom:14px"><b>Mitglieder-Masterliste importieren</b><p><small>Die Datei wird nur an den geschützten Vorstandsbereich übertragen. Bestehende Datensätze werden nicht überschrieben.</small></p><input id="memberImportFile" type="file" accept=".json"><button class="btn" id="memberImportButton" type="button">Import starten</button><div id="memberImportStatus" style="margin-top:8px"></div></div><table><thead><tr><th>Mitglied</th><th>Status</th><th>Eintritt</th><th>Nächstes Jubiläum</th><th>Datenstatus</th><th>Aktion</th></tr></thead><tbody id="membersBody"><tr><td colspan="6" class="empty">Masterliste bereit zum sicheren Datenbank-Import.</td></tr></tbody></table></div></div></section>
+<section id="members" class="page"><div class="panel"><div class="panel-head"><h2>👥 Mitgliederregister</h2><div class="toolbar"><input id="search" placeholder="Name suchen…"><select id="filter"><option value="all">Alle</option><option value="missing">Daten fehlen</option><option value="aktiv">Aktiv</option><option value="passiv">Passiv</option><option value="archiv">Archiv</option></select><button class="btn" type="button" id="printMembersButton">🖨️ Liste drucken</button><button class="btn">+ Mitglied</button></div></div><div class="tablewrap"><div class="card" style="margin-bottom:14px"><b>Mitglieder-Masterliste importieren</b><p><small>Die Datei wird nur an den geschützten Vorstandsbereich übertragen. Bestehende Datensätze werden nicht überschrieben.</small></p><input id="memberImportFile" type="file" accept=".json"><button class="btn" id="memberImportButton" type="button">Import starten</button><div id="memberImportStatus" style="margin-top:8px"></div></div><table><thead><tr><th>Mitglied</th><th>Status</th><th>Eintritt</th><th>Nächstes Jubiläum</th><th>Datenstatus</th><th>Aktion</th></tr></thead><tbody id="membersBody"><tr><td colspan="6" class="empty">Masterliste bereit zum sicheren Datenbank-Import.</td></tr></tbody></table></div></div></section>
 <section id="applications" class="page"><div class="panel"><div class="panel-head"><h2>📥 Aufnahmeanträge</h2></div><div class="tablewrap"><table><thead><tr><th>Name</th><th>Antrag</th><th>Beantragt</th><th>Vorstandsstatus</th><th>Aktion</th></tr></thead><tbody id="applicationsBody"><tr><td colspan="5" class="empty">Anträge werden geladen …</td></tr></tbody></table></div></div></section>
 <section id="jubilee" class="page"><div class="panel"><div class="panel-head"><h2>🎭 Närrische Jubiläen</h2></div><p>Automatisch nach dem nächsten anstehenden närrischen Vereinsjubiläum sortiert.</p><div class="note">FKK-Stufen: 11 · 22 · 33 · 44 · 55 · 66 · 77 · 88 · 99 · 111 Jahre.</div><div class="tablewrap"><table><thead><tr><th>Mitglied</th><th>Nächstes Jubiläum</th><th>Jahr</th><th>Eintritt</th></tr></thead><tbody id="jubileeBody"><tr><td colspan="4" class="empty">Jubiläen werden geladen …</td></tr></tbody></table></div></div></section>
 <section id="terminations" class="page"><div class="panel"><h2>📤 Kündigungen & Archiv</h2><p>Eine Kündigung bekommt Datum, Wirksamkeitsdatum und Bearbeiter. Bei vorhandener E-Mail kann eine Kündigungsbestätigung versendet werden. Ausgeschiedene Mitglieder werden archiviert; endgültiges Löschen bleibt eine separate Sicherheitsfunktion.</p></div></section>
@@ -156,6 +156,7 @@ document.getElementById("sendMemberMail").addEventListener("click",sendMemberEma
 document.getElementById("memberEditButton").addEventListener("click",function(){setMemberEdit(true)});
 document.getElementById("memberCancelButton").addEventListener("click",function(){setMemberEdit(false)});
 document.getElementById("memberSaveButton").addEventListener("click",saveMember);
+document.getElementById("printMembersButton").addEventListener("click",printMemberList);
 async function loadMembers(){
   const r=await api("/api/portal/members");if(!r.ok)return;
   const d=await r.json(),body=document.getElementById("membersBody");
@@ -227,6 +228,23 @@ async function saveMember(){
     document.getElementById("memberMessage").textContent="✓ Änderungen gespeichert.";
   }catch(e){msg.textContent="Speichern derzeit nicht möglich.";}
   button.disabled=false;
+}
+
+
+function printMemberList(){
+  const members=(window.portalMembers||[]).filter(function(m){return !m.archived;}).sort(function(a,b){
+    return String(a.last_name||"").localeCompare(String(b.last_name||""),"de")||String(a.first_name||"").localeCompare(String(b.first_name||""),"de");
+  });
+  if(!members.length){alert("Keine Mitglieder zum Drucken vorhanden.");return;}
+  const rows=members.map(function(m,i){
+    const entry=m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–");
+    const address=[m.street,[m.postal_code,m.city].filter(Boolean).join(" ")].filter(Boolean).join(", ")||"–";
+    return "<tr><td>"+(i+1)+"</td><td><b>"+esc(m.last_name+", "+m.first_name)+"</b></td><td>"+esc(m.current_status||"Ungeklärt")+"</td><td>"+esc(entry)+"</td><td>"+esc(address)+"</td><td>"+esc(m.phone||"–")+"</td><td>"+esc(m.email||"–")+"</td></tr>";
+  }).join("");
+  const w=window.open("","_blank");
+  if(!w){alert("Das Druckfenster wurde vom Browser blockiert.");return;}
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>FKK Mitgliederliste</title><style>@page{size:A4 landscape;margin:10mm}body{font-family:Arial,sans-serif;color:#111}h1{margin:0 0 4px;font-size:20px}.meta{margin:0 0 14px;color:#555;font-size:12px}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #bbb;padding:5px;text-align:left;vertical-align:top}th{background:#eee}tr:nth-child(even){background:#fafafa}</style></head><body><h1>Feldmarker Karnevals-Komitee e.V. – Mitgliederliste</h1><p class="meta">Stand: '+new Date().toLocaleDateString("de-DE")+' · '+members.length+' aktuelle Mitglieder</p><table><thead><tr><th>Nr.</th><th>Name</th><th>Status</th><th>Eintritt</th><th>Anschrift</th><th>Telefon</th><th>E-Mail</th></tr></thead><tbody>'+rows+'</tbody></table></body></html>');
+  w.document.close();w.focus();setTimeout(function(){w.print();},250);
 }
 
 function renderJubilees(members){
