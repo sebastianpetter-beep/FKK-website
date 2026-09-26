@@ -88,7 +88,12 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
       if(!r.ok)throw new Error(d.error||"Anmeldung fehlgeschlagen.");
       if(!d.token)throw new Error("Kein Sitzungsschlüssel empfangen.");
       sessionStorage.setItem("fkk_portal_token",d.token);
-      location.reload();
+      err.textContent="✓ Anmeldung erfolgreich – Vorstandszentrale wird geöffnet …";
+      document.getElementById("portalUser").textContent="🔒 "+((d.user&&d.user.display_name)||"Vorstand");
+      document.getElementById("loginGate").classList.add("hidden");
+      if(typeof loadPortalData==="function"){
+        try{await loadPortalData();}catch(loadError){console.error("Portal-Daten:",loadError);}
+      }
     }catch(ex){
       err.textContent=ex.message||"Anmeldung derzeit nicht möglich.";
       button.disabled=false;
