@@ -61,6 +61,20 @@ main{min-width:0}.hero{background:linear-gradient(135deg,var(--gd),var(--g));col
 <section id="documents" class="page"><div class="panel"><h2>📁 Dokumente</h2><p>Aufnahmeanträge, Kündigungen und weitere Vorstandsunterlagen werden später geschützt einer Mitgliederakte zugeordnet.</p></div></section>
 <section id="activity" class="page"><div class="panel"><h2>🕘 Aktivitäten</h2><p>Änderungen werden mit Zeitpunkt und Bearbeiter nachvollziehbar protokolliert.</p></div></section>
 </main></div>
+<div id="memberModal" class="loginGate hidden" style="z-index:2100;background:rgba(0,0,0,.65)">
+  <div class="loginBox" style="max-width:760px;width:min(94vw,760px);text-align:left;max-height:90vh;overflow:auto">
+    <button type="button" onclick="closeMember()" style="float:right;border:0;background:transparent;font-size:24px;cursor:pointer">×</button>
+    <h1 style="text-align:left">Mitgliederakte</h1>
+    <div id="memberDetail"></div>
+    <div id="memberEdit" class="hidden"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px">
+      <button class="btn" id="memberEditButton" type="button">Bearbeiten</button>
+      <button class="btn hidden" id="memberSaveButton" type="button">Speichern</button>
+      <button class="btn hidden" id="memberCancelButton" type="button">Abbrechen</button>
+    </div>
+    <div id="memberMessage" style="margin-top:12px"></div>
+  </div>
+</div>
 <div id="applicationModal" class="loginGate hidden" style="z-index:2000;background:rgba(0,0,0,.65)">
   <div class="loginBox" style="max-width:720px;width:min(92vw,720px);text-align:left">
     <button onclick="closeApplication()" style="float:right;border:0;background:transparent;font-size:24px;cursor:pointer">×</button>
@@ -139,6 +153,9 @@ document.getElementById("memberImportButton").addEventListener("click",runMember
 document.getElementById("mailTarget").addEventListener("change",refreshMailRecipients);
 document.getElementById("mailSingle").addEventListener("change",refreshMailRecipients);
 document.getElementById("sendMemberMail").addEventListener("click",sendMemberEmail);
+document.getElementById("memberEditButton").addEventListener("click",function(){setMemberEdit(true)});
+document.getElementById("memberCancelButton").addEventListener("click",function(){setMemberEdit(false)});
+document.getElementById("memberSaveButton").addEventListener("click",saveMember);
 async function loadMembers(){
   const r=await api("/api/portal/members");if(!r.ok)return;
   const d=await r.json(),body=document.getElementById("membersBody");
@@ -146,8 +163,72 @@ async function loadMembers(){
   setTimeout(refreshMailRecipients,0);
   renderJubilees(d.members);
   if(!d.members.length){body.innerHTML='<tr><td colspan="6" class="empty">Noch keine Mitglieder importiert.</td></tr>';return}
-  body.innerHTML=d.members.map(m=>{const entry=m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–");const jub=m.next_jubilee?(m.next_jubilee.years+" Jahre · "+m.next_jubilee.year):"⚠ Eintritt fehlt";const miss=m.data_complete?'<span class="badge">Vollständig</span>':'<span class="badge miss">'+m.missing_fields.length+' fehlen</span>';return '<tr data-status="'+esc((m.current_status||"").toLowerCase())+'" data-missing="'+(!m.data_complete)+'"><td><b>'+esc(m.first_name+" "+m.last_name)+'</b><br><small>'+esc(m.email||"")+'</small></td><td><span class="badge '+(m.current_status==="Passiv"?"passiv":"")+'">'+esc(m.current_status||"Ungeklärt")+'</span></td><td>'+esc(entry)+'</td><td>'+esc(jub)+'</td><td>'+miss+'</td><td><button class="btn" disabled>Details</button></td></tr>'}).join("");
+  body.innerHTML=d.members.map(m=>{const entry=m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–");const jub=m.next_jubilee?(m.next_jubilee.years+" Jahre · "+m.next_jubilee.year):"⚠ Eintritt fehlt";const miss=m.data_complete?'<span class="badge">Vollständig</span>':'<span class="badge miss">'+m.missing_fields.length+' fehlen</span>';return '<tr data-status="'+esc((m.current_status||"").toLowerCase())+'" data-missing="'+(!m.data_complete)+'"><td><b>'+esc(m.first_name+" "+m.last_name)+'</b><br><small>'+esc(m.email||"")+'</small></td><td><span class="badge '+(m.current_status==="Passiv"?"passiv":"")+'">'+esc(m.current_status||"Ungeklärt")+'</span></td><td>'+esc(entry)+'</td><td>'+esc(jub)+'</td><td>'+miss+'</td><td><button class="btn" type="button" onclick="openMember('+m.id+')">Details</button></td></tr>'}).join("");
 }
+
+let selectedMemberId=null;
+function val(v){return v===null||v===undefined?"":String(v)}
+function openMember(id){
+  const m=(window.portalMembers||[]).find(function(x){return Number(x.id)===Number(id);});
+  if(!m)return;
+  selectedMemberId=Number(id);
+  document.getElementById("memberMessage").textContent="";
+  document.getElementById("memberDetail").innerHTML=
+    '<h2>'+esc(m.first_name+" "+m.last_name)+'</h2>'+
+    '<p><b>Status:</b> '+esc(m.current_status||"Ungeklärt")+'</p>'+
+    '<p><b>Geburtsdatum:</b> '+esc(m.birth_date?fmtDate(m.birth_date):"–")+'</p>'+
+    '<p><b>Anschrift:</b> '+esc([m.street,[m.postal_code,m.city].filter(Boolean).join(" ")].filter(Boolean).join(", ")||"–")+'</p>'+
+    '<p><b>Telefon:</b> '+esc(m.phone||"–")+'<br><b>E-Mail:</b> '+esc(m.email||"–")+'</p>'+
+    '<p><b>Eintritt:</b> '+esc(m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–"))+'<br><b>Nächstes Jubiläum:</b> '+esc(m.next_jubilee?(m.next_jubilee.years+" Jahre · "+m.next_jubilee.year):"nicht berechenbar")+'</p>'+
+    '<p><b>Zahlungsart:</b> '+esc(m.payment_method||"–")+'<br><b>IBAN:</b> '+(m.has_iban?"✓ hinterlegt":"– nicht hinterlegt")+'</p>'+
+    '<p><b>Datenstatus:</b> '+(m.data_complete?"Vollständig":"Fehlend: "+esc((m.missing_fields||[]).join(", ")))+'</p>';
+  document.getElementById("memberEdit").innerHTML=
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
+    memberField("mFirst","Vorname",m.first_name,"text")+memberField("mLast","Nachname",m.last_name,"text")+
+    memberField("mBirth","Geburtsdatum",m.birth_date,"date")+memberField("mPhone","Telefon",m.phone,"tel")+
+    memberField("mEmail","E-Mail",m.email,"email")+memberField("mStreet","Straße / Hausnummer",m.street,"text")+
+    memberField("mZip","PLZ",m.postal_code,"text")+memberField("mCity","Ort",m.city,"text")+
+    memberField("mEntry","Eintrittsdatum",m.entry_date,"date")+memberField("mEntryYear","Eintrittsjahr",m.entry_year,"number")+
+    '<label>Status<select id="mStatus" style="width:100%;padding:10px;margin-top:5px"><option>Aktiv</option><option>Passiv</option><option>Ungeklärt</option></select></label>'+
+    memberField("mPayment","Zahlungsart",m.payment_method,"text")+'</div>';
+  document.getElementById("mStatus").value=m.current_status||"Ungeklärt";
+  setMemberEdit(false);
+  document.getElementById("memberModal").classList.remove("hidden");
+}
+function memberField(id,label,value,type){
+  return '<label>'+label+'<input id="'+id+'" type="'+type+'" value="'+esc(val(value))+'" style="width:100%;padding:10px;margin-top:5px"></label>';
+}
+function setMemberEdit(editing){
+  document.getElementById("memberDetail").classList.toggle("hidden",editing);
+  document.getElementById("memberEdit").classList.toggle("hidden",!editing);
+  document.getElementById("memberEditButton").classList.toggle("hidden",editing);
+  document.getElementById("memberSaveButton").classList.toggle("hidden",!editing);
+  document.getElementById("memberCancelButton").classList.toggle("hidden",!editing);
+}
+function closeMember(){document.getElementById("memberModal").classList.add("hidden");selectedMemberId=null}
+async function saveMember(){
+  if(!selectedMemberId)return;
+  const body={first_name:document.getElementById("mFirst").value,last_name:document.getElementById("mLast").value,
+    birth_date:document.getElementById("mBirth").value,phone:document.getElementById("mPhone").value,
+    email:document.getElementById("mEmail").value,street:document.getElementById("mStreet").value,
+    postal_code:document.getElementById("mZip").value,city:document.getElementById("mCity").value,
+    entry_date:document.getElementById("mEntry").value,entry_year:document.getElementById("mEntryYear").value,
+    current_status:document.getElementById("mStatus").value,payment_method:document.getElementById("mPayment").value};
+  const button=document.getElementById("memberSaveButton"),msg=document.getElementById("memberMessage");
+  button.disabled=true;msg.textContent="Änderungen werden gespeichert …";
+  try{
+    const r=await api("/api/portal/members/"+selectedMemberId,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(!r.ok){msg.textContent=d.error||"Speichern nicht möglich.";button.disabled=false;return}
+    msg.textContent="✓ Änderungen gespeichert.";
+    const id=selectedMemberId;
+    await loadMembers();
+    openMember(id);
+    document.getElementById("memberMessage").textContent="✓ Änderungen gespeichert.";
+  }catch(e){msg.textContent="Speichern derzeit nicht möglich.";}
+  button.disabled=false;
+}
+
 function renderJubilees(members){
   const list=(members||[]).filter(function(m){return !m.archived&&m.next_jubilee;}).sort(function(a,b){
     const diff=Number(a.next_jubilee.year||9999)-Number(b.next_jubilee.year||9999);
