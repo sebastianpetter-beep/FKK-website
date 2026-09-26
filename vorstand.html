@@ -113,6 +113,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px">
       <button class="btn" id="memberEditButton" type="button">Bearbeiten</button>
       <button class="btn yellow" id="memberSpouseButton" type="button">💍 Ehepartner</button>
+      <button class="btn" id="memberBankButton" type="button">🏦 Bankverbindung</button>
       <button class="btn hidden" id="memberSaveButton" type="button">Speichern</button>
       <button class="btn hidden" id="memberCancelButton" type="button">Abbrechen</button>
     </div>
@@ -199,6 +200,7 @@ document.getElementById("mailSingle").addEventListener("change",refreshMailRecip
 document.getElementById("sendMemberMail").addEventListener("click",sendMemberEmail);
 document.getElementById("memberEditButton").addEventListener("click",function(){setMemberEdit(true)});
 document.getElementById("memberSpouseButton").addEventListener("click",showSpouseEditor);
+document.getElementById("memberBankButton").addEventListener("click",showBankEditor);
 document.getElementById("memberCancelButton").addEventListener("click",function(){setMemberEdit(false)});
 document.getElementById("memberSaveButton").addEventListener("click",saveMember);
 document.getElementById("printMembersButton").addEventListener("click",printMemberList);
@@ -250,6 +252,39 @@ function openMember(id){
   setMemberEdit(false);
   document.getElementById("memberModal").classList.remove("hidden");
 }
+
+function showBankEditor(){
+  const m=(window.portalMembers||[]).find(function(x){return Number(x.id)===Number(selectedMemberId);});if(!m)return;
+  const household=!!m.spouse_member_id;
+  document.getElementById("memberMessage").innerHTML='<b>🏦 '+(household?"Gemeinsame Bankverbindung des Ehepaars":"Bankverbindung")+'</b><p><small>Die vollständige IBAN wird nicht in der Mitgliederakte angezeigt. '+(household?"Sie gilt für beide Ehepartner.":"")+'</small></p><input id="memberIbanInput" autocomplete="off" placeholder="DE00 0000 0000 0000 0000 00" style="width:100%;padding:11px;margin:6px 0"><button class="btn" type="button" onclick="saveBankAccount()">IBAN sicher speichern</button>';
+}
+async function saveBankAccount(){
+  const input=document.getElementById("memberIbanInput");if(!input)return;
+  const r=await api("/api/portal/members/"+selectedMemberId+"/bank-account",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({iban:input.value})});
+  const d=await r.json();if(!r.ok){document.getElementById("memberMessage").textContent=d.error||"Bankverbindung konnte nicht gespeichert werden.";return}
+  const id=selectedMemberId;await loadMembers();openMember(id);document.getElementById("memberMessage").textContent=d.household?"✓ Gemeinsame Bankverbindung des Ehepaars sicher gespeichert.":"✓ Bankverbindung sicher gespeichert.";
+}
+
+async function printMemberList(){
+  const r=await api("/api/portal/members/print-data");if(!r.ok){alert("Druckliste konnte nicht geladen werden.");return}
+  const d=await r.json(),members=d.members||[];
+  if(!members.length){alert("Keine Mitglieder zum Drucken vorhanden.");return}
+  const seen=new Set(),rows=[];
+  members.forEach(function(m){
+    if(seen.has(Number(m.id)))return;
+    let names=m.last_name+", "+m.first_name,status=m.current_status||"Ungeklärt",iban=m.iban||"–";
+    if(m.spouse_member_id){
+      const s=members.find(function(x){return Number(x.id)===Number(m.spouse_member_id);});
+      if(s){seen.add(Number(s.id));names=m.first_name+" "+m.last_name+" & "+s.first_name+" "+s.last_name;status="Ehepaar";iban=m.iban||s.iban||"–";}
+    }
+    seen.add(Number(m.id));
+    rows.push("<tr><td>"+esc(names)+"</td><td>"+esc(status)+"</td><td>"+esc(iban)+"</td></tr>");
+  });
+  const w=window.open("","_blank");if(!w){alert("Druckfenster wurde blockiert.");return}
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>FKK Beitragsliste</title><style>@page{size:A4 landscape;margin:10mm}body{font-family:Arial,sans-serif}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #bbb;padding:6px;text-align:left}th{background:#eee}</style></head><body><h1>FKK Mitglieder- und Beitragsliste</h1><p>Stand: '+new Date().toLocaleDateString("de-DE")+'</p><table><thead><tr><th>Mitglied / Ehepaar</th><th>Status</th><th>IBAN</th></tr></thead><tbody>'+rows.join("")+'</tbody></table></body></html>');
+  w.document.close();w.focus();setTimeout(function(){w.print()},250);
+}
+
 function memberField(id,label,value,type){
   return '<label>'+label+'<input id="'+id+'" type="'+type+'" value="'+esc(val(value))+'" style="width:100%;padding:10px;margin-top:5px"></label>';
 }
@@ -285,21 +320,7 @@ async function saveMember(){
 }
 
 
-function printMemberList(){
-  const members=(window.portalMembers||[]).filter(function(m){return !m.archived;}).sort(function(a,b){
-    return String(a.last_name||"").localeCompare(String(b.last_name||""),"de")||String(a.first_name||"").localeCompare(String(b.first_name||""),"de");
-  });
-  if(!members.length){alert("Keine Mitglieder zum Drucken vorhanden.");return;}
-  const rows=members.map(function(m,i){
-    const entry=m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–");
-    const address=[m.street,[m.postal_code,m.city].filter(Boolean).join(" ")].filter(Boolean).join(", ")||"–";
-    return "<tr><td>"+(i+1)+"</td><td><b>"+esc(m.last_name+", "+m.first_name)+"</b></td><td>"+esc(m.current_status||"Ungeklärt")+"</td><td>"+esc(entry)+"</td><td>"+esc(address)+"</td><td>"+esc(m.phone||"–")+"</td><td>"+esc(m.email||"–")+"</td></tr>";
-  }).join("");
-  const w=window.open("","_blank");
-  if(!w){alert("Das Druckfenster wurde vom Browser blockiert.");return;}
-  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>FKK Mitgliederliste</title><style>@page{size:A4 landscape;margin:10mm}body{font-family:Arial,sans-serif;color:#111}h1{margin:0 0 4px;font-size:20px}.meta{margin:0 0 14px;color:#555;font-size:12px}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #bbb;padding:5px;text-align:left;vertical-align:top}th{background:#eee}tr:nth-child(even){background:#fafafa}</style></head><body><h1>Feldmarker Karnevals-Komitee e.V. – Mitgliederliste</h1><p class="meta">Stand: '+new Date().toLocaleDateString("de-DE")+' · '+members.length+' aktuelle Mitglieder</p><table><thead><tr><th>Nr.</th><th>Name</th><th>Status</th><th>Eintritt</th><th>Anschrift</th><th>Telefon</th><th>E-Mail</th></tr></thead><tbody>'+rows+'</tbody></table></body></html>');
-  w.document.close();w.focus();setTimeout(function(){w.print();},250);
-}
+
 
 function renderJubilees(members){
   const list=(members||[]).filter(function(m){return !m.archived&&m.next_jubilee;}).sort(function(a,b){
