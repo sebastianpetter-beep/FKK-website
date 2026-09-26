@@ -25,7 +25,48 @@ body{overflow-x:hidden}.cards{grid-template-columns:1fr}.head{padding:13px 12px;
 }
 
 .loginGate{position:fixed;inset:0;z-index:999;background:linear-gradient(145deg,#043d22,#087b35);display:flex;align-items:center;justify-content:center;padding:20px}.loginBox{width:min(430px,100%);background:#fff;border-radius:26px;padding:28px;box-shadow:0 30px 80px #0005}.loginBox img{width:76px;height:76px;border-radius:50%;display:block;margin:0 auto 12px;object-fit:cover}.loginBox h1{text-align:center;color:var(--gd);margin:5px 0}.loginBox p{text-align:center;color:var(--muted);margin:0 0 20px}.loginBox label{display:block;font-size:12px;font-weight:800;margin:12px 0 5px}.loginBox input{width:100%;padding:13px;border:1px solid #ccd6cf;border-radius:12px;font:inherit}.loginBox button{width:100%;margin-top:18px;padding:13px}.loginError{color:var(--r);font-weight:700;font-size:13px;text-align:center;margin-top:12px}.hidden{display:none!important}
+
+/* Gerätemodus: wird zusätzlich per JS gesetzt, damit iPhone/iPad auch bei Desktop-Website-Einstellung mobil bleiben. */
+html.device-mobile,html.device-mobile body{width:100%;max-width:100%;overflow-x:hidden}
+html.device-mobile .head{padding:13px 12px;align-items:flex-start;gap:8px}
+html.device-mobile .brand{min-width:0}html.device-mobile .brand img{width:42px;height:42px}
+html.device-mobile .brand b{font-size:15px}html.device-mobile .brand small{font-size:10px;display:block}
+html.device-mobile .user{font-size:11px;padding:7px 9px;white-space:nowrap}
+html.device-mobile .layout{display:block;width:100%;max-width:none;padding:0 10px;margin:10px 0 0}
+html.device-mobile aside{margin:0 -10px 10px;border-radius:0;padding:8px 10px;position:sticky;top:0;z-index:50;width:auto}
+html.device-mobile nav{display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;gap:4px}
+html.device-mobile nav::-webkit-scrollbar{display:none}html.device-mobile nav button{min-width:max-content;flex:0 0 auto;font-size:12px;padding:9px 10px}
+html.device-mobile main{width:100%;max-width:100%;overflow:hidden}
+html.device-mobile .hero{padding:20px 16px;border-radius:18px;width:100%}html.device-mobile .hero h1{font-size:25px}
+html.device-mobile .hero p{white-space:normal;overflow-wrap:anywhere}
+html.device-mobile .cards{grid-template-columns:1fr}
+html.device-mobile .panel,html.device-mobile .card{padding:14px;border-radius:15px;max-width:100%}
+html.device-mobile .panel-head{align-items:stretch}html.device-mobile .toolbar{width:100%;display:grid;grid-template-columns:1fr 1fr}
+html.device-mobile .toolbar input{grid-column:1/-1;width:100%}html.device-mobile .toolbar select,html.device-mobile .toolbar .btn{width:100%}
+html.device-mobile .tablewrap{overflow:visible;max-width:100%}html.device-mobile .tablewrap table{min-width:0;width:100%}
+html.device-mobile .tablewrap thead{display:none}html.device-mobile .tablewrap tbody,html.device-mobile .tablewrap tr,html.device-mobile .tablewrap td{display:block;width:100%}
+html.device-mobile .tablewrap tr{background:#fff;border:1px solid #e5ebe7;border-radius:14px;margin:10px 0;padding:8px 10px}
+html.device-mobile .tablewrap td{border:0;padding:6px 4px;font-size:13px;overflow-wrap:anywhere}html.device-mobile .tablewrap td .btn{width:100%}
+html.device-mobile .loginGate{padding:10px}html.device-mobile .loginBox{padding:18px;border-radius:18px;max-height:94vh;overflow:auto}
+html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 </style>
+<script>
+(function(){
+  function setDeviceMode(){
+    var ua=navigator.userAgent||"";
+    var mobileUA=/Android|iPhone|iPod|Mobile/i.test(ua);
+    var iPad=/iPad/i.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+    var touch=(navigator.maxTouchPoints||0)>0&&window.matchMedia&&window.matchMedia("(pointer: coarse)").matches;
+    var narrowScreen=Math.min(screen.width||9999,screen.height||9999)<=820;
+    var mobile=mobileUA||iPad||(touch&&narrowScreen);
+    document.documentElement.classList.toggle("device-mobile",mobile);
+    document.documentElement.classList.toggle("device-desktop",!mobile);
+  }
+  setDeviceMode();
+  window.addEventListener("orientationchange",setDeviceMode);
+  window.addEventListener("resize",setDeviceMode);
+})();
+</script>
 </head>
 <body><div id="activateGate" class="loginGate hidden"><form id="activateForm" class="loginBox"><img src="assets/fkk-logo.jpeg" alt="FKK"><h1>Zugang aktivieren</h1><p>Lege jetzt dein persönliches Passwort für die FKK Vorstandszentrale fest.</p><label for="newPassword">Neues Passwort · mindestens 12 Zeichen</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required><label for="newPassword2">Passwort wiederholen</label><input id="newPassword2" type="password" minlength="12" autocomplete="new-password" required><button class="btn" type="submit">Passwort festlegen</button><div id="activateError" class="loginError"></div></form></div><div id="loginGate" class="loginGate"><form id="loginForm" class="loginBox"><img src="assets/fkk-logo.jpeg" alt="FKK"><h1>Vorstandszentrale</h1><p>Geschützter Bereich des FKK</p><label for="loginUser">Benutzername oder E-Mail</label><input id="loginUser" autocomplete="username" required><label for="loginPassword">Passwort</label><input id="loginPassword" type="password" autocomplete="current-password" required><button class="btn" type="submit">Sicher anmelden</button><div id="loginError" class="loginError"></div></form></div>
 
