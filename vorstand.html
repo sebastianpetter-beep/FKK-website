@@ -25,7 +25,7 @@ main{min-width:0}.hero{background:linear-gradient(135deg,var(--gd),var(--g));col
 .loginGate{position:fixed;inset:0;z-index:999;background:linear-gradient(145deg,#043d22,#087b35);display:flex;align-items:center;justify-content:center;padding:20px}.loginBox{width:min(430px,100%);background:#fff;border-radius:26px;padding:28px;box-shadow:0 30px 80px #0005}.loginBox img{width:76px;height:76px;border-radius:50%;display:block;margin:0 auto 12px;object-fit:cover}.loginBox h1{text-align:center;color:var(--gd);margin:5px 0}.loginBox p{text-align:center;color:var(--muted);margin:0 0 20px}.loginBox label{display:block;font-size:12px;font-weight:800;margin:12px 0 5px}.loginBox input{width:100%;padding:13px;border:1px solid #ccd6cf;border-radius:12px;font:inherit}.loginBox button{width:100%;margin-top:18px;padding:13px}.loginError{color:var(--r);font-weight:700;font-size:13px;text-align:center;margin-top:12px}.hidden{display:none!important}
 </style>
 </head>
-<body><div id="loginGate" class="loginGate"><form id="loginForm" class="loginBox"><img src="assets/fkk-logo.jpeg" alt="FKK"><h1>Vorstandszentrale</h1><p>Geschützter Bereich des FKK</p><label for="loginUser">Benutzername oder E-Mail</label><input id="loginUser" autocomplete="username" required><label for="loginPassword">Passwort</label><input id="loginPassword" type="password" autocomplete="current-password" required><button class="btn" type="submit">Sicher anmelden</button><div id="loginError" class="loginError"></div></form></div>
+<body><div id="activateGate" class="loginGate hidden"><form id="activateForm" class="loginBox"><img src="assets/fkk-logo.jpeg" alt="FKK"><h1>Zugang aktivieren</h1><p>Lege jetzt dein persönliches Passwort für die FKK Vorstandszentrale fest.</p><label for="newPassword">Neues Passwort · mindestens 12 Zeichen</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required><label for="newPassword2">Passwort wiederholen</label><input id="newPassword2" type="password" minlength="12" autocomplete="new-password" required><button class="btn" type="submit">Passwort festlegen</button><div id="activateError" class="loginError"></div></form></div><div id="loginGate" class="loginGate"><form id="loginForm" class="loginBox"><img src="assets/fkk-logo.jpeg" alt="FKK"><h1>Vorstandszentrale</h1><p>Geschützter Bereich des FKK</p><label for="loginUser">Benutzername oder E-Mail</label><input id="loginUser" autocomplete="username" required><label for="loginPassword">Passwort</label><input id="loginPassword" type="password" autocomplete="current-password" required><button class="btn" type="submit">Sicher anmelden</button><div id="loginError" class="loginError"></div></form></div>
 
 <div class="top"></div><header><div class="head"><div class="brand"><img src="assets/fkk-logo.jpeg" alt="FKK"><div><b>FKK Vorstandszentrale</b><small>Geschäftsführender Vorstand · intern</small></div></div><div class="user"><span id="portalUser">🔒 Vorstand</span> · <button onclick="logoutPortal()" style="border:0;background:transparent;color:white;cursor:pointer">Abmelden</button></div></div></header>
 <div class="layout">
@@ -57,6 +57,26 @@ main{min-width:0}.hero{background:linear-gradient(135deg,var(--gd),var(--g));col
 <script>
 const API="https://fkk-mitgliedsantrag-backend.onrender.com";
 const TOKEN_KEY="fkk_portal_token";
+const inviteToken=new URLSearchParams(location.search).get("invite");
+if(inviteToken){
+  document.getElementById("loginGate").classList.add("hidden");
+  document.getElementById("activateGate").classList.remove("hidden");
+}
+document.getElementById("activateForm").addEventListener("submit",async e=>{
+  e.preventDefault(); const err=document.getElementById("activateError");
+  const p1=document.getElementById("newPassword").value,p2=document.getElementById("newPassword2").value;
+  if(p1!==p2){err.textContent="Die beiden Passwörter stimmen nicht überein.";return}
+  err.textContent="Zugang wird aktiviert …";
+  try{
+    const r=await fetch(API+"/api/portal/activate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:inviteToken,password:p1})});
+    const d=await r.json();if(!r.ok)throw new Error(d.error||"Aktivierung fehlgeschlagen.");
+    history.replaceState({},document.title,location.pathname);
+    document.getElementById("activateGate").classList.add("hidden");
+    document.getElementById("loginGate").classList.remove("hidden");
+    document.getElementById("loginError").textContent="✓ Passwort eingerichtet. Du kannst dich jetzt anmelden.";
+  }catch(x){err.textContent=x.message||"Aktivierung fehlgeschlagen."}
+});
+
 async function api(path,options={}){
   const token=sessionStorage.getItem(TOKEN_KEY);
   const headers={"Content-Type":"application/json",...(options.headers||{})};
