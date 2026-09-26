@@ -91,9 +91,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
       err.textContent="✓ Anmeldung erfolgreich – Vorstandszentrale wird geöffnet …";
       document.getElementById("portalUser").textContent="🔒 "+((d.user&&d.user.display_name)||"Vorstand");
       document.getElementById("loginGate").classList.add("hidden");
-      if(typeof loadPortalData==="function"){
-        try{await loadPortalData();}catch(loadError){console.error("Portal-Daten:",loadError);}
-      }
+      window.dispatchEvent(new CustomEvent("fkk:portal-login-success"));
     }catch(ex){
       err.textContent=ex.message||"Anmeldung derzeit nicht möglich.";
       button.disabled=false;
@@ -490,6 +488,13 @@ async function checkPortal(){
   }catch(e){sessionStorage.removeItem(TOKEN_KEY)}
 }
 function logoutPortal(){sessionStorage.removeItem(TOKEN_KEY);location.reload()}
+window.addEventListener("fkk:portal-login-success",async function(){
+  try{
+    await loadPortalData();
+  }catch(e){
+    console.error("Portal-Daten konnten nicht geladen werden:",e);
+  }
+});
 checkPortal();
 
 const JUB=[11,22,33,44,55,66,77,88,99,111];
