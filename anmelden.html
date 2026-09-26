@@ -68,7 +68,11 @@ footer{background:#053d1d;color:#fff;padding:20px}.foot{max-width:900px;margin:a
 <div><label>Vorname *</label><input name="vorname" required></div><div><label>Nachname *</label><input name="nachname" required></div>
 <div class="full"><label>Adresse *</label><input name="adresse" placeholder="Straße, Hausnummer, PLZ, Ort" required></div>
 <div><label>Telefonnummer *</label><input name="telefon" required></div><div><label>E-Mail *</label><input type="email" name="email" required></div>
-<div><label>Geburtsdatum *</label><input type="date" name="geburt" required></div><div><label>Ehepartner – Geburtsdatum</label><input type="date" name="ehe"></div>
+<div><label>Geburtsdatum *</label><input type="date" name="geburt" required></div>
+<div><label>Ehepartner dabei?</label><select name="ehepartner_dabei" id="ehepartnerDabei"><option value="Nein">Nein</option><option value="Ja">Ja</option></select></div>
+<div id="ehepartnerNameWrap" style="display:none"><label>Ehepartner – Vorname *</label><input name="ehe_vorname" id="eheVorname"></div>
+<div id="ehepartnerNachnameWrap" style="display:none"><label>Ehepartner – Nachname *</label><input name="ehe_nachname" id="eheNachname"></div>
+<div id="ehepartnerGeburtWrap" style="display:none"><label>Ehepartner – Geburtsdatum *</label><input type="date" name="ehe" id="eheGeburt"></div>
 </div><div class="actions"><button type="button" class="secondary prev">← Zurück</button><button type="button" class="primary next">Weiter →</button></div></section>
 
 <section class="section" data-i="2"><h2>Bankverbindung & Zustimmung</h2><div class="grid"><div class="full"><label>IBAN *</label><input name="iban" id="iban" inputmode="text" autocomplete="off" maxlength="34" required></div></div>
@@ -99,12 +103,12 @@ Wir verarbeiten deine Angaben zur Bearbeitung des Aufnahmeantrags, zur Mitgliede
 <script>
 const root=document, form=root.getElementById('f'), sections=[...root.querySelectorAll('.section')], steps=[...root.querySelectorAll('.step')]; let i=0;
 function show(n){i=Math.max(0,Math.min(3,n));sections.forEach((s,x)=>s.classList.toggle('on',x===i));steps.forEach((s,x)=>s.classList.toggle('on',x===i));if(i===3)review();window.scrollTo({top:0,behavior:'smooth'})}
-function validSection(){if(i===2 && ibanEl.value && !ibanChecksumValid(ibanEl.value)){ibanEl.setCustomValidity('Bitte prüfe die IBAN. Die eingegebene IBAN ist formal nicht gültig.');ibanEl.reportValidity();return false} const req=[...sections[i].querySelectorAll('[required]')];for(const el of req){if(!el.checkValidity()){el.reportValidity();return false}}return true}
+function validSection(){if(i===1 && val('ehepartner_dabei')==='Ja'){for(const n of ['ehe_vorname','ehe_nachname','ehe']){const el=form.elements[n];if(!el.value){el.setCustomValidity('Bitte ergänze die Angaben zum Ehepartner.');el.reportValidity();return false}else el.setCustomValidity('')}}if(i===2 && ibanEl.value && !ibanChecksumValid(ibanEl.value)){ibanEl.setCustomValidity('Bitte prüfe die IBAN. Die eingegebene IBAN ist formal nicht gültig.');ibanEl.reportValidity();return false} const req=[...sections[i].querySelectorAll('[required]')];for(const el of req){if(!el.checkValidity()){el.reportValidity();return false}}return true}
 root.querySelectorAll('.next').forEach(b=>b.addEventListener('click',()=>{if(validSection())show(i+1)}));root.querySelectorAll('.prev').forEach(b=>b.addEventListener('click',()=>show(i-1)));
 function val(n){const e=form.elements[n];return e?e.value:''}
 function fmtDate(v){if(!v)return '—';const [y,m,d]=v.split('-');return `${d}.${m}.${y}`}
 function review(){const art=form.querySelector('input[name=art]:checked').value;const rows=[
-['Mitgliedschaft',art],['Vorname, Nachname',`${val('vorname')} ${val('nachname')}`],['Adresse',val('adresse')],['Telefon',val('telefon')],['E-Mail',val('email')],['Geburtsdatum',fmtDate(val('geburt'))],['Ehepartner Geburtsdatum',fmtDate(val('ehe'))],['IBAN',val('iban')],['SEPA-Zustimmung','Ja'],['Antragsdatum',new Date().toLocaleDateString('de-DE')]];
+['Mitgliedschaft',art],['Vorname, Nachname',`${val('vorname')} ${val('nachname')}`],['Adresse',val('adresse')],['Telefon',val('telefon')],['E-Mail',val('email')],['Geburtsdatum',fmtDate(val('geburt'))],['Ehepartner',val('ehepartner_dabei')==='Ja'?((val('ehe_vorname')+' '+val('ehe_nachname')).trim()):'—'],['Ehepartner Geburtsdatum',val('ehepartner_dabei')==='Ja'?fmtDate(val('ehe')):'—'],['IBAN',val('iban')],['SEPA-Zustimmung','Ja'],['Antragsdatum',new Date().toLocaleDateString('de-DE')]];
 root.getElementById('summary').innerHTML=rows.map(r=>`<div class="row"><b>${r[0]}</b><span>${r[1]||'—'}</span></div>`).join('')}
 
 const ibanEl=document.getElementById('iban');
@@ -163,6 +167,9 @@ const payload={
   telefon: val('telefon'),
   email: val('email'),
   geburt: val('geburt'),
+  ehepartner_dabei: val('ehepartner_dabei'),
+  ehe_vorname: val('ehe_vorname'),
+  ehe_nachname: val('ehe_nachname'),
   ehe: val('ehe'),
   iban: val('iban'),
   sepa: !!form.elements['sepa'].checked,
@@ -196,6 +203,8 @@ try{
   status.textContent=err.message || 'Beim Versand ist ein Fehler aufgetreten.';
 }
 });
+
+const eheSelect=document.getElementById('ehepartnerDabei');function toggleEhepartner(){const yes=eheSelect.value==='Ja';['ehepartnerNameWrap','ehepartnerNachnameWrap','ehepartnerGeburtWrap'].forEach(id=>document.getElementById(id).style.display=yes?'block':'none');['eheVorname','eheNachname','eheGeburt'].forEach(id=>{const el=document.getElementById(id);el.required=yes;if(!yes){el.value='';el.setCustomValidity('')}})}eheSelect.addEventListener('change',toggleEhepartner);toggleEhepartner();
 
 document.querySelectorAll('input[name=art]').forEach(r=>r.addEventListener('change',()=>{document.getElementById('fee').innerHTML=r.value==='Passiv'?'Passive Mitglieder: <b>15,- € jährlich</b>.':'Aktive Einzelmitglieder: <b>66,- € jährlich</b>. Ehepaare: 99,- €. Jugendliche bis 16: 22,- €, bis 18: 33,- €.'}));
 </script>
