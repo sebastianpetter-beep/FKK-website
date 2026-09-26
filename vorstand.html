@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>FKK Vorstandszentrale</title>
+<style>
+:root{--g:#087b35;--gd:#045323;--y:#ffd51f;--r:#c9152e;--bg:#f3f6f4;--muted:#69736d}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:#1d2520}
+.top{height:7px;background:linear-gradient(90deg,var(--y),var(--r),#10a8b5,var(--g),#ff7a1a,var(--y))}
+header{background:#063d22;color:#fff}.head{max-width:1280px;margin:auto;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{display:flex;align-items:center;gap:13px}.brand img{width:52px;height:52px;border-radius:50%;object-fit:cover}.brand b{display:block;font-size:18px}.brand small{opacity:.75}.user{background:#ffffff18;border:1px solid #ffffff25;border-radius:999px;padding:9px 13px;font-weight:800}
+.layout{max-width:1280px;margin:24px auto;padding:0 20px;display:grid;grid-template-columns:230px 1fr;gap:22px}
+aside{background:#fff;border-radius:20px;padding:14px;height:max-content;box-shadow:0 10px 28px #163c2610;position:sticky;top:20px}
+nav button{width:100%;border:0;background:transparent;padding:12px;border-radius:12px;text-align:left;font-weight:800;color:#3c4840;cursor:pointer;margin:2px 0}nav button.active,nav button:hover{background:#eaf5ed;color:var(--gd)}
+main{min-width:0}.hero{background:linear-gradient(135deg,var(--gd),var(--g));color:#fff;border-radius:24px;padding:27px;position:relative;overflow:hidden}.hero:after{content:"11";position:absolute;right:20px;bottom:-40px;font-size:150px;font-weight:950;color:#ffffff0e}.hero h1{margin:0 0 7px;font-size:clamp(26px,4vw,40px)}.hero p{margin:0;color:#ffffffd9}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}.card,.panel{background:#fff;border-radius:18px;padding:19px;box-shadow:0 9px 24px #163c260d;border:1px solid #e7ece8}.card strong{font-size:28px;color:var(--gd);display:block}.card span{color:var(--muted);font-size:13px}.warn strong{color:#b77900}.danger strong{color:var(--r)}
+.panel{margin-top:16px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}.panel h2{margin:0;color:var(--gd);font-size:21px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}.toolbar input,.toolbar select{border:1px solid #ccd6cf;border-radius:11px;padding:10px 12px;font:inherit}.btn{border:0;border-radius:11px;padding:10px 13px;font-weight:850;cursor:pointer;background:var(--g);color:#fff}.btn.yellow{background:var(--y);color:#233125}.btn.red{background:var(--r)}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:880px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #edf0ee;font-size:13px}th{color:#5d6861;font-size:11px;text-transform:uppercase;letter-spacing:.05em}.badge{display:inline-block;border-radius:999px;padding:5px 8px;font-weight:800;font-size:11px;background:#eaf5ed;color:var(--gd)}.badge.passiv{background:#f1f1f1;color:#555}.badge.miss{background:#fff2cf;color:#8b6200}.badge.jub{background:#fff0f3;color:#a9122a}
+.empty{padding:28px;text-align:center;color:var(--muted)}.note{background:#fff8df;border-left:4px solid var(--y);padding:13px;border-radius:10px;margin-top:12px;font-size:13px}
+.page{display:none}.page.active{display:block}
+@media(max-width:900px){.layout{grid-template-columns:1fr}aside{position:static}nav{display:flex;overflow:auto;gap:4px}nav button{min-width:max-content}.cards{grid-template-columns:1fr 1fr}}
+@media(max-width:540px){.cards{grid-template-columns:1fr}.head{align-items:flex-start}.user{font-size:12px}.layout{padding:0 12px;margin-top:14px}}
+</style>
+</head>
+<body>
+<div class="top"></div><header><div class="head"><div class="brand"><img src="assets/fkk-logo.jpeg" alt="FKK"><div><b>FKK Vorstandszentrale</b><small>Geschäftsführender Vorstand · intern</small></div></div><div class="user">🔒 Sebastian · Kelly · Jörg</div></div></header>
+<div class="layout">
+<aside><nav>
+<button class="active" data-page="dashboard">🏠 Dashboard</button>
+<button data-page="members">👥 Mitglieder</button>
+<button data-page="applications">📥 Aufnahmeanträge</button>
+<button data-page="jubilee">🎭 Jubiläen</button>
+<button data-page="terminations">📤 Kündigungen</button>
+<button data-page="communication">📣 Kommunikation</button>
+<button data-page="documents">📁 Dokumente</button>
+<button data-page="activity">🕘 Aktivitäten</button>
+</nav></aside>
+<main>
+<section id="dashboard" class="page active">
+<div class="hero"><h1>Willkommen in der Vorstandszentrale</h1><p>Mitglieder, Anträge, Jubiläen und Vereinskommunikation an einem Ort.</p></div>
+<div class="cards"><div class="card"><strong id="memberCount">155</strong><span>Mitglieder im aktuellen Import</span></div><div class="card warn"><strong id="missingCount">–</strong><span>Datensätze unvollständig</span></div><div class="card"><strong id="appCount">3</strong><span>aktuelle Online-Anträge</span></div><div class="card danger"><strong>0</strong><span>offene Kündigungen</span></div></div>
+<div class="panel"><div class="panel-head"><h2>⚠️ Fehlende Mitgliedsdaten</h2><button class="btn yellow" onclick="go('members','missing')">Unvollständige anzeigen</button></div><p>Das Portal prüft künftig automatisch Eintrittsdatum, Status, Anschrift, Geburtsdatum, E-Mail/Telefon und IBAN. Fehlende Werte bleiben sichtbar, bis sie ergänzt wurden.</p></div>
+<div class="panel"><div class="panel-head"><h2>🎭 Nächste närrische Jubiläen</h2><button class="btn" onclick="go('jubilee')">Alle Jubiläen</button></div><p>Berechnet werden 11 · 22 · 33 · 44 · 55 · 66 · 77 · 88 · 99 · 111 Jahre ab Eintrittsdatum.</p></div>
+</section>
+<section id="members" class="page"><div class="panel"><div class="panel-head"><h2>👥 Mitgliederregister</h2><div class="toolbar"><input id="search" placeholder="Name suchen…"><select id="filter"><option value="all">Alle</option><option value="missing">Daten fehlen</option><option value="aktiv">Aktiv</option><option value="passiv">Passiv</option><option value="archiv">Archiv</option></select><button class="btn">+ Mitglied</button></div></div><div class="note">V1-Grundgerüst: Die 155 Datensätze werden im nächsten Schritt serverseitig importiert. IBANs werden nicht in diese öffentliche HTML-Datei geschrieben.</div><div class="tablewrap"><table><thead><tr><th>Mitglied</th><th>Status</th><th>Eintritt</th><th>Nächstes Jubiläum</th><th>Datenstatus</th><th>Aktion</th></tr></thead><tbody id="membersBody"><tr><td colspan="6" class="empty">Masterliste bereit zum sicheren Datenbank-Import.</td></tr></tbody></table></div></div></section>
+<section id="applications" class="page"><div class="panel"><div class="panel-head"><h2>📥 Aufnahmeanträge</h2></div><div class="tablewrap"><table><thead><tr><th>Name</th><th>Antrag</th><th>Beantragt</th><th>Vorstandsstatus</th><th>Aktion</th></tr></thead><tbody><tr><td>Jannika Reinaerdts</td><td>12.09.2026</td><td><span class="badge">Aktiv</span></td><td><span class="badge passiv">Passiv</span></td><td>bereits berücksichtigt</td></tr><tr><td>Lena Carolin Müller</td><td>19.09.2026</td><td><span class="badge">Aktiv</span></td><td><span class="badge">Aktiv</span></td><td>bereits berücksichtigt</td></tr><tr><td>Manuela Askamp</td><td>25.09.2026</td><td><span class="badge">Aktiv</span></td><td><span class="badge">Aktiv</span></td><td>Thorsten als Ehepartner verknüpfen</td></tr></tbody></table></div></div></section>
+<section id="jubilee" class="page"><div class="panel"><div class="panel-head"><h2>🎭 Närrische Jubiläen</h2></div><p>Jede Mitgliederakte erhält automatisch das nächste Jubiläum. Fehlt das Eintrittsdatum, erscheint <span class="badge miss">Jubiläum nicht berechenbar</span>.</p><div class="note">FKK-Stufen: 11 · 22 · 33 · 44 · 55 · 66 · 77 · 88 · 99 · 111 Jahre.</div></div></section>
+<section id="terminations" class="page"><div class="panel"><h2>📤 Kündigungen & Archiv</h2><p>Eine Kündigung bekommt Datum, Wirksamkeitsdatum und Bearbeiter. Bei vorhandener E-Mail kann eine Kündigungsbestätigung versendet werden. Ausgeschiedene Mitglieder werden archiviert; endgültiges Löschen bleibt eine separate Sicherheitsfunktion.</p></div></section>
+<section id="communication" class="page"><div class="panel"><h2>📣 Vereinsinformation erstellen</h2><p>Einmal erfassen – daraus entstehen später Website-, WhatsApp-, Spond- und E-Mail-Fassung.</p></div></section>
+<section id="documents" class="page"><div class="panel"><h2>📁 Dokumente</h2><p>Aufnahmeanträge, Kündigungen und weitere Vorstandsunterlagen werden später geschützt einer Mitgliederakte zugeordnet.</p></div></section>
+<section id="activity" class="page"><div class="panel"><h2>🕘 Aktivitäten</h2><p>Änderungen werden mit Zeitpunkt und Bearbeiter nachvollziehbar protokolliert.</p></div></section>
+</main></div>
+<script>
+const JUB=[11,22,33,44,55,66,77,88,99,111];
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
+function go(id,filter){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));if(filter&&document.getElementById('filter'))document.getElementById('filter').value=filter;window.scrollTo({top:0,behavior:'smooth'})}
+function nextJubilee(entry){if(!entry)return null;const y=new Date(entry).getFullYear(),now=new Date().getFullYear(),years=now-y;const n=JUB.find(v=>v>=years);return n?{years:n,year:y+n}:null}
+</script>
+</body></html>
