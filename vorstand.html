@@ -69,6 +69,35 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 </script>
 </head>
 <body><div id="activateGate" class="loginGate hidden"><form id="activateForm" class="loginBox"><img src="assets/fkk-logo.jpeg" alt="FKK"><h1>Zugang aktivieren</h1><p>Lege jetzt dein persönliches Passwort für die FKK Vorstandszentrale fest.</p><label for="newPassword">Neues Passwort · mindestens 12 Zeichen</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required><label for="newPassword2">Passwort wiederholen</label><input id="newPassword2" type="password" minlength="12" autocomplete="new-password" required><button class="btn" type="submit">Passwort festlegen</button><div id="activateError" class="loginError"></div></form></div><div id="loginGate" class="loginGate"><form id="loginForm" class="loginBox"><img src="assets/fkk-logo.jpeg" alt="FKK"><h1>Vorstandszentrale</h1><p>Geschützter Bereich des FKK</p><label for="loginUser">Benutzername oder E-Mail</label><input id="loginUser" autocomplete="username" required><label for="loginPassword">Passwort</label><input id="loginPassword" type="password" autocomplete="current-password" required><button class="btn" id="loginButton" type="button">Sicher anmelden</button><div id="loginError" class="loginError"></div></form></div>
+<script>
+(function(){
+  var form=document.getElementById("loginForm");
+  var button=document.getElementById("loginButton");
+  var userInput=document.getElementById("loginUser");
+  var passInput=document.getElementById("loginPassword");
+  var err=document.getElementById("loginError");
+  if(!form||!button||!userInput||!passInput||!err)return;
+  async function loginNow(){
+    var username=userInput.value.trim(),password=passInput.value;
+    if(!username||!password){err.textContent="Bitte Benutzername und Passwort eingeben.";return;}
+    err.textContent="Anmeldung wird geprüft …";
+    button.disabled=true;
+    try{
+      var r=await fetch("https://fkk-mitgliedsantrag-backend.onrender.com/api/portal/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:username,password:password})});
+      var d=await r.json();
+      if(!r.ok)throw new Error(d.error||"Anmeldung fehlgeschlagen.");
+      if(!d.token)throw new Error("Kein Sitzungsschlüssel empfangen.");
+      sessionStorage.setItem("fkk_portal_token",d.token);
+      location.reload();
+    }catch(ex){
+      err.textContent=ex.message||"Anmeldung derzeit nicht möglich.";
+      button.disabled=false;
+    }
+  }
+  button.addEventListener("click",loginNow);
+  form.addEventListener("submit",function(e){e.preventDefault();loginNow();});
+})();
+</script>
 
 <div class="top"></div><header><div class="head"><div class="brand"><img src="assets/fkk-logo.jpeg" alt="FKK"><div><b>FKK Vorstandszentrale</b><small>Geschäftsführender Vorstand · intern</small></div></div><div class="user"><span id="portalUser">🔒 Vorstand</span> · <button onclick="logoutPortal()" style="border:0;background:transparent;color:white;cursor:pointer">Abmelden</button></div></div></header>
 <div class="layout">
@@ -455,29 +484,6 @@ async function checkPortal(){
     await loadPortalData();
   }catch(e){sessionStorage.removeItem(TOKEN_KEY)}
 }
-async function doPortalLogin(){
-  const err=document.getElementById("loginError");
-  const userInput=document.getElementById("loginUser");
-  const passInput=document.getElementById("loginPassword");
-  const username=userInput.value.trim(),password=passInput.value;
-  if(!username||!password){err.textContent="Bitte Benutzername und Passwort eingeben.";return;}
-  err.textContent="Anmeldung wird geprüft …";
-  try{
-    const r=await fetch(API+"/api/portal/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:username,password:password})});
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.error||"Anmeldung fehlgeschlagen.");
-    sessionStorage.setItem(TOKEN_KEY,d.token);
-    const me=await api("/api/portal/me");
-    if(!me.ok)throw new Error("Sitzung konnte nicht bestätigt werden.");
-    const md=await me.json();
-    document.getElementById("portalUser").textContent="🔒 "+md.user.display_name;
-    document.getElementById("loginGate").classList.add("hidden");
-    err.textContent="";
-    await loadPortalData();
-  }catch(ex){err.textContent=ex.message||"Anmeldung derzeit nicht möglich.";}
-}
-document.getElementById("loginButton").onclick=doPortalLogin;
-document.getElementById("loginForm").onsubmit=function(e){e.preventDefault();doPortalLogin();return false;};
 function logoutPortal(){sessionStorage.removeItem(TOKEN_KEY);location.reload()}
 checkPortal();
 
