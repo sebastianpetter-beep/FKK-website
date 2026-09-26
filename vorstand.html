@@ -54,6 +54,15 @@ main{min-width:0}.hero{background:linear-gradient(135deg,var(--gd),var(--g));col
 <section id="documents" class="page"><div class="panel"><h2>📁 Dokumente</h2><p>Aufnahmeanträge, Kündigungen und weitere Vorstandsunterlagen werden später geschützt einer Mitgliederakte zugeordnet.</p></div></section>
 <section id="activity" class="page"><div class="panel"><h2>🕘 Aktivitäten</h2><p>Änderungen werden mit Zeitpunkt und Bearbeiter nachvollziehbar protokolliert.</p></div></section>
 </main></div>
+<div id="applicationModal" class="loginGate hidden" style="z-index:2000;background:rgba(0,0,0,.65)">
+  <div class="loginBox" style="max-width:720px;width:min(92vw,720px);text-align:left">
+    <button onclick="closeApplication()" style="float:right;border:0;background:transparent;font-size:24px;cursor:pointer">×</button>
+    <h1 style="text-align:left">Aufnahmeantrag</h1>
+    <div id="applicationDetail"></div>
+    <div id="applicationActions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px"></div>
+    <div id="applicationMessage" class="loginError" style="margin-top:12px"></div>
+  </div>
+</div>
 <script>
 const API="https://fkk-mitgliedsantrag-backend.onrender.com";
 const TOKEN_KEY="fkk_portal_token";
@@ -110,8 +119,47 @@ async function loadApplications(){
 }
 function showApplication(id){
   const a=(window.portalApplications||[]).find(x=>x.id===id);if(!a)return;
-  const spouse=(a.spouse_first_name||a.spouse_last_name)?'\nEhepartner: '+((a.spouse_first_name||"")+" "+(a.spouse_last_name||"")).trim()+(a.spouse_birth_date?' · '+fmtDate(a.spouse_birth_date):''):'';
-  alert(a.first_name+' '+a.last_name+'\n\nAntragsnummer: '+a.application_no+'\nBeantragt: '+a.requested_status+'\nGeburtsdatum: '+fmtDate(a.birth_date)+'\nAdresse: '+(a.address||'–')+'\nTelefon: '+(a.phone||'–')+'\nE-Mail: '+(a.email||'–')+spouse+'\nIBAN sicher hinterlegt: '+(a.has_iban?'Ja':'Nein')+'\n\nStatus: '+a.status);
+  window.currentApplication=a;
+  const spouse=(a.spouse_first_name||a.spouse_last_name)?'<p><b>Ehepartner:</b> '+esc(((a.spouse_first_name||"")+" "+(a.spouse_last_name||"")).trim())+(a.spouse_birth_date?' · '+esc(fmtDate(a.spouse_birth_date)):'')+'</p>':'';
+  document.getElementById("applicationDetail").innerHTML=
+    '<p><b>'+esc(a.first_name+" "+a.last_name)+'</b></p>'+
+    '<p><b>Antragsnummer:</b> '+esc(a.application_no)+' · <b>Eingang:</b> '+esc(fmtDate((a.submitted_at||"").slice(0,10)))+'</p>'+
+    '<p><b>Beantragt:</b> '+esc(a.requested_status)+' · <b>Status:</b> '+esc(a.status)+'</p>'+
+    '<p><b>Geburtsdatum:</b> '+esc(fmtDate(a.birth_date))+'</p>'+
+    '<p><b>Anschrift:</b> '+esc(a.address||"–")+'</p>'+
+    '<p><b>Telefon:</b> '+esc(a.phone||"–")+' · <b>E-Mail:</b> '+esc(a.email||"–")+'</p>'+spouse+
+    '<p><b>IBAN:</b> '+(a.has_iban?'🔐 sicher verschlüsselt hinterlegt':'nicht hinterlegt')+'</p>'+
+    (a.duplicate_warning?'<p><span class="badge miss">⚠ '+esc(a.duplicate_notes||"Mögliche Dublette")+'</span></p>':'');
+  const actions=document.getElementById("applicationActions");
+  actions.innerHTML=a.status==="Eingegangen"?
+    '<button class="btn" onclick="decideApplication(\'accept_active\')">✓ Aktiv aufnehmen</button>'+
+    '<button class="btn" onclick="decideApplication(\'accept_passive\')">✓ Passiv aufnehmen</button>'+
+    '<button class="btn yellow" onclick="decideApplication(\'reject\')">Ablehnen</button>'+
+    '<button class="btn" onclick="deleteApplication()" style="background:#8b1e1e">Antrag löschen</button>':
+    '<span class="badge">Bereits bearbeitet: '+esc(a.status)+'</span>';
+  document.getElementById("applicationMessage").textContent="";
+  document.getElementById("applicationModal").classList.remove("hidden");
+}
+function closeApplication(){document.getElementById("applicationModal").classList.add("hidden")}
+async function decideApplication(action){
+  const a=window.currentApplication;if(!a)return;
+  const label=action==="reject"?"diesen Antrag ablehnen":(action==="accept_active"?"als aktives Mitglied aufnehmen":"als passives Mitglied aufnehmen");
+  if(!confirm("Möchtest du "+a.first_name+" "+a.last_name+" wirklich "+label+"?"))return;
+  const msg=document.getElementById("applicationMessage");msg.textContent="Wird gespeichert …";
+  const r=await api("/api/portal/applications/"+a.id+"/decide",{method:"POST",body:JSON.stringify({action})});
+  const d=await r.json();
+  if(!r.ok){msg.textContent=d.error||"Aktion nicht möglich.";return}
+  closeApplication();await loadPortalData();
+}
+async function deleteApplication(){
+  const a=window.currentApplication;if(!a)return;
+  const confirmation=prompt("Zum endgültigen Löschen bitte exakt ANTRAG LÖSCHEN eingeben:");
+  if(confirmation!=="ANTRAG LÖSCHEN")return;
+  const msg=document.getElementById("applicationMessage");msg.textContent="Antrag wird gelöscht …";
+  const r=await api("/api/portal/applications/"+a.id,{method:"DELETE",body:JSON.stringify({confirmation})});
+  const d=await r.json();
+  if(!r.ok){msg.textContent=d.error||"Löschen nicht möglich.";return}
+  closeApplication();await loadPortalData();
 }
 async function loadPortalData(){await Promise.all([loadDashboard(),loadMembers(),loadApplications()])}
 async function checkPortal(){
