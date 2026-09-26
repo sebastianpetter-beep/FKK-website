@@ -112,13 +112,21 @@ async function runMemberImport(){
     const data=JSON.parse(fileText);
     if(!data.members||!Array.isArray(data.members)||!data.members.length)throw new Error("Die Datei enthält keine Mitglieder.");
     if(!confirm(data.members.length+" Datensätze importieren? Bestehende Mitglieder werden nicht überschrieben."))return;
-    status.textContent="Import läuft …";
-    const r=await api("/api/portal/members/import",{method:"POST",body:JSON.stringify(data)});
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.error||"Import fehlgeschlagen.");
-    status.textContent="Import abgeschlossen: "+d.inserted+" neu, "+d.skipped+" übersprungen, "+d.conflicts+" Prüffälle.";
+    const batchSize=25;
+    let inserted=0,skipped=0,conflicts=0;
+    const totalBatches=Math.ceil(data.members.length/batchSize);
+    for(let offset=0,batchNo=1;offset<data.members.length;offset+=batchSize,batchNo++){
+      const batch=data.members.slice(offset,offset+batchSize);
+      status.textContent="Import läuft: Block "+batchNo+" von "+totalBatches+" ("+(offset+1)+"–"+Math.min(offset+batch.length,data.members.length)+") …";
+      const r=await api("/api/portal/members/import",{method:"POST",body:JSON.stringify({members:batch})});
+      let d={};
+      try{d=await r.json()}catch(_){}
+      if(!r.ok)throw new Error((d&&d.error)||("Block "+batchNo+" konnte nicht importiert werden."));
+      inserted+=Number(d.inserted||0);skipped+=Number(d.skipped||0);conflicts+=Number(d.conflicts||0);
+    }
+    status.textContent="✓ Import abgeschlossen: "+inserted+" neu, "+skipped+" übersprungen, "+conflicts+" Prüffälle.";
     await loadPortalData();
-  }catch(e){status.textContent="Import nicht durchgeführt: "+(e.message||"Unbekannter Fehler.")}
+  }catch(e){status.textContent="Import nicht durchgeführt: "+(e.message||"Unbekannter Fehler.")+" Bereits erfolgreich abgeschlossene Blöcke bleiben gespeichert; ein erneuter Start überspringt sie sicher."}
 }
 document.getElementById("memberImportButton").addEventListener("click",runMemberImport);
 async function loadMembers(){
