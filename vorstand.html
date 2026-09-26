@@ -214,21 +214,29 @@ async function loadMembers(){
 
 let selectedMemberId=null;
 function val(v){return v===null||v===undefined?"":String(v)}
-function openMember(id){
-  const m=(window.portalMembers||[]).find(function(x){return Number(x.id)===Number(id);});
-  if(!m)return;
-  selectedMemberId=Number(id);
-  document.getElementById("memberMessage").textContent="";
-  document.getElementById("memberDetail").innerHTML=
-    '<h2>'+esc(m.first_name+" "+m.last_name)+'</h2>'+
+function memberRecordHtml(m,title){
+  const contribution=contributionLabel(m);
+  return '<div class="card" style="margin:10px 0"><h2 style="margin-bottom:10px">'+esc(title||m.first_name+" "+m.last_name)+'</h2>'+
+    '<p><b>Name:</b> '+esc(m.first_name+" "+m.last_name)+'</p>'+
     '<p><b>Status:</b> '+esc(m.current_status||"Ungeklärt")+'</p>'+
     '<p><b>Geburtsdatum:</b> '+esc(m.birth_date?fmtDate(m.birth_date):"–")+'</p>'+
     '<p><b>Anschrift:</b> '+esc([m.street,[m.postal_code,m.city].filter(Boolean).join(" ")].filter(Boolean).join(", ")||"–")+'</p>'+
     '<p><b>Telefon:</b> '+esc(m.phone||"–")+'<br><b>E-Mail:</b> '+esc(m.email||"–")+'</p>'+
     '<p><b>Eintritt:</b> '+esc(m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–"))+'<br><b>Nächstes Jubiläum:</b> '+esc(m.next_jubilee?(m.next_jubilee.years+" Jahre · "+m.next_jubilee.year):"nicht berechenbar")+'</p>'+
     '<p><b>Zahlungsart:</b> '+esc(m.payment_method||"–")+'<br><b>IBAN:</b> '+(m.has_iban?"✓ hinterlegt":"– nicht hinterlegt")+'</p>'+
-    '<p><b>Ehepartner:</b> '+esc(spouseName(m)||"– nicht verknüpft")+'<br><b>Beitrag:</b> '+esc(contributionLabel(m))+'</p>'+
-    '<p><b>Datenstatus:</b> '+(m.data_complete?"Vollständig":"Fehlend: "+esc((m.missing_fields||[]).join(", ")))+'</p>';
+    '<p><b>Beitrag:</b> '+esc(contribution)+'</p>'+
+    '<p><b>Datenstatus:</b> '+(m.data_complete?"Vollständig":"Fehlend: "+esc((m.missing_fields||[]).join(", ")))+'</p></div>';
+}
+function openMember(id){
+  const m=(window.portalMembers||[]).find(function(x){return Number(x.id)===Number(id);});
+  if(!m)return;
+  selectedMemberId=Number(id);
+  const spouse=m.spouse_member_id?(window.portalMembers||[]).find(function(x){return Number(x.id)===Number(m.spouse_member_id);}):null;
+  document.getElementById("memberMessage").textContent="";
+  document.getElementById("memberDetail").innerHTML=
+    (spouse?'<div class="note"><b>💍 Ehepaar-Akte</b><br>Beide Personen bleiben eigenständige Mitglieder und werden in der Mitgliederzahl einzeln gezählt. Die Akte zeigt beide Datensätze gemeinsam.</div>':'')+
+    memberRecordHtml(m,spouse?"Mitglied 1":"")+
+    (spouse?memberRecordHtml(spouse,"Ehepartner · "+spouse.first_name+" "+spouse.last_name):"");
   document.getElementById("memberEdit").innerHTML=
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
     memberField("mFirst","Vorname",m.first_name,"text")+memberField("mLast","Nachname",m.last_name,"text")+
@@ -242,40 +250,6 @@ function openMember(id){
   setMemberEdit(false);
   document.getElementById("memberModal").classList.remove("hidden");
 }
-
-function spouseName(m){
-  if(!m.spouse_member_id)return "";
-  const s=(window.portalMembers||[]).find(function(x){return Number(x.id)===Number(m.spouse_member_id);});
-  return s?(s.first_name+" "+s.last_name):"Verknüpftes Mitglied";
-}
-function contributionLabel(m){
-  const x=m.contribution||{};
-  return x.annual_eur!==null&&x.annual_eur!==undefined?(x.kind+" · "+x.annual_eur+" € / Jahr"):(x.kind||"nicht berechenbar");
-}
-function showSpouseEditor(){
-  const m=(window.portalMembers||[]).find(function(x){return Number(x.id)===Number(selectedMemberId);});if(!m)return;
-  const box=document.getElementById("memberMessage");
-  if(m.spouse_member_id){
-    box.innerHTML='<b>Ehepaar:</b> '+esc(spouseName(m))+' <button class="btn red" type="button" onclick="unlinkSpouse()">Verknüpfung lösen</button>';
-    return;
-  }
-  const options=(window.portalMembers||[]).filter(function(x){return !x.archived&&Number(x.id)!==Number(m.id)&&!x.spouse_member_id;})
-    .map(function(x){return '<option value="'+x.id+'">'+esc(x.last_name+", "+x.first_name)+'</option>';}).join("");
-  box.innerHTML='<b>Ehepartner manuell verknüpfen</b><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><select id="spouseSelect" style="flex:1;min-width:200px;padding:10px">'+options+'</select><button class="btn" type="button" onclick="linkSpouse()">Als Ehepaar verknüpfen</button></div><small>Beide Personen bleiben eigenständige Mitglieder. Die Mitgliederzahl ändert sich nicht.</small>';
-}
-async function linkSpouse(){
-  const s=document.getElementById("spouseSelect");if(!s||!s.value)return;
-  const r=await api("/api/portal/members/"+selectedMemberId+"/spouse",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({spouse_member_id:Number(s.value)})});
-  const d=await r.json();if(!r.ok){document.getElementById("memberMessage").textContent=d.error||"Verknüpfen nicht möglich.";return}
-  const id=selectedMemberId;await loadMembers();openMember(id);document.getElementById("memberMessage").textContent="✓ Ehepaar wurde verknüpft. Die Mitgliederzahl bleibt unverändert.";
-}
-async function unlinkSpouse(){
-  if(!confirm("Ehepartner-Verknüpfung wirklich lösen? Beide Mitgliedschaften bleiben bestehen."))return;
-  const r=await api("/api/portal/members/"+selectedMemberId+"/spouse",{method:"DELETE"});const d=await r.json();
-  if(!r.ok){document.getElementById("memberMessage").textContent=d.error||"Lösen nicht möglich.";return}
-  const id=selectedMemberId;await loadMembers();openMember(id);document.getElementById("memberMessage").textContent="✓ Ehepartner-Verknüpfung gelöst. Beide Mitglieder bleiben erhalten.";
-}
-
 function memberField(id,label,value,type){
   return '<label>'+label+'<input id="'+id+'" type="'+type+'" value="'+esc(val(value))+'" style="width:100%;padding:10px;margin-top:5px"></label>';
 }
