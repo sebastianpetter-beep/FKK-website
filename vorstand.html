@@ -60,7 +60,6 @@ const TOKEN_KEY="fkk_portal_token";
 const inviteToken=new URLSearchParams(location.search).get("invite");
 if(inviteToken){
   document.getElementById("loginGate").classList.add("hidden");
-    await loadPortalData();
   document.getElementById("activateGate").classList.remove("hidden");
 }
 document.getElementById("activateForm").addEventListener("submit",async e=>{
