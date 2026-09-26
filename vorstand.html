@@ -47,7 +47,7 @@ main{min-width:0}.hero{background:linear-gradient(135deg,var(--gd),var(--g));col
 <div class="panel"><div class="panel-head"><h2>🎭 Nächste närrische Jubiläen</h2><button class="btn" onclick="go('jubilee')">Alle Jubiläen</button></div><p>Berechnet werden 11 · 22 · 33 · 44 · 55 · 66 · 77 · 88 · 99 · 111 Jahre ab Eintrittsdatum.</p></div>
 </section>
 <section id="members" class="page"><div class="panel"><div class="panel-head"><h2>👥 Mitgliederregister</h2><div class="toolbar"><input id="search" placeholder="Name suchen…"><select id="filter"><option value="all">Alle</option><option value="missing">Daten fehlen</option><option value="aktiv">Aktiv</option><option value="passiv">Passiv</option><option value="archiv">Archiv</option></select><button class="btn">+ Mitglied</button></div></div><div class="note">V1-Grundgerüst: Die 155 Datensätze werden im nächsten Schritt serverseitig importiert. IBANs werden nicht in diese öffentliche HTML-Datei geschrieben.</div><div class="tablewrap"><table><thead><tr><th>Mitglied</th><th>Status</th><th>Eintritt</th><th>Nächstes Jubiläum</th><th>Datenstatus</th><th>Aktion</th></tr></thead><tbody id="membersBody"><tr><td colspan="6" class="empty">Masterliste bereit zum sicheren Datenbank-Import.</td></tr></tbody></table></div></div></section>
-<section id="applications" class="page"><div class="panel"><div class="panel-head"><h2>📥 Aufnahmeanträge</h2></div><div class="tablewrap"><table><thead><tr><th>Name</th><th>Antrag</th><th>Beantragt</th><th>Vorstandsstatus</th><th>Aktion</th></tr></thead><tbody></tbody></table></div></div></section>
+<section id="applications" class="page"><div class="panel"><div class="panel-head"><h2>📥 Aufnahmeanträge</h2></div><div class="tablewrap"><table><thead><tr><th>Name</th><th>Antrag</th><th>Beantragt</th><th>Vorstandsstatus</th><th>Aktion</th></tr></thead><tbody id="applicationsBody"><tr><td colspan="5" class="empty">Anträge werden geladen …</td></tr></tbody></table></div></div></section>
 <section id="jubilee" class="page"><div class="panel"><div class="panel-head"><h2>🎭 Närrische Jubiläen</h2></div><p>Jede Mitgliederakte erhält automatisch das nächste Jubiläum. Fehlt das Eintrittsdatum, erscheint <span class="badge miss">Jubiläum nicht berechenbar</span>.</p><div class="note">FKK-Stufen: 11 · 22 · 33 · 44 · 55 · 66 · 77 · 88 · 99 · 111 Jahre.</div></div></section>
 <section id="terminations" class="page"><div class="panel"><h2>📤 Kündigungen & Archiv</h2><p>Eine Kündigung bekommt Datum, Wirksamkeitsdatum und Bearbeiter. Bei vorhandener E-Mail kann eine Kündigungsbestätigung versendet werden. Ausgeschiedene Mitglieder werden archiviert; endgültiges Löschen bleibt eine separate Sicherheitsfunktion.</p></div></section>
 <section id="communication" class="page"><div class="panel"><h2>📣 Vereinsinformation erstellen</h2><p>Einmal erfassen – daraus entstehen später Website-, WhatsApp-, Spond- und E-Mail-Fassung.</p></div></section>
@@ -96,7 +96,25 @@ async function loadMembers(){
   if(!d.members.length){body.innerHTML='<tr><td colspan="6" class="empty">Noch keine Mitglieder importiert.</td></tr>';return}
   body.innerHTML=d.members.map(m=>{const entry=m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–");const jub=m.next_jubilee?(m.next_jubilee.years+" Jahre · "+m.next_jubilee.year):"⚠ Eintritt fehlt";const miss=m.data_complete?'<span class="badge">Vollständig</span>':'<span class="badge miss">'+m.missing_fields.length+' fehlen</span>';return '<tr data-status="'+esc((m.current_status||"").toLowerCase())+'" data-missing="'+(!m.data_complete)+'"><td><b>'+esc(m.first_name+" "+m.last_name)+'</b><br><small>'+esc(m.email||"")+'</small></td><td><span class="badge '+(m.current_status==="Passiv"?"passiv":"")+'">'+esc(m.current_status||"Ungeklärt")+'</span></td><td>'+esc(entry)+'</td><td>'+esc(jub)+'</td><td>'+miss+'</td><td><button class="btn" disabled>Details</button></td></tr>'}).join("");
 }
-async function loadPortalData(){await Promise.all([loadDashboard(),loadMembers()])}
+async function loadApplications(){
+  const body=document.getElementById("applicationsBody");
+  const r=await api("/api/portal/applications");
+  if(!r.ok){body.innerHTML='<tr><td colspan="5" class="empty">Anträge konnten nicht geladen werden.</td></tr>';return}
+  const d=await r.json();
+  if(!d.applications.length){body.innerHTML='<tr><td colspan="5" class="empty">Aktuell liegen keine gespeicherten Online-Anträge vor.</td></tr>';return}
+  body.innerHTML=d.applications.map(a=>{
+    const spouse=(a.spouse_first_name||a.spouse_last_name)?'<br><small>Ehepartner: '+esc(((a.spouse_first_name||"")+" "+(a.spouse_last_name||"")).trim())+'</small>':"";
+    const duplicate=a.duplicate_warning?'<br><span class="badge miss">⚠ Dublettenhinweis</span>':"";
+    return '<tr><td><b>'+esc(a.first_name+" "+a.last_name)+'</b><br><small>'+esc(a.email||"")+'</small>'+spouse+'</td><td>'+esc(a.application_no)+'<br><small>'+fmtDate((a.submitted_at||"").slice(0,10))+'</small></td><td><span class="badge">'+esc(a.requested_status)+'</span></td><td><span class="badge '+(a.status==="Eingegangen"?"miss":"")+'">'+esc(a.status)+'</span>'+duplicate+'</td><td><button class="btn" onclick="showApplication('+a.id+')">Öffnen</button></td></tr>'
+  }).join("");
+  window.portalApplications=d.applications;
+}
+function showApplication(id){
+  const a=(window.portalApplications||[]).find(x=>x.id===id);if(!a)return;
+  const spouse=(a.spouse_first_name||a.spouse_last_name)?'\nEhepartner: '+((a.spouse_first_name||"")+" "+(a.spouse_last_name||"")).trim()+(a.spouse_birth_date?' · '+fmtDate(a.spouse_birth_date):''):'';
+  alert(a.first_name+' '+a.last_name+'\n\nAntragsnummer: '+a.application_no+'\nBeantragt: '+a.requested_status+'\nGeburtsdatum: '+fmtDate(a.birth_date)+'\nAdresse: '+(a.address||'–')+'\nTelefon: '+(a.phone||'–')+'\nE-Mail: '+(a.email||'–')+spouse+'\nIBAN sicher hinterlegt: '+(a.has_iban?'Ja':'Nein')+'\n\nStatus: '+a.status);
+}
+async function loadPortalData(){await Promise.all([loadDashboard(),loadMembers(),loadApplications()])}
 async function checkPortal(){
   const token=sessionStorage.getItem(TOKEN_KEY);
   if(!token)return;
@@ -105,6 +123,7 @@ async function checkPortal(){
     if(!r.ok)throw new Error();
     document.getElementById("portalUser").textContent="🔒 "+d.user.display_name;
     document.getElementById("loginGate").classList.add("hidden");
+    await loadPortalData();
   }catch(e){sessionStorage.removeItem(TOKEN_KEY)}
 }
 document.getElementById("loginForm").addEventListener("submit",async e=>{
