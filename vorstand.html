@@ -21,10 +21,13 @@ main{min-width:0}.hero{background:linear-gradient(135deg,var(--gd),var(--g));col
 .page{display:none}.page.active{display:block}
 @media(max-width:900px){.layout{grid-template-columns:1fr}aside{position:static}nav{display:flex;overflow:auto;gap:4px}nav button{min-width:max-content}.cards{grid-template-columns:1fr 1fr}}
 @media(max-width:540px){.cards{grid-template-columns:1fr}.head{align-items:flex-start}.user{font-size:12px}.layout{padding:0 12px;margin-top:14px}}
+
+.loginGate{position:fixed;inset:0;z-index:999;background:linear-gradient(145deg,#043d22,#087b35);display:flex;align-items:center;justify-content:center;padding:20px}.loginBox{width:min(430px,100%);background:#fff;border-radius:26px;padding:28px;box-shadow:0 30px 80px #0005}.loginBox img{width:76px;height:76px;border-radius:50%;display:block;margin:0 auto 12px;object-fit:cover}.loginBox h1{text-align:center;color:var(--gd);margin:5px 0}.loginBox p{text-align:center;color:var(--muted);margin:0 0 20px}.loginBox label{display:block;font-size:12px;font-weight:800;margin:12px 0 5px}.loginBox input{width:100%;padding:13px;border:1px solid #ccd6cf;border-radius:12px;font:inherit}.loginBox button{width:100%;margin-top:18px;padding:13px}.loginError{color:var(--r);font-weight:700;font-size:13px;text-align:center;margin-top:12px}.hidden{display:none!important}
 </style>
 </head>
-<body>
-<div class="top"></div><header><div class="head"><div class="brand"><img src="assets/fkk-logo.jpeg" alt="FKK"><div><b>FKK Vorstandszentrale</b><small>Geschäftsführender Vorstand · intern</small></div></div><div class="user">🔒 Sebastian · Kelly · Jörg</div></div></header>
+<body><div id="loginGate" class="loginGate"><form id="loginForm" class="loginBox"><img src="assets/fkk-logo.jpeg" alt="FKK"><h1>Vorstandszentrale</h1><p>Geschützter Bereich des FKK</p><label for="loginUser">Benutzername oder E-Mail</label><input id="loginUser" autocomplete="username" required><label for="loginPassword">Passwort</label><input id="loginPassword" type="password" autocomplete="current-password" required><button class="btn" type="submit">Sicher anmelden</button><div id="loginError" class="loginError"></div></form></div>
+
+<div class="top"></div><header><div class="head"><div class="brand"><img src="assets/fkk-logo.jpeg" alt="FKK"><div><b>FKK Vorstandszentrale</b><small>Geschäftsführender Vorstand · intern</small></div></div><div class="user"><span id="portalUser">🔒 Vorstand</span> · <button onclick="logoutPortal()" style="border:0;background:transparent;color:white;cursor:pointer">Abmelden</button></div></div></header>
 <div class="layout">
 <aside><nav>
 <button class="active" data-page="dashboard">🏠 Dashboard</button>
@@ -52,6 +55,35 @@ main{min-width:0}.hero{background:linear-gradient(135deg,var(--gd),var(--g));col
 <section id="activity" class="page"><div class="panel"><h2>🕘 Aktivitäten</h2><p>Änderungen werden mit Zeitpunkt und Bearbeiter nachvollziehbar protokolliert.</p></div></section>
 </main></div>
 <script>
+const API="https://fkk-mitgliedsantrag-backend.onrender.com";
+const TOKEN_KEY="fkk_portal_token";
+async function api(path,options={}){
+  const token=sessionStorage.getItem(TOKEN_KEY);
+  const headers={"Content-Type":"application/json",...(options.headers||{})};
+  if(token)headers.Authorization="Bearer "+token;
+  return fetch(API+path,{...options,headers});
+}
+async function checkPortal(){
+  const token=sessionStorage.getItem(TOKEN_KEY);
+  if(!token)return;
+  try{
+    const r=await api("/api/portal/me"); const d=await r.json();
+    if(!r.ok)throw new Error();
+    document.getElementById("portalUser").textContent="🔒 "+d.user.display_name;
+    document.getElementById("loginGate").classList.add("hidden");
+  }catch(e){sessionStorage.removeItem(TOKEN_KEY)}
+}
+document.getElementById("loginForm").addEventListener("submit",async e=>{
+  e.preventDefault(); const err=document.getElementById("loginError"); err.textContent="Anmeldung wird geprüft …";
+  try{
+    const r=await api("/api/portal/login",{method:"POST",body:JSON.stringify({username:document.getElementById("loginUser").value,password:document.getElementById("loginPassword").value})});
+    const d=await r.json(); if(!r.ok)throw new Error(d.error||"Anmeldung fehlgeschlagen.");
+    sessionStorage.setItem(TOKEN_KEY,d.token); err.textContent=""; await checkPortal();
+  }catch(ex){err.textContent=ex.message||"Anmeldung derzeit nicht möglich."}
+});
+function logoutPortal(){sessionStorage.removeItem(TOKEN_KEY);location.reload()}
+checkPortal();
+
 const JUB=[11,22,33,44,55,66,77,88,99,111];
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
 function go(id,filter){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));if(filter&&document.getElementById('filter'))document.getElementById('filter').value=filter;window.scrollTo({top:0,behavior:'smooth'})}
