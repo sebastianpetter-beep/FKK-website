@@ -44,11 +44,11 @@ main{min-width:0}.hero{background:linear-gradient(135deg,var(--gd),var(--g));col
 <div class="hero"><h1>Willkommen in der Vorstandszentrale</h1><p>Mitglieder, Anträge, Jubiläen und Vereinskommunikation an einem Ort.</p></div>
 <div class="cards"><div class="card"><strong id="memberCount">–</strong><span>Mitglieder</span></div><div class="card warn"><strong id="missingCount">–</strong><span>Datensätze unvollständig</span></div><div class="card"><strong id="appCount">–</strong><span>aktuelle Online-Anträge</span></div><div class="card danger"><strong id="resignationCount">–</strong><span>offene Kündigungen</span></div></div>
 <div class="panel"><div class="panel-head"><h2>⚠️ Fehlende Mitgliedsdaten</h2><button class="btn yellow" onclick="go('members','missing')">Unvollständige anzeigen</button></div><p>Das Portal prüft künftig automatisch Eintrittsdatum, Status, Anschrift, Geburtsdatum, E-Mail/Telefon und IBAN. Fehlende Werte bleiben sichtbar, bis sie ergänzt wurden.</p></div>
-<div class="panel"><div class="panel-head"><h2>🎭 Nächste närrische Jubiläen</h2><button class="btn" onclick="go('jubilee')">Alle Jubiläen</button></div><p>Berechnet werden 11 · 22 · 33 · 44 · 55 · 66 · 77 · 88 · 99 · 111 Jahre ab Eintrittsdatum.</p></div>
+<div class="panel"><div class="panel-head"><h2>🎭 Nächste närrische Jubiläen</h2><button class="btn" onclick="go('jubilee')">Alle Jubiläen</button></div><div id="dashboardJubilees"><p>Jubiläen werden geladen …</p></div></div>
 </section>
 <section id="members" class="page"><div class="panel"><div class="panel-head"><h2>👥 Mitgliederregister</h2><div class="toolbar"><input id="search" placeholder="Name suchen…"><select id="filter"><option value="all">Alle</option><option value="missing">Daten fehlen</option><option value="aktiv">Aktiv</option><option value="passiv">Passiv</option><option value="archiv">Archiv</option></select><button class="btn">+ Mitglied</button></div></div><div class="note">V1-Grundgerüst: Die 155 Datensätze werden im nächsten Schritt serverseitig importiert. IBANs werden nicht in diese öffentliche HTML-Datei geschrieben.</div><div class="tablewrap"><div class="card" style="margin-bottom:14px"><b>Mitglieder-Masterliste importieren</b><p><small>Die Datei wird nur an den geschützten Vorstandsbereich übertragen. Bestehende Datensätze werden nicht überschrieben.</small></p><input id="memberImportFile" type="file" accept=".json"><button class="btn" id="memberImportButton" type="button">Import starten</button><div id="memberImportStatus" style="margin-top:8px"></div></div><table><thead><tr><th>Mitglied</th><th>Status</th><th>Eintritt</th><th>Nächstes Jubiläum</th><th>Datenstatus</th><th>Aktion</th></tr></thead><tbody id="membersBody"><tr><td colspan="6" class="empty">Masterliste bereit zum sicheren Datenbank-Import.</td></tr></tbody></table></div></div></section>
 <section id="applications" class="page"><div class="panel"><div class="panel-head"><h2>📥 Aufnahmeanträge</h2></div><div class="tablewrap"><table><thead><tr><th>Name</th><th>Antrag</th><th>Beantragt</th><th>Vorstandsstatus</th><th>Aktion</th></tr></thead><tbody id="applicationsBody"><tr><td colspan="5" class="empty">Anträge werden geladen …</td></tr></tbody></table></div></div></section>
-<section id="jubilee" class="page"><div class="panel"><div class="panel-head"><h2>🎭 Närrische Jubiläen</h2></div><p>Jede Mitgliederakte erhält automatisch das nächste Jubiläum. Fehlt das Eintrittsdatum, erscheint <span class="badge miss">Jubiläum nicht berechenbar</span>.</p><div class="note">FKK-Stufen: 11 · 22 · 33 · 44 · 55 · 66 · 77 · 88 · 99 · 111 Jahre.</div></div></section>
+<section id="jubilee" class="page"><div class="panel"><div class="panel-head"><h2>🎭 Närrische Jubiläen</h2></div><p>Automatisch nach dem nächsten anstehenden närrischen Vereinsjubiläum sortiert.</p><div class="note">FKK-Stufen: 11 · 22 · 33 · 44 · 55 · 66 · 77 · 88 · 99 · 111 Jahre.</div><div class="tablewrap"><table><thead><tr><th>Mitglied</th><th>Nächstes Jubiläum</th><th>Jahr</th><th>Eintritt</th></tr></thead><tbody id="jubileeBody"><tr><td colspan="4" class="empty">Jubiläen werden geladen …</td></tr></tbody></table></div></div></section>
 <section id="terminations" class="page"><div class="panel"><h2>📤 Kündigungen & Archiv</h2><p>Eine Kündigung bekommt Datum, Wirksamkeitsdatum und Bearbeiter. Bei vorhandener E-Mail kann eine Kündigungsbestätigung versendet werden. Ausgeschiedene Mitglieder werden archiviert; endgültiges Löschen bleibt eine separate Sicherheitsfunktion.</p></div></section>
 <section id="communication" class="page"><div class="panel"><h2>📣 Vereinsinformation erstellen</h2><p>Einmal erfassen – daraus entstehen später Website-, WhatsApp-, Spond- und E-Mail-Fassung.</p></div></section>
 <section id="documents" class="page"><div class="panel"><h2>📁 Dokumente</h2><p>Aufnahmeanträge, Kündigungen und weitere Vorstandsunterlagen werden später geschützt einer Mitgliederakte zugeordnet.</p></div></section>
@@ -132,9 +132,31 @@ document.getElementById("memberImportButton").addEventListener("click",runMember
 async function loadMembers(){
   const r=await api("/api/portal/members");if(!r.ok)return;
   const d=await r.json(),body=document.getElementById("membersBody");
+  window.portalMembers=d.members;
+  renderJubilees(d.members);
   if(!d.members.length){body.innerHTML='<tr><td colspan="6" class="empty">Noch keine Mitglieder importiert.</td></tr>';return}
   body.innerHTML=d.members.map(m=>{const entry=m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–");const jub=m.next_jubilee?(m.next_jubilee.years+" Jahre · "+m.next_jubilee.year):"⚠ Eintritt fehlt";const miss=m.data_complete?'<span class="badge">Vollständig</span>':'<span class="badge miss">'+m.missing_fields.length+' fehlen</span>';return '<tr data-status="'+esc((m.current_status||"").toLowerCase())+'" data-missing="'+(!m.data_complete)+'"><td><b>'+esc(m.first_name+" "+m.last_name)+'</b><br><small>'+esc(m.email||"")+'</small></td><td><span class="badge '+(m.current_status==="Passiv"?"passiv":"")+'">'+esc(m.current_status||"Ungeklärt")+'</span></td><td>'+esc(entry)+'</td><td>'+esc(jub)+'</td><td>'+miss+'</td><td><button class="btn" disabled>Details</button></td></tr>'}).join("");
 }
+function renderJubilees(members){
+  const list=(members||[]).filter(function(m){return !m.archived&&m.next_jubilee;}).sort(function(a,b){
+    const diff=Number(a.next_jubilee.year||9999)-Number(b.next_jubilee.year||9999);
+    return diff||String(a.last_name||"").localeCompare(String(b.last_name||""),"de");
+  });
+  const body=document.getElementById("jubileeBody");
+  if(body){
+    body.innerHTML=list.length?list.map(function(m){
+      return '<tr><td><b>'+esc(m.first_name+" "+m.last_name)+'</b></td><td><span class="badge">'+esc(m.next_jubilee.years+" Jahre")+'</span></td><td>'+esc(m.next_jubilee.year)+'</td><td>'+esc(m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–"))+'</td></tr>';
+    }).join(""):'<tr><td colspan="4" class="empty">Noch keine Jubiläen berechenbar.</td></tr>';
+  }
+  const dash=document.getElementById("dashboardJubilees");
+  if(dash){
+    const next=list.slice(0,5);
+    dash.innerHTML=next.length?next.map(function(m,i){
+      return '<p style="margin:7px 0"><b>'+(i===0?"Als Nächstes: ":"")+esc(m.first_name+" "+m.last_name)+'</b> · '+esc(m.next_jubilee.years+" Jahre")+' · '+esc(m.next_jubilee.year)+'</p>';
+    }).join("")+'<small>Die fünf zeitlich nächsten Jubiläen.</small>':'<p>Noch keine Jubiläen berechenbar.</p>';
+  }
+}
+
 async function loadApplications(){
   const body=document.getElementById("applicationsBody");
   const r=await api("/api/portal/applications");
