@@ -112,6 +112,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
     <div id="memberEdit" class="hidden"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px">
       <button class="btn" id="memberEditButton" type="button">Bearbeiten</button>
+      <button class="btn yellow" id="memberSpouseButton" type="button">💍 Ehepartner</button>
       <button class="btn hidden" id="memberSaveButton" type="button">Speichern</button>
       <button class="btn hidden" id="memberCancelButton" type="button">Abbrechen</button>
     </div>
@@ -197,6 +198,7 @@ document.getElementById("mailTarget").addEventListener("change",refreshMailRecip
 document.getElementById("mailSingle").addEventListener("change",refreshMailRecipients);
 document.getElementById("sendMemberMail").addEventListener("click",sendMemberEmail);
 document.getElementById("memberEditButton").addEventListener("click",function(){setMemberEdit(true)});
+document.getElementById("memberSpouseButton").addEventListener("click",showSpouseEditor);
 document.getElementById("memberCancelButton").addEventListener("click",function(){setMemberEdit(false)});
 document.getElementById("memberSaveButton").addEventListener("click",saveMember);
 document.getElementById("printMembersButton").addEventListener("click",printMemberList);
@@ -225,6 +227,7 @@ function openMember(id){
     '<p><b>Telefon:</b> '+esc(m.phone||"–")+'<br><b>E-Mail:</b> '+esc(m.email||"–")+'</p>'+
     '<p><b>Eintritt:</b> '+esc(m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–"))+'<br><b>Nächstes Jubiläum:</b> '+esc(m.next_jubilee?(m.next_jubilee.years+" Jahre · "+m.next_jubilee.year):"nicht berechenbar")+'</p>'+
     '<p><b>Zahlungsart:</b> '+esc(m.payment_method||"–")+'<br><b>IBAN:</b> '+(m.has_iban?"✓ hinterlegt":"– nicht hinterlegt")+'</p>'+
+    '<p><b>Ehepartner:</b> '+esc(spouseName(m)||"– nicht verknüpft")+'<br><b>Beitrag:</b> '+esc(contributionLabel(m))+'</p>'+
     '<p><b>Datenstatus:</b> '+(m.data_complete?"Vollständig":"Fehlend: "+esc((m.missing_fields||[]).join(", ")))+'</p>';
   document.getElementById("memberEdit").innerHTML=
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
@@ -239,6 +242,40 @@ function openMember(id){
   setMemberEdit(false);
   document.getElementById("memberModal").classList.remove("hidden");
 }
+
+function spouseName(m){
+  if(!m.spouse_member_id)return "";
+  const s=(window.portalMembers||[]).find(function(x){return Number(x.id)===Number(m.spouse_member_id);});
+  return s?(s.first_name+" "+s.last_name):"Verknüpftes Mitglied";
+}
+function contributionLabel(m){
+  const x=m.contribution||{};
+  return x.annual_eur!==null&&x.annual_eur!==undefined?(x.kind+" · "+x.annual_eur+" € / Jahr"):(x.kind||"nicht berechenbar");
+}
+function showSpouseEditor(){
+  const m=(window.portalMembers||[]).find(function(x){return Number(x.id)===Number(selectedMemberId);});if(!m)return;
+  const box=document.getElementById("memberMessage");
+  if(m.spouse_member_id){
+    box.innerHTML='<b>Ehepaar:</b> '+esc(spouseName(m))+' <button class="btn red" type="button" onclick="unlinkSpouse()">Verknüpfung lösen</button>';
+    return;
+  }
+  const options=(window.portalMembers||[]).filter(function(x){return !x.archived&&Number(x.id)!==Number(m.id)&&!x.spouse_member_id;})
+    .map(function(x){return '<option value="'+x.id+'">'+esc(x.last_name+", "+x.first_name)+'</option>';}).join("");
+  box.innerHTML='<b>Ehepartner manuell verknüpfen</b><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><select id="spouseSelect" style="flex:1;min-width:200px;padding:10px">'+options+'</select><button class="btn" type="button" onclick="linkSpouse()">Als Ehepaar verknüpfen</button></div><small>Beide Personen bleiben eigenständige Mitglieder. Die Mitgliederzahl ändert sich nicht.</small>';
+}
+async function linkSpouse(){
+  const s=document.getElementById("spouseSelect");if(!s||!s.value)return;
+  const r=await api("/api/portal/members/"+selectedMemberId+"/spouse",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({spouse_member_id:Number(s.value)})});
+  const d=await r.json();if(!r.ok){document.getElementById("memberMessage").textContent=d.error||"Verknüpfen nicht möglich.";return}
+  const id=selectedMemberId;await loadMembers();openMember(id);document.getElementById("memberMessage").textContent="✓ Ehepaar wurde verknüpft. Die Mitgliederzahl bleibt unverändert.";
+}
+async function unlinkSpouse(){
+  if(!confirm("Ehepartner-Verknüpfung wirklich lösen? Beide Mitgliedschaften bleiben bestehen."))return;
+  const r=await api("/api/portal/members/"+selectedMemberId+"/spouse",{method:"DELETE"});const d=await r.json();
+  if(!r.ok){document.getElementById("memberMessage").textContent=d.error||"Lösen nicht möglich.";return}
+  const id=selectedMemberId;await loadMembers();openMember(id);document.getElementById("memberMessage").textContent="✓ Ehepartner-Verknüpfung gelöst. Beide Mitglieder bleiben erhalten.";
+}
+
 function memberField(id,label,value,type){
   return '<label>'+label+'<input id="'+id+'" type="'+type+'" value="'+esc(val(value))+'" style="width:100%;padding:10px;margin-top:5px"></label>';
 }
