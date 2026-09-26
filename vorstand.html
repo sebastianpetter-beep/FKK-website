@@ -243,7 +243,13 @@ async function loadMembers(){
   setTimeout(refreshMailRecipients,0);
   renderJubilees(d.members);
   if(!d.members.length){body.innerHTML='<tr><td colspan="6" class="empty">Noch keine Mitglieder importiert.</td></tr>';return}
-  body.innerHTML=d.members.map(m=>{const entry=m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–");const jub=m.next_jubilee?(m.next_jubilee.years+" Jahre · "+m.next_jubilee.year):"⚠ Eintritt fehlt";const miss=m.data_complete?'<span class="badge">Vollständig</span>':'<span class="badge miss">'+m.missing_fields.length+' fehlen</span>';return '<tr data-status="'+esc((m.current_status||"").toLowerCase())+'" data-missing="'+(!m.data_complete)+'"><td><b>'+esc(m.first_name+" "+m.last_name)+'</b><br><small>'+esc(m.email||"")+'</small></td><td><span class="badge '+(m.current_status==="Passiv"?"passiv":"")+'">'+esc(m.current_status||"Ungeklärt")+'</span></td><td>'+esc(entry)+'</td><td>'+esc(jub)+'</td><td>'+miss+'</td><td><button class="btn" type="button" onclick="openMember('+m.id+')">Details</button></td></tr>'}).join("");
+  body.innerHTML=d.members.map(m=>{const entry=m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–");const jub=m.next_jubilee?(m.next_jubilee.years+" Jahre · "+m.next_jubilee.year):"⚠ Eintritt fehlt";const miss=m.data_complete?'<span class="badge">Vollständig</span>':'<span class="badge miss">'+m.missing_fields.length+' fehlen</span>';return '<tr data-member-id="'+m.id+'" data-status="'+esc((m.current_status||"").toLowerCase())+'" data-missing="'+(!m.data_complete)+'"><td><b>'+esc(m.first_name+" "+m.last_name)+'</b><br><small>'+esc(m.email||"")+'</small></td><td><span class="badge '+(m.current_status==="Passiv"?"passiv":"")+'">'+esc(m.current_status||"Ungeklärt")+'</span></td><td>'+esc(entry)+'</td><td>'+esc(jub)+'</td><td>'+miss+'</td><td><button class="btn member-details-button" data-member-id="'+m.id+'" type="button">Details</button></td></tr>'}).join("");
+  body.querySelectorAll(".member-details-button").forEach(function(button){
+    button.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();
+      openMember(Number(button.getAttribute("data-member-id")));
+    });
+  });
 }
 
 let selectedMemberId=null;
