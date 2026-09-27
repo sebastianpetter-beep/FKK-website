@@ -135,7 +135,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <label for="mailSubject">Betreff</label><input id="mailSubject" maxlength="180" placeholder="Betreff der E-Mail" style="width:100%;padding:12px;margin:6px 0 14px">
 <label for="mailMessage">Nachricht</label><textarea id="mailMessage" maxlength="5000" rows="10" placeholder="Nachricht schreiben …" style="width:100%;padding:12px;margin:6px 0 14px;resize:vertical"></textarea>
 <button class="btn" id="sendMemberMail" type="button">E-Mail senden</button><div id="mailResult" style="margin-top:12px"></div>
-<div class="card" style="margin-top:18px"><h2>💬 WhatsApp</h2><p>Nachricht für ein Mitglied vorbereiten und anschließend mit dem auf diesem Gerät angemeldeten WhatsApp-Konto öffnen. Die Vorstandszentrale versendet nichts automatisch.</p><div class="note" id="whatsappInfo">Mitgliederdaten werden geladen …</div><label for="whatsappMember">Mitglied</label><select id="whatsappMember" style="width:100%;padding:12px;margin:6px 0 14px"></select><label for="whatsappMessage">Nachricht</label><textarea id="whatsappMessage" maxlength="4000" rows="7" placeholder="Nachricht schreiben …" style="width:100%;padding:12px;margin:6px 0 14px;resize:vertical"></textarea><button class="btn" id="openWhatsApp" type="button">💬 In WhatsApp öffnen</button><div id="whatsappResult" style="margin-top:12px"></div></div>
+<div class="card" style="margin-top:18px"><h2>💬 WhatsApp</h2><p>Nachricht für ein Mitglied vorbereiten und anschließend mit dem auf diesem Gerät angemeldeten WhatsApp-Konto öffnen. Die Vorstandszentrale versendet nichts automatisch.</p><div class="note" id="whatsappInfo">Mitgliederdaten werden geladen …</div><label for="whatsappMember">Mitglied</label><select id="whatsappMember" style="width:100%;padding:12px;margin:6px 0 14px"></select><label for="whatsappMessage">Nachricht</label><textarea id="whatsappMessage" maxlength="4000" rows="7" placeholder="Nachricht schreiben …" style="width:100%;padding:12px;margin:6px 0 14px;resize:vertical"></textarea><button class="btn" id="openWhatsApp" type="button">💬 In WhatsApp öffnen</button><div id="whatsappResult" style="margin-top:12px"></div></div><div class="card" style="margin-top:18px"><h2>📱 SMS-Fallback</h2><p>SMS werden nur an Mitglieder versendet, die ausdrücklich als <b>„kein WhatsApp“</b> markiert sind. Unbekannte Kontakte werden nicht kostenpflichtig angeschrieben.</p><label for="smsMember">Mitglied</label><select id="smsMember" style="width:100%;padding:12px;margin:6px 0 10px"></select><label for="smsWhatsappStatus">WhatsApp-Status</label><select id="smsWhatsappStatus" style="width:100%;padding:12px;margin:6px 0 10px"><option value="unknown">Unbekannt</option><option value="yes">WhatsApp vorhanden</option><option value="no">Kein WhatsApp → SMS erlaubt</option></select><button class="btn gray" id="saveWhatsappStatus" type="button">Status speichern</button><hr style="margin:18px 0"><label for="smsMessage">SMS-Nachricht</label><textarea id="smsMessage" maxlength="1000" rows="5" placeholder="SMS schreiben …" style="width:100%;padding:12px;margin:6px 0 8px;resize:vertical"></textarea><div class="note" id="smsCounter">0 Zeichen · 0 SMS</div><button class="btn" id="sendMemberSms" type="button" disabled>📱 SMS senden</button><div id="smsResult" style="margin-top:12px"></div></div>
 </div></section>
 <section id="documents" class="page"><div class="panel"><h2>📁 Dokumente</h2><p>Aufnahmeanträge, Kündigungen und weitere Vorstandsunterlagen werden später geschützt einer Mitgliederakte zugeordnet.</p></div></section>
 <section id="donations" class="page"><div class="panel"><div class="panel-head"><h2>🧾 Spendenquittungen</h2><button class="btn" type="button" id="newDonationReceipt">+ Neue Spendenquittung</button></div>
@@ -241,6 +241,11 @@ document.getElementById("mailTarget").addEventListener("change",refreshMailRecip
 document.getElementById("mailSingle").addEventListener("change",refreshMailRecipients);
 document.getElementById("sendMemberMail").addEventListener("click",sendMemberEmail);
 document.getElementById("openWhatsApp").addEventListener("click",openMemberWhatsApp);
+document.getElementById("smsMember").addEventListener("change",syncSmsMemberStatus);
+document.getElementById("smsWhatsappStatus").addEventListener("change",syncSmsMemberStatus);
+document.getElementById("saveWhatsappStatus").addEventListener("click",saveMemberWhatsappStatus);
+document.getElementById("smsMessage").addEventListener("input",updateSmsCounter);
+document.getElementById("sendMemberSms").addEventListener("click",sendMemberSms);
 document.getElementById("newDonationReceipt").addEventListener("click",function(){document.getElementById("donationForm").classList.remove("hidden");document.getElementById("donationMessage").textContent="";});
 document.getElementById("cancelDonationForm").addEventListener("click",function(){document.getElementById("donationForm").classList.add("hidden");});
 document.getElementById("saveDonationReceipt").addEventListener("click",saveDonationReceipt);
@@ -255,6 +260,7 @@ async function loadMembers(){
   const d=await r.json(),body=document.getElementById("membersBody");
   window.portalMembers=d.members;
   refreshWhatsAppMembers();
+  refreshSmsMembers();
   setTimeout(refreshMailRecipients,0);
   renderJubilees(d.members);
   if(!d.members.length){body.innerHTML='<tr><td colspan="6" class="empty">Noch keine Mitglieder importiert.</td></tr>';return}
@@ -465,6 +471,51 @@ async function sendMemberEmail(){
   }catch(e){result.textContent="Versand derzeit nicht möglich.";}
   button.disabled=false;
 }
+
+function refreshSmsMembers(){
+  const sel=document.getElementById("smsMember"); if(!sel)return;
+  const members=(window.portalMembers||[]).filter(function(m){return !m.archived&&m.phone;});
+  const previous=sel.value;
+  sel.innerHTML=members.map(function(m){return '<option value="'+m.id+'">'+esc(m.first_name+" "+m.last_name)+'</option>';}).join("");
+  if(previous&&members.some(function(m){return String(m.id)===String(previous);}))sel.value=previous;
+  syncSmsMemberStatus();
+}
+function syncSmsMemberStatus(){
+  const sel=document.getElementById("smsMember"),status=document.getElementById("smsWhatsappStatus"),btn=document.getElementById("sendMemberSms");if(!sel||!status)return;
+  const m=(window.portalMembers||[]).find(function(x){return String(x.id)===String(sel.value);});
+  status.value=(m&&m.whatsapp_status)||"unknown";
+  if(btn)btn.disabled=!m||status.value!=="no";
+  updateSmsCounter();
+}
+async function saveMemberWhatsappStatus(){
+  const id=document.getElementById("smsMember").value,status=document.getElementById("smsWhatsappStatus").value,out=document.getElementById("smsResult");
+  if(!id)return;
+  const r=await api("/api/portal/members/"+id+"/whatsapp-status",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:status})});
+  const d=await r.json(); if(!r.ok){out.textContent=d.error||"Status konnte nicht gespeichert werden.";return}
+  const m=(window.portalMembers||[]).find(function(x){return String(x.id)===String(id);});if(m)m.whatsapp_status=status;
+  out.textContent="✓ WhatsApp-Status gespeichert.";syncSmsMemberStatus();
+}
+function smsParts(text){
+  if(!text)return 0;
+  const gsm=/^[\n\r @£$¥èéùìòÇØøÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ!"#¤%&'()*+,\-.\/0-9:;<=>?¡A-ZÄÖÑÜ§¿a-zäöñüà^{}\\\[~\]|€]*$/;
+  const size=gsm.test(text)?160:70, concat=gsm.test(text)?153:67;
+  return text.length<=size?1:Math.ceil(text.length/concat);
+}
+function updateSmsCounter(){
+  const box=document.getElementById("smsMessage"),out=document.getElementById("smsCounter");if(!box||!out)return;
+  const n=box.value.length,parts=smsParts(box.value);out.textContent=n+" Zeichen · "+parts+" SMS";
+}
+async function sendMemberSms(){
+  const id=Number(document.getElementById("smsMember").value),m=(window.portalMembers||[]).find(function(x){return Number(x.id)===id;}),message=document.getElementById("smsMessage").value.trim(),out=document.getElementById("smsResult"),btn=document.getElementById("sendMemberSms");
+  if(!m||m.whatsapp_status!=="no"){out.textContent="SMS gesperrt: Das Mitglied ist nicht als „kein WhatsApp“ markiert.";return}
+  if(!message){out.textContent="Bitte eine SMS-Nachricht schreiben.";return}
+  const parts=smsParts(message);if(!confirm("SMS wirklich an "+m.first_name+" "+m.last_name+" senden?\n\n"+message.length+" Zeichen · voraussichtlich "+parts+" SMS"))return;
+  btn.disabled=true;out.textContent="SMS wird über Brevo versendet …";
+  try{const r=await api("/api/portal/members/sms",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({member_ids:[id],message:message})});const d=await r.json();out.textContent=r.ok?"✓ "+(d.message||"SMS versendet."):(d.error||"SMS konnte nicht versendet werden.");}
+  catch(e){out.textContent="SMS-Versand derzeit nicht möglich."}
+  syncSmsMemberStatus();
+}
+
 async function loadApplications(){
   const body=document.getElementById("applicationsBody");
   const r=await api("/api/portal/applications");
