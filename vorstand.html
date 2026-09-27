@@ -242,7 +242,7 @@ document.getElementById("mailSingle").addEventListener("change",refreshMailRecip
 document.getElementById("sendMemberMail").addEventListener("click",sendMemberEmail);
 document.getElementById("openWhatsApp").addEventListener("click",openMemberWhatsApp);
 document.getElementById("smsMember").addEventListener("change",syncSmsMemberStatus);
-document.getElementById("smsWhatsappStatus").addEventListener("change",syncSmsMemberStatus);
+document.getElementById("smsWhatsappStatus").addEventListener("change",function(){const btn=document.getElementById("sendMemberSms");if(btn)btn.disabled=true;document.getElementById("smsResult").textContent="Status wurde geändert – bitte zuerst speichern.";});
 document.getElementById("saveWhatsappStatus").addEventListener("click",saveMemberWhatsappStatus);
 document.getElementById("smsMessage").addEventListener("input",updateSmsCounter);
 document.getElementById("sendMemberSms").addEventListener("click",sendMemberSms);
