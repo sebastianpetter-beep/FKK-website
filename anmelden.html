@@ -61,7 +61,7 @@ footer{background:#053d1d;color:#fff;padding:20px}.foot{max-width:900px;margin:a
 <label><input type="radio" name="art" value="Aktiv" checked> <b>Aktives Mitglied</b><br><small>Teil des aktiven Vereinslebens</small></label>
 <label><input type="radio" name="art" value="Passiv"> <b>Passives Mitglied</b><br><small>Den Verein unterstützen</small></label>
 </div>
-<div class="fee" id="fee">Aktive Einzelmitglieder: <b>66,- € jährlich</b>. Ehepaare: 99,- €. Jugendliche bis 16: 22,- €, bis 18: 33,- €.</div>
+<div class="fee" id="fee">Der Jahresbeitrag wird automatisch nach Alter und Mitgliedschaft berechnet: Erwachsene ab 18 Jahren <b>66,- €</b>, Ehepaare gemeinsam <b>99,- €</b>, Jugendliche unter 16 Jahren <b>22,- €</b>, Jugendliche von 16 bis unter 18 Jahren <b>33,- €</b>.</div>
 <div class="actions"><span></span><button type="button" class="primary next">Weiter →</button></div></section>
 
 <section class="section" data-i="1"><h2>Persönliche Angaben</h2><div class="grid">
@@ -85,7 +85,7 @@ Wir verarbeiten deine Angaben zur Bearbeitung des Aufnahmeantrags, zur Mitgliede
 <div class="actions"><button type="button" class="secondary prev">← Zurück</button><button type="button" class="primary next">Angaben prüfen →</button></div></section>
 
 <section class="section" id="review" data-i="3"><h2>Dein Aufnahmeantrag</h2><p>Bitte prüfe deine Angaben. Diese Daten werden später in die fertige PDF übernommen.</p><div class="summary" id="summary"></div>
-<div class="fee"><b>Beitragsinformationen:</b> Aktive Einzelmitglieder 66,- € jährlich; Ehepaare 99,- €; Jugendliche bis 16 Jahre 22,- €; Jugendliche bis 18 Jahre 33,- €; passive Mitglieder 15,- € jährlich.</div>
+<div class="fee"><b>Beitragsinformationen:</b> Erwachsene ab 18 Jahren 66,- € jährlich; Ehepaare gemeinsam 99,- € jährlich; Jugendliche unter 16 Jahren 22,- € jährlich; Jugendliche von 16 bis unter 18 Jahren 33,- € jährlich; passive Mitglieder 15,- € jährlich.</div>
 <label class="check no-print"><input type="checkbox" id="finalok"><span>Ich bestätige, dass meine Angaben richtig sind.</span></label>
 <div class="actions no-print"><button type="button" class="secondary prev">← Ändern</button><button type="submit" class="primary">Antrag absenden</button></div>
 <p class="note">Mit dem Absenden werden deine Angaben verschlüsselt an unseren Server übertragen. Daraus wird der Mitgliedsantrag als PDF erzeugt und an den FKK übermittelt.</p></section>
@@ -108,7 +108,7 @@ root.querySelectorAll('.next').forEach(b=>b.addEventListener('click',()=>{if(val
 function val(n){const e=form.elements[n];return e?e.value:''}
 function fmtDate(v){if(!v)return '—';const [y,m,d]=v.split('-');return `${d}.${m}.${y}`}
 function review(){const art=form.querySelector('input[name=art]:checked').value;const rows=[
-['Mitgliedschaft',art],['Vorname, Nachname',`${val('vorname')} ${val('nachname')}`],['Adresse',val('adresse')],['Telefon',val('telefon')],['E-Mail',val('email')],['Geburtsdatum',fmtDate(val('geburt'))],['Ehepartner',val('ehepartner_dabei')==='Ja'?((val('ehe_vorname')+' '+val('ehe_nachname')).trim()):'—'],['Ehepartner Geburtsdatum',val('ehepartner_dabei')==='Ja'?fmtDate(val('ehe')):'—'],['IBAN',val('iban')],['SEPA-Zustimmung','Ja'],['Antragsdatum',new Date().toLocaleDateString('de-DE')]];
+['Mitgliedschaft',art],['Jahresbeitrag',(()=>{const x=calculatedFee();return x.amount!==null?(x.amount+',- €'):'nach Geburtsdatum'})()],['Vorname, Nachname',`${val('vorname')} ${val('nachname')}`],['Adresse',val('adresse')],['Telefon',val('telefon')],['E-Mail',val('email')],['Geburtsdatum',fmtDate(val('geburt'))],['Ehepartner',val('ehepartner_dabei')==='Ja'?((val('ehe_vorname')+' '+val('ehe_nachname')).trim()):'—'],['Ehepartner Geburtsdatum',val('ehepartner_dabei')==='Ja'?fmtDate(val('ehe')):'—'],['IBAN',val('iban')],['SEPA-Zustimmung','Ja'],['Antragsdatum',new Date().toLocaleDateString('de-DE')]];
 root.getElementById('summary').innerHTML=rows.map(r=>`<div class="row"><b>${r[0]}</b><span>${r[1]||'—'}</span></div>`).join('')}
 
 const ibanEl=document.getElementById('iban');
@@ -206,7 +206,11 @@ try{
 
 const eheSelect=document.getElementById('ehepartnerDabei');function toggleEhepartner(){const yes=eheSelect.value==='Ja';['ehepartnerNameWrap','ehepartnerNachnameWrap','ehepartnerGeburtWrap'].forEach(id=>document.getElementById(id).style.display=yes?'block':'none');['eheVorname','eheNachname','eheGeburt'].forEach(id=>{const el=document.getElementById(id);el.required=yes;if(!yes){el.value='';el.setCustomValidity('')}})}eheSelect.addEventListener('change',toggleEhepartner);toggleEhepartner();
 
-document.querySelectorAll('input[name=art]').forEach(r=>r.addEventListener('change',()=>{document.getElementById('fee').innerHTML=r.value==='Passiv'?'Passive Mitglieder: <b>15,- € jährlich</b>.':'Aktive Einzelmitglieder: <b>66,- € jährlich</b>. Ehepaare: 99,- €. Jugendliche bis 16: 22,- €, bis 18: 33,- €.'}));
+function ageOnToday(v){if(!v)return null;const b=new Date(v+"T12:00:00"),t=new Date();let a=t.getFullYear()-b.getFullYear();if((t.getMonth()<b.getMonth())||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))a--;return a}
+function calculatedFee(){const art=form.querySelector('input[name=art]:checked').value;if(art==='Passiv')return {label:'Passives Mitglied',amount:15};if(val('ehepartner_dabei')==='Ja')return {label:'Ehepaar · gemeinsamer Jahresbeitrag',amount:99};const age=ageOnToday(val('geburt'));if(age===null)return {label:'Aktives Mitglied · Beitrag nach Geburtsdatum',amount:null};if(age<16)return {label:'Aktiv · unter 16 Jahre',amount:22};if(age<18)return {label:'Aktiv · 16 bis unter 18 Jahre',amount:33};return {label:'Aktiv · ab 18 Jahre',amount:66}}
+function refreshFee(){const x=calculatedFee(),fee=document.getElementById('fee');fee.innerHTML=x.amount===null?'<b>'+x.label+'</b><br>Bitte Geburtsdatum eintragen, damit dein Jahresbeitrag automatisch angezeigt wird.':'<b>'+x.label+': '+x.amount+',- € jährlich</b><br>Einzug in zwei Raten zum 1. Mai und 1. November.'}
+document.querySelectorAll('input[name=art]').forEach(r=>r.addEventListener('change',refreshFee));
+form.elements['geburt'].addEventListener('change',refreshFee);eheSelect.addEventListener('change',refreshFee);refreshFee();
 </script>
 <script src="backend-config.js"></script>
 </body></html>
