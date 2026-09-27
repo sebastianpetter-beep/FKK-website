@@ -122,6 +122,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <div class="hero"><h1>Willkommen in der Vorstandszentrale</h1><p>Mitglieder, Anträge, Jubiläen und Vereinskommunikation an einem Ort.</p></div>
 <div class="cards"><div class="card"><strong id="memberCount">–</strong><span>Mitglieder</span></div><div class="card warn"><strong id="missingCount">–</strong><span>Datensätze unvollständig</span></div><div class="card"><strong id="appCount">–</strong><span>aktuelle Online-Anträge</span></div><div class="card danger"><strong id="resignationCount">–</strong><span>offene Kündigungen</span></div></div>
 <div class="panel"><div class="panel-head"><h2>⚠️ Fehlende Mitgliedsdaten</h2><button class="btn yellow" onclick="go('members','missing')">Unvollständige anzeigen</button></div><p>Das Portal prüft künftig automatisch Eintrittsdatum, Status, Anschrift, Geburtsdatum, E-Mail/Telefon und IBAN. Fehlende Werte bleiben sichtbar, bis sie ergänzt wurden.</p></div>
+<div class="panel"><div class="panel-head"><h2>🎂 Geburtstage</h2></div><p>Heutige und kommende Geburtstage der nächsten 31 Tage. Bei heutigen Geburtstagen kann der offizielle HTML-Gruß des Vorstands direkt versendet werden.</p><div id="dashboardBirthdays"><p>Geburtstage werden geladen …</p></div><div id="birthdayResult" style="margin-top:10px"></div></div>
 <div class="panel"><div class="panel-head"><h2>🎭 Nächste närrische Jubiläen</h2><button class="btn" onclick="go('jubilee')">Alle Jubiläen</button></div><div id="dashboardJubilees"><p>Jubiläen werden geladen …</p></div></div>
 </section>
 <section id="members" class="page"><div class="panel"><div class="panel-head"><h2>👥 Mitgliederregister</h2><div class="toolbar"><input id="search" list="memberSearchSuggestions" autocomplete="off" placeholder="Name suchen…"><datalist id="memberSearchSuggestions"></datalist><select id="filter"><option value="all">Alle</option><option value="missing">Daten fehlen</option><option value="aktiv">Aktiv</option><option value="passiv">Passiv</option><option value="archiv">Archiv</option></select><button class="btn" type="button" id="printMembersButton">🖨️ Liste drucken</button><button class="btn">+ Mitglied</button></div></div><div class="tablewrap"><div class="card" style="margin-bottom:14px"><b>Mitglieder-Masterliste importieren</b><p><small>Die Datei wird nur an den geschützten Vorstandsbereich übertragen. Bestehende Datensätze werden nicht überschrieben.</small></p><input id="memberImportFile" type="file" accept=".json"><button class="btn" id="memberImportButton" type="button">Import starten</button><div id="memberImportStatus" style="margin-top:8px"></div></div><table><thead><tr><th>Mitglied</th><th>Status</th><th>Eintritt</th><th>Nächstes Jubiläum</th><th>Datenstatus</th><th>Aktion</th></tr></thead><tbody id="membersBody"><tr><td colspan="6" class="empty">Masterliste bereit zum sicheren Datenbank-Import.</td></tr></tbody></table></div></div></section>
@@ -205,6 +206,27 @@ function fmtDate(v){if(!v)return "–";const d=new Date(v+"T00:00:00");return d.
 async function loadDashboard(){
   const r=await api("/api/portal/dashboard");if(!r.ok)return;
   const d=await r.json();memberCount.textContent=d.member_count;missingCount.textContent=d.incomplete_count;appCount.textContent=d.application_count;resignationCount.textContent=d.resignation_count;
+  const box=document.getElementById("dashboardBirthdays"),items=d.birthdays||[];
+  if(box){
+    box.innerHTML=items.length?items.map(function(b){
+      const today=Number(b.days)===0;
+      const when=today?'<span class="badge">Heute · '+esc(b.age)+'. Geburtstag</span>':'<span class="badge passiv">'+esc(fmtDate(b.date))+' · in '+esc(b.days)+' Tagen</span>';
+      let action='';
+      if(today&&b.greeting_sent)action='<span class="badge">✓ Geburtstagsmail versendet</span>';
+      else if(today&&!b.has_email)action='<span class="badge miss">Keine E-Mail hinterlegt</span>';
+      else if(today)action='<button class="btn" type="button" onclick="sendBirthdayMail('+b.id+',this)">🎂 Geburtstagsgruß senden</button>';
+      return '<div class="card" style="margin:10px 0"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><b>'+esc(b.first_name+' '+b.last_name)+'</b><br>'+when+'</div><div>'+action+'</div></div></div>';
+    }).join(""):'<p>In den nächsten 31 Tagen stehen keine hinterlegten Geburtstage an.</p>';
+  }
+}
+async function sendBirthdayMail(id,button){
+  if(!confirm("Den offiziellen Geburtstagsgruß des FKK jetzt per E-Mail versenden?"))return;
+  button.disabled=true;const out=document.getElementById("birthdayResult");out.textContent="Geburtstagsgruß wird versendet …";
+  try{
+    const r=await api("/api/portal/members/"+id+"/birthday-email",{method:"POST"});const d=await r.json();
+    if(!r.ok){out.textContent=d.error||"Versand nicht möglich.";button.disabled=false;return}
+    out.textContent="✓ "+d.message;await loadDashboard();
+  }catch(e){out.textContent="Versand derzeit nicht möglich.";button.disabled=false}
 }
 async function runMemberImport(){
   const input=document.getElementById("memberImportFile"),status=document.getElementById("memberImportStatus");
