@@ -135,6 +135,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <label for="mailSubject">Betreff</label><input id="mailSubject" maxlength="180" placeholder="Betreff der E-Mail" style="width:100%;padding:12px;margin:6px 0 14px">
 <label for="mailMessage">Nachricht</label><textarea id="mailMessage" maxlength="5000" rows="10" placeholder="Nachricht schreiben …" style="width:100%;padding:12px;margin:6px 0 14px;resize:vertical"></textarea>
 <button class="btn" id="sendMemberMail" type="button">E-Mail senden</button><div id="mailResult" style="margin-top:12px"></div>
+<div class="card" style="margin-top:18px"><h2>💬 WhatsApp</h2><p>Nachricht für ein Mitglied vorbereiten und anschließend mit dem auf diesem Gerät angemeldeten WhatsApp-Konto öffnen. Die Vorstandszentrale versendet nichts automatisch.</p><div class="note" id="whatsappInfo">Mitgliederdaten werden geladen …</div><label for="whatsappMember">Mitglied</label><select id="whatsappMember" style="width:100%;padding:12px;margin:6px 0 14px"></select><label for="whatsappMessage">Nachricht</label><textarea id="whatsappMessage" maxlength="4000" rows="7" placeholder="Nachricht schreiben …" style="width:100%;padding:12px;margin:6px 0 14px;resize:vertical"></textarea><button class="btn" id="openWhatsApp" type="button">💬 In WhatsApp öffnen</button><div id="whatsappResult" style="margin-top:12px"></div></div>
 </div></section>
 <section id="documents" class="page"><div class="panel"><h2>📁 Dokumente</h2><p>Aufnahmeanträge, Kündigungen und weitere Vorstandsunterlagen werden später geschützt einer Mitgliederakte zugeordnet.</p></div></section>
 <section id="donations" class="page"><div class="panel"><div class="panel-head"><h2>🧾 Spendenquittungen</h2><button class="btn" type="button" id="newDonationReceipt">+ Neue Spendenquittung</button></div>
@@ -239,6 +240,7 @@ document.getElementById("memberImportButton").addEventListener("click",runMember
 document.getElementById("mailTarget").addEventListener("change",refreshMailRecipients);
 document.getElementById("mailSingle").addEventListener("change",refreshMailRecipients);
 document.getElementById("sendMemberMail").addEventListener("click",sendMemberEmail);
+document.getElementById("openWhatsApp").addEventListener("click",openMemberWhatsApp);
 document.getElementById("newDonationReceipt").addEventListener("click",function(){document.getElementById("donationForm").classList.remove("hidden");document.getElementById("donationMessage").textContent="";});
 document.getElementById("cancelDonationForm").addEventListener("click",function(){document.getElementById("donationForm").classList.add("hidden");});
 document.getElementById("saveDonationReceipt").addEventListener("click",saveDonationReceipt);
@@ -252,6 +254,7 @@ async function loadMembers(){
   const r=await api("/api/portal/members");if(!r.ok)return;
   const d=await r.json(),body=document.getElementById("membersBody");
   window.portalMembers=d.members;
+  refreshWhatsAppMembers();
   setTimeout(refreshMailRecipients,0);
   renderJubilees(d.members);
   if(!d.members.length){body.innerHTML='<tr><td colspan="6" class="empty">Noch keine Mitglieder importiert.</td></tr>';return}
@@ -519,6 +522,10 @@ async function deleteApplication(){
   if(!r.ok){msg.textContent=d.error||"Löschen nicht möglich.";return}
   closeApplication();await loadPortalData();
 }
+
+function whatsappPhone(raw){let p=String(raw||"").trim().replace(/[^\d+]/g,"");if(p.startsWith("00"))p="+"+p.slice(2);if(p.startsWith("0"))p="+49"+p.slice(1);return p.replace(/\D/g,"");}
+function refreshWhatsAppMembers(){const sel=document.getElementById("whatsappMember"),info=document.getElementById("whatsappInfo");if(!sel)return;const list=(window.portalMembers||[]).filter(m=>m.phone&&whatsappPhone(m.phone));sel.innerHTML=list.length?list.slice().sort((a,b)=>(a.last_name||"").localeCompare(b.last_name||"","de")).map(m=>'<option value="'+m.id+'">'+esc((m.last_name||"")+", "+(m.first_name||""))+'</option>').join(""):'<option value="">Keine Telefonnummer hinterlegt</option>';if(info)info.textContent=list.length+" Mitglieder mit hinterlegter Telefonnummer verfügbar.";}
+function openMemberWhatsApp(){const id=Number(document.getElementById("whatsappMember").value),m=(window.portalMembers||[]).find(x=>Number(x.id)===id),out=document.getElementById("whatsappResult");if(!m){out.textContent="⚠️ Bitte ein Mitglied mit Telefonnummer auswählen.";return}const phone=whatsappPhone(m.phone),message=document.getElementById("whatsappMessage").value.trim();if(!phone){out.textContent="⚠️ Für dieses Mitglied ist keine gültige Telefonnummer hinterlegt.";return}if(!message){out.textContent="⚠️ Bitte zuerst eine Nachricht schreiben.";return}window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(message),"_blank","noopener");out.textContent="✓ WhatsApp wurde mit Empfänger und vorbereitetem Text geöffnet. Gesendet wird erst in WhatsApp.";}
 
 let donationReceipts=[];
 function moneyEuro(cents){return (Number(cents||0)/100).toLocaleString("de-DE",{style:"currency",currency:"EUR"});}
