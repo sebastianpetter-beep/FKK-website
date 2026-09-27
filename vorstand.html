@@ -305,6 +305,25 @@ async function loadMembers(){
   const r=await api("/api/portal/members");if(!r.ok)return;
   const d=await r.json();window.portalMembers=d.members;
   refreshWhatsAppMembers();refreshSmsMembers();setTimeout(refreshMailRecipients,0);renderJubilees(d.members);refreshMemberSearch();
+  // Nur Anzeige: Namensschaetzung laeuft getrennt nach dem erfolgreichen Laden der Mitglieder.
+  // Fehler hier duerfen das Portal oder die Mitgliederdaten niemals blockieren.
+  setTimeout(()=>{try{refreshEstimatedGenderStats(d.members)}catch(e){}},0);
+}
+function refreshEstimatedGenderStats(members){
+  const box=document.getElementById("dashboardMemberStats");if(!box||!Array.isArray(members))return;
+  const female=new Set("amelie,anke,anna,annette,antje,barbara,beate,bianca,birgit,britta,carina,carmen,christina,claudia,daniela,doris,elena,elia,elke,eva,gabi,gabriela,heidi,heike,helga,ines,iris,janine,jennifer,jessica,julia,karin,karina,katharina,katrin,kelly,kerstin,laura,lena,lisa,manuela,marion,melanie,michaela,monika,nadine,nicole,nina,petra,renate,sabine,sabrina,sandra,sarah,silke,silvana,simone,sonja,steffi,stephanie,susanne,tanja,ute,vanessa,verena,yvonne".split(","));
+  const male=new Set("alexander,ali,andreas,ben,bernd,christian,daniel,david,denis,detlef,dirk,frank,gerd,hans,harald,heinz,henn,holger,jan,jens,joerg,jörg,kai,karl,klaus,lars,luc,lukas,manfred,marcel,mario,markus,martin,maksim,matthias,michael,norbert,oliver,oli,patrick,paul,peter,rainer,ralf,raphael,rene,rené,robert,sascha,sebastian,stefan,sven,thomas,thorsten,tim,tobias,uwe,wolfgang".split(","));
+  let m=0,w=0,u=0,d=0;
+  members.filter(x=>!x.archived).forEach(x=>{
+    const stored=(x.gender||"unknown").toLowerCase();
+    if(stored==="male"){m++;return} if(stored==="female"){w++;return} if(stored==="diverse"){d++;return}
+    const n=((x.first_name||"").trim().split(/[\s-]+/)[0]||"").toLowerCase();
+    if(male.has(n))m++;else if(female.has(n))w++;else u++;
+  });
+  const headings=[...box.querySelectorAll("h3")],h=headings.find(x=>x.textContent.trim()==="Geschlecht");if(!h)return;
+  const cards=h.nextElementSibling;if(!cards)return;const total=m+w+d+u,p=n=>total?Math.round(n/total*100):0;
+  const card=(n,label)=>'<div class="card" style="display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:118px;justify-content:center"><strong style="font-size:2.15rem;line-height:1">'+n+'</strong><span style="font-weight:700;line-height:1.2">'+label+'</span><span style="display:inline-block;margin-top:3px;padding:4px 9px;border-radius:999px;background:#f1f5f2;color:#526057;font-size:.82rem;font-weight:700">'+p(n)+' % der Mitglieder</span></div>';
+  cards.innerHTML=card(m,"Männlich")+card(w,"Weiblich")+card(d,"Divers")+card(u,"Nicht eindeutig");
 }
 function memberListHtml(members){
   if(!members.length)return '<tr><td colspan="6" class="empty">Keine passenden Mitglieder gefunden.</td></tr>';
