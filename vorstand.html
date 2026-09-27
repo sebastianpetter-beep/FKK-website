@@ -123,7 +123,9 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <div class="cards"><div class="card"><strong id="memberCount">–</strong><span>Mitglieder</span></div><div class="card warn"><strong id="missingCount">–</strong><span>Datensätze unvollständig</span></div><div class="card"><strong id="appCount">–</strong><span>aktuelle Online-Anträge</span></div><div class="card danger"><strong id="resignationCount">–</strong><span>offene Kündigungen</span></div></div>
 <div class="panel"><div class="panel-head"><h2>⚠️ Fehlende Mitgliedsdaten</h2><button class="btn yellow" onclick="go('members','missing')">Unvollständige anzeigen</button></div><p>Das Portal prüft künftig automatisch Eintrittsdatum, Status, Anschrift, Geburtsdatum, E-Mail/Telefon und IBAN. Fehlende Werte bleiben sichtbar, bis sie ergänzt wurden.</p></div>
 <div class="panel"><div class="panel-head"><h2>💶 Mitgliedsbeiträge</h2></div><div id="dashboardContributions"><p>Beitragsvorschau wird geladen …</p></div></div>
-<div class="panel"><div class="panel-head"><h2>👥 Mitgliederstruktur</h2></div><div id="dashboardGender"><p>Auswertung wird geladen …</p></div><small>Die Auswertung verwendet ausschließlich die ausdrücklich hinterlegte Angabe – keine Ableitung aus Vornamen.</small></div>
+<div class="panel"><div class="panel-head"><h2>📊 Mitgliederstatistik</h2></div>
+<div id="dashboardMemberStats"><p>Mitgliederstatistik wird geladen …</p></div>
+<small>Alle Werte werden automatisch aus den aktuellen, nicht archivierten Mitgliederakten berechnet. Die Altersgruppen entsprechen der Beitragslogik.</small></div>
 <div class="panel"><div class="panel-head"><h2>🎂 Geburtstage</h2></div><p>Heutige und kommende Geburtstage der nächsten 31 Tage. Bei heutigen Geburtstagen kann der offizielle HTML-Gruß des Vorstands direkt versendet werden.</p><div id="dashboardBirthdays"><p>Geburtstage werden geladen …</p></div><div id="birthdayResult" style="margin-top:10px"></div></div>
 <div class="panel"><div class="panel-head"><h2>🎭 Nächste närrische Jubiläen</h2><button class="btn" onclick="go('jubilee')">Alle Jubiläen</button></div><div id="dashboardJubilees"><p>Jubiläen werden geladen …</p></div></div>
 </section>
@@ -210,8 +212,19 @@ async function loadDashboard(){
   const d=await r.json();memberCount.textContent=d.member_count;missingCount.textContent=d.incomplete_count;appCount.textContent=d.application_count;resignationCount.textContent=d.resignation_count;
   const cf=d.contribution_forecast||{},cb=document.getElementById("dashboardContributions");
   if(cb){const inst=cf.installments||[];cb.innerHTML='<div class="cards" style="margin:0"><div class="card"><strong>'+esc(Number(cf.annual_total_eur||0).toLocaleString("de-DE",{style:"currency",currency:"EUR"}))+'</strong><span>erwartete Jahresbeiträge</span></div>'+inst.map(x=>'<div class="card"><strong>'+esc(Number(x.amount_eur||0).toLocaleString("de-DE",{style:"currency",currency:"EUR"}))+'</strong><span>erwartet zum '+esc(x.label)+'</span></div>').join("")+'</div><small>Ehepaare werden als ein Haushalt gerechnet; die Jahresbeiträge werden auf die beiden Einzugstermine verteilt.</small>';}
-  const gc=d.gender_counts||{},gb=document.getElementById("dashboardGender");
-  if(gb)gb.innerHTML='<div class="cards" style="margin:0"><div class="card"><strong>'+esc(gc.male||0)+'</strong><span>Männlich</span></div><div class="card"><strong>'+esc(gc.female||0)+'</strong><span>Weiblich</span></div><div class="card"><strong>'+esc(gc.diverse||0)+'</strong><span>Divers</span></div><div class="card"><strong>'+esc(gc.unknown||0)+'</strong><span>Keine Angabe</span></div></div>';
+  const ms=d.member_statistics||{},sb=document.getElementById("dashboardMemberStats"),total=Number(ms.total||d.member_count||0),pct=n=>total?Math.round((Number(n||0)/total)*100):0;
+  if(sb){
+    const st=ms.status||{},gc=ms.gender||d.gender_counts||{},ag=ms.age||{};
+    const card=(n,label,sub)=>'<div class="card"><strong>'+esc(n||0)+'</strong><span>'+esc(label)+'</span>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>';
+    sb.innerHTML=
+      '<h3 style="margin:8px 0">Mitgliedschaft</h3><div class="cards" style="margin:0 0 18px">'+
+      card(total,'Gesamt','100 %')+card(st.active,'Aktiv',pct(st.active)+' %')+card(st.passive,'Passiv',pct(st.passive)+' %')+card(st.unclear,'Ungeklärt',pct(st.unclear)+' %')+'</div>'+
+      '<h3 style="margin:8px 0">Geschlecht</h3><div class="cards" style="margin:0 0 18px">'+
+      card(gc.male,'Männlich',pct(gc.male)+' %')+card(gc.female,'Weiblich',pct(gc.female)+' %')+card(gc.diverse,'Divers',pct(gc.diverse)+' %')+card(gc.unknown,'Keine Angabe',pct(gc.unknown)+' %')+'</div>'+
+      '<h3 style="margin:8px 0">Altersstruktur</h3><div class="cards" style="margin:0 0 18px">'+
+      card(ag.under_16,'Unter 16',pct(ag.under_16)+' %')+card(ag.age_16_17,'16 bis unter 18',pct(ag.age_16_17)+' %')+card(ag.adult_18_plus,'Ab 18',pct(ag.adult_18_plus)+' %')+card(ag.unknown,'Alter unbekannt',pct(ag.unknown)+' %')+'</div>'+
+      '<h3 style="margin:8px 0">Haushalte</h3><div class="cards" style="margin:0">'+card(ms.spouse_households,'Ehepaare','verknüpfte Haushalte')+'</div>';
+  }
   const box=document.getElementById("dashboardBirthdays"),items=d.birthdays||[];
   if(box){
     box.innerHTML=items.length?items.map(function(b){
