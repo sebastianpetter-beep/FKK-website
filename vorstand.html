@@ -91,7 +91,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
       err.textContent="✓ Anmeldung erfolgreich – Vorstandszentrale wird geöffnet …";
       document.getElementById("portalUser").textContent="🔒 "+((d.user&&d.user.display_name)||"Vorstand");
       document.getElementById("loginGate").classList.add("hidden");
-      location.reload();
+      if(window.fkkPortalReady&&typeof window.fkkOpenPortal==="function"){await window.fkkOpenPortal();}else{window.fkkLoginPending=true;}
     }catch(ex){
       err.textContent=ex.message||"Anmeldung derzeit nicht möglich.";
       button.disabled=false;
@@ -488,14 +488,24 @@ async function checkPortal(){
   }catch(e){sessionStorage.removeItem(TOKEN_KEY)}
 }
 function logoutPortal(){sessionStorage.removeItem(TOKEN_KEY);location.reload()}
-window.addEventListener("fkk:portal-login-success",async function(){
-  try{
-    await loadPortalData();
-  }catch(e){
-    console.error("Portal-Daten konnten nicht geladen werden:",e);
-  }
-});
-checkPortal();
+window.fkkOpenPortal=async function(){
+  const r=await api("/api/portal/me");
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error||"Sitzung konnte nicht bestätigt werden.");
+  document.getElementById("portalUser").textContent="🔒 "+d.user.display_name;
+  document.getElementById("loginGate").classList.add("hidden");
+  await loadPortalData();
+};
+window.fkkPortalReady=true;
+if(window.fkkLoginPending){
+  window.fkkLoginPending=false;
+  window.fkkOpenPortal().catch(function(e){
+    document.getElementById("loginGate").classList.remove("hidden");
+    document.getElementById("loginError").textContent=e.message||"Vorstandszentrale konnte nicht geladen werden.";
+  });
+}else{
+  checkPortal();
+}
 
 const JUB=[11,22,33,44,55,66,77,88,99,111];
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
