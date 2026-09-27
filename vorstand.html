@@ -125,7 +125,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <div class="panel"><div class="panel-head"><h2>💶 Mitgliedsbeiträge</h2></div><div id="dashboardContributions"><p>Beitragsvorschau wird geladen …</p></div></div>
 <div class="panel"><div class="panel-head"><h2>📊 Mitgliederstatistik</h2></div>
 <div id="dashboardMemberStats"><p>Mitgliederstatistik wird geladen …</p></div>
-<small>Alle Werte werden automatisch aus den aktuellen, nicht archivierten Mitgliederakten berechnet. Die Altersgruppen entsprechen der Beitragslogik.</small></div>
+<small>Alle Werte werden automatisch aus den aktuellen, nicht archivierten Mitgliederakten berechnet. Die Altersgruppen entsprechen der Beitragslogik. Geschlecht: hinterlegte Angabe; falls nicht vorhanden, vorsichtige statistische Schätzung anhand eindeutig zuordenbarer Vornamen.</small></div>
 <div class="panel"><div class="panel-head"><h2>🎂 Geburtstage</h2></div><p>Heutige und kommende Geburtstage der nächsten 31 Tage. Bei heutigen Geburtstagen kann der offizielle HTML-Gruß des Vorstands direkt versendet werden.</p><div id="dashboardBirthdays"><p>Geburtstage werden geladen …</p></div><div id="birthdayResult" style="margin-top:10px"></div></div>
 <div class="panel"><div class="panel-head"><h2>🎭 Nächste närrische Jubiläen</h2><button class="btn" onclick="go('jubilee')">Alle Jubiläen</button></div><div id="dashboardJubilees"><p>Jubiläen werden geladen …</p></div></div>
 </section>
@@ -215,14 +215,14 @@ async function loadDashboard(){
   const ms=d.member_statistics||{},sb=document.getElementById("dashboardMemberStats"),total=Number(ms.total||d.member_count||0),pct=n=>total?Math.round((Number(n||0)/total)*100):0;
   if(sb){
     const st=ms.status||{},gc=ms.gender||d.gender_counts||{},ag=ms.age||{};
-    const card=(n,label,sub)=>'<div class="card"><strong>'+esc(n||0)+'</strong><span>'+esc(label)+'</span>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>';
+    const card=(n,label,sub)=>'<div class="card" style="display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:118px;justify-content:center"><strong style="font-size:2.15rem;line-height:1">'+esc(n||0)+'</strong><span style="font-weight:700;line-height:1.2">'+esc(label)+'</span>'+(sub?'<span style="display:inline-block;margin-top:3px;padding:4px 9px;border-radius:999px;background:#f1f5f2;color:#526057;font-size:.82rem;font-weight:700">'+esc(sub)+'</span>':'')+'</div>';
     sb.innerHTML=
       '<h3 style="margin:8px 0">Mitgliedschaft</h3><div class="cards" style="margin:0 0 18px">'+
-      card(total,'Gesamt','100 %')+card(st.active,'Aktiv',pct(st.active)+' %')+card(st.passive,'Passiv',pct(st.passive)+' %')+card(st.unclear,'Ungeklärt',pct(st.unclear)+' %')+'</div>'+
+      card(total,'Gesamt','')+card(st.active,'Aktiv',pct(st.active)+' % der Mitglieder')+card(st.passive,'Passiv',pct(st.passive)+' % der Mitglieder')+card(st.unclear,'Ungeklärt',pct(st.unclear)+' % der Mitglieder')+'</div>'+
       '<h3 style="margin:8px 0">Geschlecht</h3><div class="cards" style="margin:0 0 18px">'+
-      card(gc.male,'Männlich',pct(gc.male)+' %')+card(gc.female,'Weiblich',pct(gc.female)+' %')+card(gc.diverse,'Divers',pct(gc.diverse)+' %')+card(gc.unknown,'Keine Angabe',pct(gc.unknown)+' %')+'</div>'+
+      card(gc.male,'Männlich',pct(gc.male)+' % der Mitglieder')+card(gc.female,'Weiblich',pct(gc.female)+' % der Mitglieder')+card(gc.diverse,'Divers',pct(gc.diverse)+' % der Mitglieder')+card(gc.unknown,'Keine Angabe',pct(gc.unknown)+' % der Mitglieder')+'</div>'+
       '<h3 style="margin:8px 0">Altersstruktur</h3><div class="cards" style="margin:0 0 18px">'+
-      card(ag.under_16,'Unter 16',pct(ag.under_16)+' %')+card(ag.age_16_17,'16 bis unter 18',pct(ag.age_16_17)+' %')+card(ag.adult_18_plus,'Ab 18',pct(ag.adult_18_plus)+' %')+card(ag.unknown,'Alter unbekannt',pct(ag.unknown)+' %')+'</div>'+
+      card(ag.under_16,'Unter 16',pct(ag.under_16)+' % der Mitglieder')+card(ag.age_16_17,'16 bis unter 18',pct(ag.age_16_17)+' % der Mitglieder')+card(ag.adult_18_plus,'Ab 18',pct(ag.adult_18_plus)+' % der Mitglieder')+card(ag.unknown,'Alter unbekannt',pct(ag.unknown)+' % der Mitglieder')+'</div>'+
       '<h3 style="margin:8px 0">Haushalte</h3><div class="cards" style="margin:0">'+card(ms.spouse_households,'Ehepaare','verknüpfte Haushalte')+'</div>';
   }
   const box=document.getElementById("dashboardBirthdays"),items=d.birthdays||[];
