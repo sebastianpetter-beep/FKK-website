@@ -231,7 +231,7 @@ document.getElementById("mailTarget").addEventListener("change",refreshMailRecip
 document.getElementById("mailSingle").addEventListener("change",refreshMailRecipients);
 document.getElementById("sendMemberMail").addEventListener("click",sendMemberEmail);
 document.getElementById("memberEditButton").addEventListener("click",function(){setMemberEdit(true)});
-document.getElementById("memberSpouseButton").addEventListener("click",showSpouseEditor);
+document.getElementById("memberSpouseButton").addEventListener("click",function(){document.getElementById("spouseEditor").classList.remove("hidden");});
 document.getElementById("memberBankButton").addEventListener("click",showBankEditor);
 document.getElementById("memberCancelButton").addEventListener("click",function(){setMemberEdit(false)});
 document.getElementById("memberSaveButton").addEventListener("click",saveMember);
