@@ -49,6 +49,8 @@ html.device-mobile .tablewrap tr{background:#fff;border:1px solid #e5ebe7;border
 html.device-mobile .tablewrap td{border:0;padding:6px 4px;font-size:13px;overflow-wrap:anywhere}html.device-mobile .tablewrap td .btn{width:100%}
 html.device-mobile .loginGate{padding:10px}html.device-mobile .loginBox{padding:18px;border-radius:18px;max-height:94vh;overflow:auto}
 html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
+
+.missing-info{position:relative;cursor:help;outline:none}.missing-tooltip{display:none;position:absolute;z-index:2600;left:50%;bottom:calc(100% + 9px);transform:translateX(-50%);width:max-content;max-width:280px;padding:9px 12px;border-radius:10px;background:#202722;color:#fff;font-size:13px;font-weight:600;line-height:1.35;white-space:normal;box-shadow:0 8px 24px rgba(0,0,0,.2);pointer-events:none}.missing-info:hover .missing-tooltip,.missing-info:focus .missing-tooltip,.missing-info:focus-within .missing-tooltip{display:block}@media(max-width:760px){.missing-tooltip{left:auto;right:0;transform:none;max-width:min(260px,75vw)}}
 </style>
 <script>
 (function(){
@@ -243,7 +245,7 @@ async function loadMembers(){
   setTimeout(refreshMailRecipients,0);
   renderJubilees(d.members);
   if(!d.members.length){body.innerHTML='<tr><td colspan="6" class="empty">Noch keine Mitglieder importiert.</td></tr>';return}
-  body.innerHTML=d.members.map(m=>{const entry=m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–");const jub=m.next_jubilee?(m.next_jubilee.years+" Jahre · "+m.next_jubilee.year):"⚠ Eintritt fehlt";const miss=m.data_complete?'<span class="badge">Vollständig</span>':'<span class="badge miss">'+m.missing_fields.length+' fehlen</span>';return '<tr data-status="'+esc((m.current_status||"").toLowerCase())+'" data-missing="'+(!m.data_complete)+'"><td><b>'+esc(m.first_name+" "+m.last_name)+'</b><br><small>'+esc(m.email||"")+'</small></td><td><span class="badge '+(m.current_status==="Passiv"?"passiv":"")+'">'+esc(m.current_status||"Ungeklärt")+'</span></td><td>'+esc(entry)+'</td><td>'+esc(jub)+'</td><td>'+miss+'</td><td><button class="btn" type="button" onclick="openMember('+m.id+')">Details</button></td></tr>'}).join("");
+  body.innerHTML=d.members.map(m=>{const entry=m.entry_date?fmtDate(m.entry_date):(m.entry_year||"–");const jub=m.next_jubilee?(m.next_jubilee.years+" Jahre · "+m.next_jubilee.year):"⚠ Eintritt fehlt";const missing=(m.missing_fields||[]);const missingText=missing.length?("Fehlende Angaben: "+missing.join(", ")):"";const miss=m.data_complete?'<span class="badge">Vollständig</span>':'<span class="badge miss missing-info" tabindex="0" role="button" aria-label="'+esc(missingText)+'" title="'+esc(missingText)+'">'+missing.length+' fehlen<span class="missing-tooltip">'+esc(missingText)+'</span></span>';return '<tr data-status="'+esc((m.current_status||"").toLowerCase())+'" data-missing="'+(!m.data_complete)+'"><td><b>'+esc(m.first_name+" "+m.last_name)+'</b><br><small>'+esc(m.email||"")+'</small></td><td><span class="badge '+(m.current_status==="Passiv"?"passiv":"")+'">'+esc(m.current_status||"Ungeklärt")+'</span></td><td>'+esc(entry)+'</td><td>'+esc(jub)+'</td><td>'+miss+'</td><td><button class="btn" type="button" onclick="openMember('+m.id+')">Details</button></td></tr>'}).join("");
 }
 
 let selectedMemberId=null;
