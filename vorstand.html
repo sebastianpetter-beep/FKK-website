@@ -122,6 +122,8 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <div class="hero"><h1>Willkommen in der Vorstandszentrale</h1><p>Mitglieder, Anträge, Jubiläen und Vereinskommunikation an einem Ort.</p></div>
 <div class="cards"><div class="card"><strong id="memberCount">–</strong><span>Mitglieder</span></div><div class="card warn"><strong id="missingCount">–</strong><span>Datensätze unvollständig</span></div><div class="card"><strong id="appCount">–</strong><span>aktuelle Online-Anträge</span></div><div class="card danger"><strong id="resignationCount">–</strong><span>offene Kündigungen</span></div></div>
 <div class="panel"><div class="panel-head"><h2>⚠️ Fehlende Mitgliedsdaten</h2><button class="btn yellow" onclick="go('members','missing')">Unvollständige anzeigen</button></div><p>Das Portal prüft künftig automatisch Eintrittsdatum, Status, Anschrift, Geburtsdatum, E-Mail/Telefon und IBAN. Fehlende Werte bleiben sichtbar, bis sie ergänzt wurden.</p></div>
+<div class="panel"><div class="panel-head"><h2>💶 Mitgliedsbeiträge</h2></div><div id="dashboardContributions"><p>Beitragsvorschau wird geladen …</p></div></div>
+<div class="panel"><div class="panel-head"><h2>👥 Mitgliederstruktur</h2></div><div id="dashboardGender"><p>Auswertung wird geladen …</p></div><small>Die Auswertung verwendet ausschließlich die ausdrücklich hinterlegte Angabe – keine Ableitung aus Vornamen.</small></div>
 <div class="panel"><div class="panel-head"><h2>🎂 Geburtstage</h2></div><p>Heutige und kommende Geburtstage der nächsten 31 Tage. Bei heutigen Geburtstagen kann der offizielle HTML-Gruß des Vorstands direkt versendet werden.</p><div id="dashboardBirthdays"><p>Geburtstage werden geladen …</p></div><div id="birthdayResult" style="margin-top:10px"></div></div>
 <div class="panel"><div class="panel-head"><h2>🎭 Nächste närrische Jubiläen</h2><button class="btn" onclick="go('jubilee')">Alle Jubiläen</button></div><div id="dashboardJubilees"><p>Jubiläen werden geladen …</p></div></div>
 </section>
@@ -206,6 +208,10 @@ function fmtDate(v){if(!v)return "–";const d=new Date(v+"T00:00:00");return d.
 async function loadDashboard(){
   const r=await api("/api/portal/dashboard");if(!r.ok)return;
   const d=await r.json();memberCount.textContent=d.member_count;missingCount.textContent=d.incomplete_count;appCount.textContent=d.application_count;resignationCount.textContent=d.resignation_count;
+  const cf=d.contribution_forecast||{},cb=document.getElementById("dashboardContributions");
+  if(cb){const inst=cf.installments||[];cb.innerHTML='<div class="cards" style="margin:0"><div class="card"><strong>'+esc(Number(cf.annual_total_eur||0).toLocaleString("de-DE",{style:"currency",currency:"EUR"}))+'</strong><span>erwartete Jahresbeiträge</span></div>'+inst.map(x=>'<div class="card"><strong>'+esc(Number(x.amount_eur||0).toLocaleString("de-DE",{style:"currency",currency:"EUR"}))+'</strong><span>erwartet zum '+esc(x.label)+'</span></div>').join("")+'</div><small>Ehepaare werden als ein Haushalt gerechnet; die Jahresbeiträge werden auf die beiden Einzugstermine verteilt.</small>';}
+  const gc=d.gender_counts||{},gb=document.getElementById("dashboardGender");
+  if(gb)gb.innerHTML='<div class="cards" style="margin:0"><div class="card"><strong>'+esc(gc.male||0)+'</strong><span>Männlich</span></div><div class="card"><strong>'+esc(gc.female||0)+'</strong><span>Weiblich</span></div><div class="card"><strong>'+esc(gc.diverse||0)+'</strong><span>Divers</span></div><div class="card"><strong>'+esc(gc.unknown||0)+'</strong><span>Keine Angabe</span></div></div>';
   const box=document.getElementById("dashboardBirthdays"),items=d.birthdays||[];
   if(box){
     box.innerHTML=items.length?items.map(function(b){
@@ -359,13 +365,13 @@ function openMember(id){
   document.getElementById("memberEdit").innerHTML=
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
     memberField("mFirst","Vorname",m.first_name,"text")+memberField("mLast","Nachname",m.last_name,"text")+
-    memberField("mBirth","Geburtsdatum",m.birth_date,"date")+memberField("mPhone","Telefon",m.phone,"tel")+
+    memberField("mBirth","Geburtsdatum",m.birth_date,"date")+'<label>Geschlecht<select id="mGender" style="width:100%;padding:10px;margin-top:5px"><option value="unknown">Keine Angabe</option><option value="male">Männlich</option><option value="female">Weiblich</option><option value="diverse">Divers</option></select></label>'+memberField("mPhone","Telefon",m.phone,"tel")+
     memberField("mEmail","E-Mail",m.email,"email")+memberField("mStreet","Straße / Hausnummer",m.street,"text")+
     memberField("mZip","PLZ",m.postal_code,"text")+memberField("mCity","Ort",m.city,"text")+
     memberField("mEntry","Eintrittsdatum",m.entry_date,"date")+memberField("mEntryYear","Eintrittsjahr",m.entry_year,"number")+
     '<label>Status<select id="mStatus" style="width:100%;padding:10px;margin-top:5px"><option>Aktiv</option><option>Passiv</option><option>Ungeklärt</option></select></label>'+
     memberField("mPayment","Zahlungsart",m.payment_method,"text")+'</div>';
-  document.getElementById("mStatus").value=m.current_status||"Ungeklärt";
+  document.getElementById("mStatus").value=m.current_status||"Ungeklärt";document.getElementById("mGender").value=m.gender||"unknown";
   setMemberEdit(false);
   document.getElementById("memberModal").classList.remove("hidden");
 }
@@ -405,7 +411,7 @@ function closeMember(){document.getElementById("memberModal").classList.add("hid
 async function saveMember(){
   if(!selectedMemberId)return;
   const body={first_name:document.getElementById("mFirst").value,last_name:document.getElementById("mLast").value,
-    birth_date:document.getElementById("mBirth").value,phone:document.getElementById("mPhone").value,
+    birth_date:document.getElementById("mBirth").value,gender:document.getElementById("mGender").value,phone:document.getElementById("mPhone").value,
     email:document.getElementById("mEmail").value,street:document.getElementById("mStreet").value,
     postal_code:document.getElementById("mZip").value,city:document.getElementById("mCity").value,
     entry_date:document.getElementById("mEntry").value,entry_year:document.getElementById("mEntryYear").value,
