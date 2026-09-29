@@ -696,9 +696,8 @@ async function cancelDonationReceipt(id){
 }
 async function deleteDonationReceipt(id){
   const x=donationReceipts.find(v=>Number(v.id)===Number(id));if(!x)return;
-  if(!confirm("Spendenquittung "+x.receipt_no+" wirklich endgültig löschen?\n\nDer Datensatz und das zugehörige Dokument werden entfernt."))return;
-  const confirmation=prompt('Zur Sicherheit bitte exakt eingeben:\nSPENDENQUITTUNG LÖSCHEN');if(confirmation!=="SPENDENQUITTUNG LÖSCHEN")return;
-  const r=await api("/api/portal/donation-receipts/"+id,{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({confirmation})});
+  if(!confirm("Spendenquittung "+x.receipt_no+" wirklich endgültig löschen?\n\nDie Quittung, der Dokumenteneintrag und die gespeicherte PDF werden entfernt."))return;
+  const r=await api("/api/portal/donation-receipts/"+id,{method:"DELETE"});
   const d=await r.json();if(!r.ok){alert(d.error||"Löschen nicht möglich.");return}
   await Promise.all([loadDonationReceipts(),loadDocuments()]);
 }
