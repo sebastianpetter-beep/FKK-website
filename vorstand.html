@@ -60,6 +60,8 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 #taskForm .task-form-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:18px!important}#taskForm .task-field{display:flex!important;flex-direction:column!important;gap:7px!important}#taskForm .task-field-wide{grid-column:1/-1!important}#taskForm input,#taskForm select,#taskForm textarea{display:block!important;width:100%!important;min-height:48px!important;padding:12px 14px!important;border:1px solid #c9d4cc!important;border-radius:12px!important;background:#fff!important;font-family:inherit!important;font-size:15px!important;line-height:1.3!important;color:#1d2520!important;appearance:auto}#taskForm textarea{min-height:125px!important;resize:vertical!important}#taskForm select{cursor:pointer!important}#taskForm input:focus,#taskForm select:focus,#taskForm textarea:focus{outline:none!important;border-color:#087b35!important;box-shadow:0 0 0 3px rgba(8,123,53,.10)!important}@media(max-width:700px){#taskForm .task-form-grid{grid-template-columns:1fr!important}#taskForm .task-field-wide{grid-column:1!important}}
 
 .task-assignee-field{position:relative}.task-member-results{position:absolute;z-index:120;top:76px;left:0;right:0;background:#fff;border:1px solid #d7e0da;border-radius:13px;padding:6px;box-shadow:0 14px 35px rgba(22,60,38,.16);max-height:300px;overflow:auto}.task-member-results button{display:flex;width:100%;border:0;background:#fff;padding:10px 11px;border-radius:9px;text-align:left;cursor:pointer;flex-direction:column;gap:2px;color:#26322a}.task-member-results button:hover{background:#edf7f0}.task-member-results button b{font-size:14px}.task-member-results button span,.task-member-empty{font-size:11px;color:#6d7871}.task-member-empty{padding:12px}.task-member-selected{margin-top:2px;border-radius:10px;background:#eaf5ed;padding:9px 11px;display:flex;flex-direction:column;gap:2px;color:#07572a}.task-member-selected span{font-size:11px;color:#536159;font-weight:500}
+
+.letter-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.letter-grid .task-field-wide{grid-column:1/-1}.letter-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:20px;padding-top:18px;border-top:1px solid #edf0ee}#letterEditor{padding:24px}#letterEditor input,#letterEditor textarea{width:100%;border:1px solid #ccd6cf;border-radius:12px;background:#fff;padding:13px 14px;font:inherit;color:#1d2520;outline:none}#letterEditor textarea{resize:vertical;line-height:1.5}#letterEditor input:focus,#letterEditor textarea:focus{border-color:#087b35;box-shadow:0 0 0 3px #087b3514}@media(max-width:700px){.letter-grid{grid-template-columns:1fr}.letter-grid .task-field-wide{grid-column:1}.letter-actions{display:grid}.letter-actions .btn{width:100%}}
 </style>
 <script>
 (function(){
@@ -122,7 +124,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <button data-page="jubilee">🎭 Jubiläen</button>
 <button data-page="terminations">📤 Kündigungen</button>
 <button data-page="communication">📣 Kommunikation</button>
-<button data-page="documents">📁 Dokumente</button>
+<button data-page="documents">📁 Dokumente</button>\n<button data-page="correspondence">✍️ Schriftverkehr</button>
 <button data-page="invoices">🧾 Rechnungen</button>
 <button data-page="donations">🧾 Spendenquittungen</button>
 <button data-page="activity">🕘 Aktivitäten</button>
@@ -188,6 +190,29 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label>Name des Zuwendenden<input id="donorName" style="width:100%;padding:10px;margin-top:5px"></label><label>Tag der Zuwendung<input id="donationDate" type="date" style="width:100%;padding:10px;margin-top:5px"></label><label style="grid-column:1/-1">Anschrift<textarea id="donorAddress" rows="2" style="width:100%;padding:10px;margin-top:5px"></textarea></label><label>Betrag in Euro<input id="donationAmount" inputmode="decimal" placeholder="100,00" style="width:100%;padding:10px;margin-top:5px"></label></div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" type="button" id="saveDonationReceipt">Sicher speichern</button><button class="btn gray" type="button" id="cancelDonationForm">Abbrechen</button></div><div id="donationMessage" style="margin-top:10px"></div></div>
 <div class="tablewrap"><table><thead><tr><th>Beleg</th><th>Zuwendender</th><th>Betrag</th><th>Spendendatum</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="donationRows"><tr><td colspan="6">Spendenquittungen werden geladen …</td></tr></tbody></table></div></div></section>
+<section id="correspondence" class="page">
+<div class="panel"><div class="panel-head"><div><h2>✍️ Schriftverkehr</h2><p style="margin-bottom:0">Offizielle FKK-Briefe auf dem festen Vereinsbriefpapier erstellen und archivieren.</p></div><button class="btn" type="button" onclick="newLetter()">+ Neuer Brief</button></div></div>
+<div id="letterEditor" class="panel hidden">
+<div class="task-editor-head"><div class="task-editor-icon">✍</div><div><h2 id="letterEditorTitle">Neues Schreiben</h2><p>Entwurf speichern oder als fertiges PDF im Ordner „Schriftverkehr“ ablegen.</p></div></div>
+<input id="letterId" type="hidden"><input id="letterMemberId" type="hidden">
+<div class="letter-grid">
+<label class="task-field task-field-wide"><span>Empfänger aus Mitgliedern suchen <em>optional</em></span><input id="letterMemberSearch" type="search" autocomplete="off" placeholder="Name eingeben …"><div id="letterMemberResults" class="task-member-results hidden"></div><small>Oder die Empfängerdaten darunter frei eintragen.</small></label>
+<label class="task-field"><span>Empfänger / Firma</span><input id="letterRecipient"></label>
+<label class="task-field"><span>E-Mail <em>optional</em></span><input id="letterEmail" type="email"></label>
+<label class="task-field task-field-wide"><span>Anschrift</span><textarea id="letterAddress" rows="3" placeholder="Straße und Hausnummer&#10;PLZ Ort"></textarea></label>
+<label class="task-field"><span>Datum</span><input id="letterDate" type="date"></label>
+<label class="task-field"><span>Unterzeichner</span><input id="letterSigner" placeholder="z. B. Maksim Bondarenko"></label>
+<label class="task-field task-field-wide"><span>Betreff</span><input id="letterSubject" placeholder="Betreff des Schreibens"></label>
+<label class="task-field task-field-wide"><span>Anrede</span><input id="letterSalutation" placeholder="Sehr geehrte Damen und Herren,"></label>
+<label class="task-field task-field-wide"><span>Brieftext</span><textarea id="letterBody" rows="14" placeholder="Hier den eigentlichen Brief schreiben …"></textarea></label>
+<label class="task-field task-field-wide"><span>Grußformel</span><input id="letterClosing" value="Mit freundlichen Grüßen"></label>
+</div>
+<div class="task-reminder-note"><b>📄 Festes FKK-Briefpapier</b><span>Kopfbereich, Vorstandsspalte und Bankverbindung werden beim PDF automatisch ergänzt.</span></div>
+<div id="letterMessage" class="task-message"></div>
+<div class="letter-actions"><button class="btn gray" type="button" onclick="saveLetterDraft()">💾 Entwurf speichern</button><button class="btn" type="button" onclick="finalizeLetter()">✓ Brief fertigstellen & PDF erzeugen</button><button class="btn gray" type="button" onclick="closeLetterEditor()">Abbrechen</button></div>
+</div>
+<div class="panel"><div class="panel-head"><h2>Schreiben & Entwürfe</h2><button class="btn gray" type="button" onclick="loadCorrespondence()">↻ Aktualisieren</button></div><div class="tablewrap"><table><thead><tr><th>Datum</th><th>Empfänger</th><th>Betreff</th><th>Status</th><th>Bearbeiter</th><th>Aktion</th></tr></thead><tbody id="letterRows"><tr><td colspan="6">Schriftverkehr wird geladen …</td></tr></tbody></table></div></div>
+</section>
 <section id="activity" class="page">
 <div class="panel"><div class="panel-head"><div><h2>🕘 Aktivitäten & Aufgaben</h2><p style="margin-bottom:0">Gemeinsame Aufgabenverwaltung des geschäftsführenden Vorstands.</p></div><button class="btn" type="button" onclick="toggleTaskForm(true)">+ Neue Aufgabe</button></div></div>
 <div id="taskForm" class="panel task-editor hidden">
@@ -297,7 +322,7 @@ async function saveTask(){
  taskMessage.textContent="Aufgabe wird gespeichert und der Verantwortliche benachrichtigt …";
  const r=await api("/api/portal/tasks",{method:"POST",body:JSON.stringify(body)}),d=await r.json();
  if(!r.ok){taskMessage.textContent="⚠️ "+(d.error||"Speichern nicht möglich.");return}
- taskTitle.value="";taskDescription.value="";taskDue.value="";taskAssignee.value="";taskAssigneeSearch.value="";taskAssigneeSelected.classList.add("hidden");taskMessage.textContent="✓ Aufgabe wurde zugewiesen und gespeichert.";await loadTasks();setTimeout(()=>toggleTaskForm(false),700);
+ taskTitle.value="";taskDescription.value="";taskDue.value="";taskAssignee.value="";taskAssigneeSearch.value="";taskAssigneeSelected.classList.add("hidden");taskMessage.textContent="✓ Aufgabe wurde zugewiesen und gespeichert.";await loadTasks();await loadCorrespondence();setTimeout(()=>toggleTaskForm(false),700);
 }
 async function completeTask(id){if(!confirm("Diese Aufgabe wirklich als erledigt bestätigen?"))return;const r=await api("/api/portal/tasks/"+id+"/complete",{method:"POST"});const d=await r.json();if(!r.ok)return alert(d.error||"Nicht möglich.");await loadTasks()}
 async function deleteTask(id){if(!confirm("Diese Aufgabe wirklich löschen?"))return;const r=await api("/api/portal/tasks/"+id,{method:"DELETE"});const d=await r.json();if(!r.ok)return alert(d.error||"Nicht möglich.");await loadTasks()}
@@ -395,6 +420,34 @@ document.getElementById("cancelNewMember").addEventListener("click",function(){d
 document.getElementById("saveNewMember").addEventListener("click",async function(){const btn=this,msg=document.getElementById("newMemberMessage");const body={first_name:document.getElementById("nFirst").value,last_name:document.getElementById("nLast").value,birth_date:document.getElementById("nBirth").value,phone:document.getElementById("nPhone").value,email:document.getElementById("nEmail").value,street:document.getElementById("nStreet").value,postal_code:document.getElementById("nZip").value,city:document.getElementById("nCity").value,entry_date:document.getElementById("nEntry").value,entry_year:document.getElementById("nEntryYear").value,current_status:document.getElementById("nStatus").value,payment_method:document.getElementById("nPayment").value,iban:document.getElementById("nIban").value};if(!body.first_name.trim()||!body.last_name.trim()){msg.textContent="Vor- und Nachname sind erforderlich.";return}btn.disabled=true;msg.textContent="Mitglied wird gespeichert …";try{const r=await api("/api/portal/members",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const d=await r.json();if(!r.ok){msg.textContent=d.error||"Speichern nicht möglich.";return}document.getElementById("newMemberModal").classList.add("hidden");["nFirst","nLast","nBirth","nPhone","nEmail","nStreet","nZip","nCity","nEntry","nEntryYear","nPayment","nIban"].forEach(id=>document.getElementById(id).value="");document.getElementById("nStatus").value="Aktiv";await loadMembers();openMember(d.member_id)}catch(e){msg.textContent="Speichern derzeit nicht möglich."}finally{btn.disabled=false}});
 document.getElementById("search").addEventListener("input",refreshMemberSearch);
 document.getElementById("filter").addEventListener("change",refreshMemberSearch);
+let correspondenceData=[];
+function newLetter(){
+ letterId.value="";letterMemberId.value="";letterMemberSearch.value="";letterRecipient.value="";letterEmail.value="";letterAddress.value="";
+ letterDate.value=new Date().toISOString().slice(0,10);letterSubject.value="";letterSalutation.value="Sehr geehrte Damen und Herren,";
+ letterBody.value="";letterClosing.value="Mit freundlichen Grüßen";letterSigner.value=(document.getElementById("portalUser").textContent||"").replace("🔒","").trim().split(" · ")[0];
+ letterMessage.textContent="";letterEditorTitle.textContent="Neues Schreiben";letterEditor.classList.remove("hidden");letterEditor.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function closeLetterEditor(){letterEditor.classList.add("hidden")}
+function searchLetterMembers(){
+ const q=(letterMemberSearch.value||"").trim().toLowerCase(),box=letterMemberResults;if(!q){box.classList.add("hidden");return}
+ const list=(window.portalMembers||[]).filter(m=>!m.archived&&(m.first_name+" "+m.last_name).toLowerCase().includes(q)).slice(0,8);
+ box.innerHTML=list.length?list.map(m=>'<button type="button" onclick="selectLetterMember('+m.id+')"><b>'+esc(m.first_name+" "+m.last_name)+'</b><span>'+esc([m.street,[m.postal_code,m.city].filter(Boolean).join(" ")].filter(Boolean).join(" · "))+'</span></button>').join(""):'<div class="task-member-empty">Kein Mitglied gefunden.</div>';box.classList.remove("hidden");
+}
+function selectLetterMember(id){
+ const m=(window.portalMembers||[]).find(x=>Number(x.id)===Number(id));if(!m)return;letterMemberId.value=m.id;letterMemberSearch.value=m.first_name+" "+m.last_name;
+ letterRecipient.value=m.first_name+" "+m.last_name;letterEmail.value=m.email||"";letterAddress.value=[m.street,[m.postal_code,m.city].filter(Boolean).join(" ")].filter(Boolean).join("\n");
+ letterSalutation.value="Hallo "+m.first_name+",";letterMemberResults.classList.add("hidden");
+}
+async function loadCorrespondence(){
+ const r=await api("/api/portal/correspondence");if(!r.ok)return;const d=await r.json();correspondenceData=d.letters||[];
+ letterRows.innerHTML=correspondenceData.length?correspondenceData.map(l=>'<tr><td>'+esc(fmtDate(l.letter_date))+'</td><td><b>'+esc(l.recipient_name)+'</b></td><td>'+esc(l.subject)+'</td><td><span class="badge '+(l.status==="final"?"":"passiv")+'">'+(l.status==="final"?"✓ Fertig":"Entwurf")+'</span></td><td>'+esc(l.created_by_name||"–")+'</td><td>'+(l.status==="draft"?'<button class="btn" onclick="editLetter('+l.id+')">Bearbeiten</button> <button class="btn red" onclick="deleteLetter('+l.id+')">Löschen</button>':'<button class="btn" onclick="openStoredDocument('+l.document_id+')">PDF</button> <button class="btn gray" onclick="printStoredDocument('+l.document_id+')">🖨️</button> <button class="btn gray" onclick="openDocumentMail('+l.document_id+')">📧</button>')+'</td></tr>').join(""):'<tr><td colspan="6">Noch kein Schriftverkehr vorhanden.</td></tr>';
+}
+function editLetter(id){const l=correspondenceData.find(x=>Number(x.id)===Number(id));if(!l)return;letterId.value=l.id;letterMemberId.value=l.member_id||"";letterMemberSearch.value="";letterRecipient.value=l.recipient_name||"";letterEmail.value=l.recipient_email||"";letterAddress.value=l.recipient_address||"";letterDate.value=(l.letter_date||"").slice(0,10);letterSubject.value=l.subject||"";letterSalutation.value=l.salutation||"";letterBody.value=l.body||"";letterClosing.value=l.closing||"";letterSigner.value=l.signer||"";letterEditorTitle.textContent="Entwurf bearbeiten";letterMessage.textContent="";letterEditor.classList.remove("hidden");letterEditor.scrollIntoView({behavior:"smooth"})}
+function letterPayload(){return{id:letterId.value||null,member_id:letterMemberId.value||null,recipient_name:letterRecipient.value,recipient_email:letterEmail.value,recipient_address:letterAddress.value,letter_date:letterDate.value,subject:letterSubject.value,salutation:letterSalutation.value,body:letterBody.value,closing:letterClosing.value,signer:letterSigner.value}}
+async function saveLetterDraft(silent=false){letterMessage.textContent="Entwurf wird gespeichert …";const r=await api("/api/portal/correspondence",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(letterPayload())});const d=await r.json();if(!r.ok){letterMessage.textContent=d.error||"Speichern nicht möglich.";return null}letterId.value=d.id;letterMessage.textContent=silent?"":"✓ Entwurf gespeichert.";await loadCorrespondence();return d.id}
+async function finalizeLetter(){const id=await saveLetterDraft(true);if(!id)return;if(!confirm("Brief jetzt fertigstellen? Danach wird das PDF unveränderlich unter Dokumente → Schriftverkehr gespeichert."))return;letterMessage.textContent="PDF wird erstellt und archiviert …";const r=await api("/api/portal/correspondence/"+id+"/finalize",{method:"POST"});const d=await r.json();if(!r.ok){letterMessage.textContent=d.error||"PDF konnte nicht erstellt werden.";return}letterMessage.textContent="✓ Brief wurde erstellt und unter Dokumente → Schriftverkehr gespeichert.";await loadCorrespondence();await loadDocuments();setTimeout(()=>openStoredDocument(d.document_id),300)}
+async function deleteLetter(id){if(!confirm("Diesen Entwurf wirklich löschen?"))return;const r=await api("/api/portal/correspondence/"+id,{method:"DELETE"});if(r.ok)await loadCorrespondence()}
+document.getElementById("letterMemberSearch").addEventListener("input",searchLetterMembers);
 async function loadMembers(){
   const r=await api("/api/portal/members");if(!r.ok)return;
   const d=await r.json();window.portalMembers=d.members;
