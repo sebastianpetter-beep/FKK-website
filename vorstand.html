@@ -93,7 +93,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
   async function loginNow(){
     var username=userInput.value.trim(),password=passInput.value;
     if(!username||!password){err.textContent="Bitte Benutzername und Passwort eingeben.";return;}
-    err.textContent="Anmeldung wird geprüft …";
+    err.textContent="Anmeldung wird geprüft … Beim ersten Start kann das Laden der Vorstandszentrale bis zu 30 Sekunden dauern.";
     button.disabled=true;
     try{
       var r=await fetch("https://fkk-mitgliedsantrag-backend.onrender.com/api/portal/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:username,password:password})});
@@ -124,7 +124,8 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <button data-page="jubilee">🎭 Jubiläen</button>
 <button data-page="terminations">📤 Kündigungen</button>
 <button data-page="communication">📣 Kommunikation</button>
-<button data-page="documents">📁 Dokumente</button>\n<button data-page="correspondence">✍️ Schriftverkehr</button>
+<button data-page="documents">📁 Dokumente</button>
+<button data-page="correspondence">✍️ Schriftverkehr</button>
 <button data-page="invoices">🧾 Rechnungen</button>
 <button data-page="donations">🧾 Spendenquittungen</button>
 <button data-page="activity">🕘 Aktivitäten</button>
@@ -289,8 +290,15 @@ function esc(v){return String(v??"").replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&l
 function fmtDate(v){if(!v)return "–";const d=new Date(v+"T00:00:00");return d.toLocaleDateString("de-DE")}
 let taskData=[];
 async function loadTasks(){
-  const tr=await api("/api/portal/tasks");if(!tr.ok)return;
-  const td=await tr.json();taskData=td.tasks||[];renderTasks();
+  const open=document.getElementById("openTasks"),done=document.getElementById("doneTasks");
+  try{
+    const tr=await api("/api/portal/tasks");
+    if(!tr.ok){const d=await tr.json().catch(()=>({}));throw new Error(d.error||("HTTP "+tr.status))}
+    const td=await tr.json();taskData=td.tasks||[];renderTasks();
+  }catch(e){
+    if(open)open.innerHTML='<p style="color:#c91432;font-weight:700">⚠️ Aufgaben konnten nicht geladen werden.</p><small>'+esc(e.message||"Unbekannter Fehler")+'</small>';
+    if(done)done.innerHTML='<p style="color:#69736d">Bitte die Seite neu laden. Bleibt der Fehler bestehen, Backend prüfen.</p>';
+  }
 }
 function taskCard(t){
   const overdue=t.status==="open"&&t.due_date&&t.due_date<new Date().toISOString().slice(0,10);
@@ -880,7 +888,7 @@ function updateDocumentMailMode(){const mode=document.getElementById("docMailMod
 async function sendDocumentMail(){const id=document.getElementById("mailDocId").value,mode=document.getElementById("docMailMode").value,result=document.getElementById("docMailResult"),sel=document.getElementById("docMailMembers");const body={mode,subject:document.getElementById("docMailSubject").value,message:document.getElementById("docMailMessage").value,external_email:document.getElementById("docMailExternal").value,member_ids:Array.from(sel.selectedOptions).map(o=>Number(o.value))};if(mode==="all"&&!confirm("Dokument wirklich an ALLE Mitglieder mit gespeicherter E-Mail-Adresse senden?"))return;result.textContent="E-Mail-Versand läuft …";const r=await api("/api/portal/documents/"+id+"/email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}),d=await r.json();result.textContent=(r.ok?"✓ ":"⚠️ ")+(d.message||d.error||"Versand abgeschlossen.")+(d.skipped_no_email?" · "+d.skipped_no_email+" ohne E-Mail":"")}
 
 async function deleteStoredDocument(id){if(!confirm("Dieses Dokument wirklich dauerhaft löschen?"))return;const r=await api("/api/portal/documents/"+id,{method:"DELETE"}),d=await r.json();if(!r.ok)return alert(d.error||"Löschen nicht möglich.");await loadDocuments()}
-async function loadPortalData(){await Promise.all([loadDashboard(),loadMembers(),loadApplications(),loadDonationReceipts(),loadDocuments(),loadInvoices()])}
+async function loadPortalData(){await Promise.all([loadDashboard(),loadMembers(),loadApplications(),loadDonationReceipts(),loadDocuments(),loadInvoices(),loadTasks(),loadCorrespondence()])}
 async function checkPortal(){
   const token=sessionStorage.getItem(TOKEN_KEY);
   if(!token)return;
