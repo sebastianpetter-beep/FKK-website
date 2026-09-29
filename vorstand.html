@@ -51,6 +51,10 @@ html.device-mobile .loginGate{padding:10px}html.device-mobile .loginBox{padding:
 html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 
 .missing-info{position:relative;cursor:help;outline:none}.missing-tooltip{display:none;position:absolute;z-index:2600;left:50%;bottom:calc(100% + 9px);transform:translateX(-50%);width:max-content;max-width:280px;padding:9px 12px;border-radius:10px;background:#202722;color:#fff;font-size:13px;font-weight:600;line-height:1.35;white-space:normal;box-shadow:0 8px 24px rgba(0,0,0,.2);pointer-events:none}.missing-info:hover .missing-tooltip,.missing-info:focus .missing-tooltip,.missing-info:focus-within .missing-tooltip{display:block}@media(max-width:760px){.missing-tooltip{left:auto;right:0;transform:none;max-width:min(260px,75vw)}}
+
+/* Aufgaben-Editor */
+.task-editor{padding:24px!important}.task-editor-head{display:flex;align-items:center;gap:13px;padding-bottom:18px;margin-bottom:20px;border-bottom:1px solid #e7ece8}.task-editor-head h2{font-size:24px;margin:0}.task-editor-head p{margin:4px 0 0;color:var(--muted);font-size:14px}.task-editor-icon{width:44px;height:44px;flex:0 0 44px;border-radius:14px;background:#eaf5ed;color:var(--g);display:grid;place-items:center;font-size:22px;font-weight:950}.task-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.task-field{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:850;color:#344139}.task-field-wide{grid-column:1/-1}.task-field span{display:flex;align-items:center;gap:6px}.task-field em{font-style:normal;font-weight:600;color:#8a948e;font-size:11px}.task-field input,.task-field select,.task-field textarea{width:100%;border:1px solid #ccd6cf;border-radius:12px;background:#fff;padding:13px 14px;font:inherit;font-weight:500;color:#1d2520;outline:none;transition:.15s}.task-field input:focus,.task-field select:focus,.task-field textarea:focus{border-color:var(--g);box-shadow:0 0 0 3px #087b3514}.task-field textarea{resize:vertical;min-height:120px;line-height:1.45}.task-field small{font-weight:500;color:#7a857e;font-size:11px}.task-reminder-note{margin-top:18px;background:#f4faf6;border:1px solid #dbeee1;border-radius:13px;padding:13px 15px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:#4d5b52}.task-reminder-note b{color:var(--gd)}.task-message{margin-top:12px;font-size:13px;font-weight:700}.task-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;padding-top:18px;border-top:1px solid #edf0ee}.task-actions .btn{padding:12px 17px}.btn.gray{background:#eef2ef;color:#344139}.task-cancel{order:-1}
+@media(max-width:700px){.task-editor{padding:17px!important}.task-form-grid{grid-template-columns:1fr;gap:14px}.task-field-wide{grid-column:auto}.task-editor-head h2{font-size:21px}.task-actions{display:grid;grid-template-columns:1fr}.task-actions .btn{width:100%}.task-save{order:-1}.task-reminder-note{align-items:flex-start;flex-direction:column}}
 </style>
 <script>
 (function(){
@@ -181,11 +185,18 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <div class="tablewrap"><table><thead><tr><th>Beleg</th><th>Zuwendender</th><th>Betrag</th><th>Spendendatum</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="donationRows"><tr><td colspan="6">Spendenquittungen werden geladen …</td></tr></tbody></table></div></div></section>
 <section id="activity" class="page">
 <div class="panel"><div class="panel-head"><div><h2>🕘 Aktivitäten & Aufgaben</h2><p style="margin-bottom:0">Gemeinsame Aufgabenverwaltung des geschäftsführenden Vorstands.</p></div><button class="btn" type="button" onclick="toggleTaskForm(true)">+ Neue Aufgabe</button></div></div>
-<div id="taskForm" class="panel hidden"><h2>Neue Aufgabe</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-<label style="grid-column:1/-1">Aufgabe<input id="taskTitle" placeholder="z. B. Genehmigung Sessionseröffnung beantragen"></label>
-<label>Verantwortlich<select id="taskAssignee"></select></label><label>Fällig bis (optional)<input id="taskDue" type="date"></label>
-<label style="grid-column:1/-1">Beschreibung<textarea id="taskDescription" rows="4" placeholder="Weitere Informationen zur Aufgabe …"></textarea></label></div>
-<div id="taskMessage" style="margin-top:10px"></div><div class="toolbar" style="margin-top:14px"><button class="btn" onclick="saveTask()" type="button">Aufgabe zuweisen</button><button class="btn gray" onclick="toggleTaskForm(false)" type="button">Abbrechen</button></div></div>
+<div id="taskForm" class="panel task-editor hidden">
+<div class="task-editor-head"><div class="task-editor-icon">✓</div><div><h2>Neue Aufgabe</h2><p>Aufgabe erstellen und einem Vorstandsmitglied zuweisen.</p></div></div>
+<div class="task-form-grid">
+<label class="task-field task-field-wide"><span>Aufgabe</span><input id="taskTitle" placeholder="z. B. Genehmigung für die Sessionseröffnung beantragen"></label>
+<label class="task-field"><span>Verantwortlich</span><select id="taskAssignee"></select><small>Diese Person erhält direkt eine E-Mail.</small></label>
+<label class="task-field"><span>Fällig bis <em>optional</em></span><input id="taskDue" type="date"><small>Ohne Datum bleibt die Aufgabe einfach offen.</small></label>
+<label class="task-field task-field-wide"><span>Beschreibung <em>optional</em></span><textarea id="taskDescription" rows="5" placeholder="Was genau soll erledigt werden? Hier können alle wichtigen Informationen zur Aufgabe eingetragen werden."></textarea></label>
+</div>
+<div class="task-reminder-note"><b>🔔 Automatische Erinnerung</b><span>Solange die Aufgabe offen ist, erhält die verantwortliche Person täglich um 09:00 Uhr eine Erinnerungsmail.</span></div>
+<div id="taskMessage" class="task-message"></div>
+<div class="task-actions"><button class="btn task-save" onclick="saveTask()" type="button">✓ Aufgabe zuweisen</button><button class="btn gray task-cancel" onclick="toggleTaskForm(false)" type="button">Abbrechen</button></div>
+</div>
 <div class="panel"><div class="panel-head"><h2>Offene Aufgaben</h2><span class="badge" id="openTaskCount">0 offen</span></div><div id="openTasks"><p>Aufgaben werden geladen …</p></div></div>
 <div class="panel"><div class="panel-head"><h2>✓ Erledigte Aufgaben</h2></div><div id="doneTasks"><p>Noch keine erledigten Aufgaben.</p></div></div>
 </section>
