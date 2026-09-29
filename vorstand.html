@@ -61,7 +61,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 
 .task-assignee-field{position:relative}.task-member-results{position:absolute;z-index:120;top:76px;left:0;right:0;background:#fff;border:1px solid #d7e0da;border-radius:13px;padding:6px;box-shadow:0 14px 35px rgba(22,60,38,.16);max-height:300px;overflow:auto}.task-member-results button{display:flex;width:100%;border:0;background:#fff;padding:10px 11px;border-radius:9px;text-align:left;cursor:pointer;flex-direction:column;gap:2px;color:#26322a}.task-member-results button:hover{background:#edf7f0}.task-member-results button b{font-size:14px}.task-member-results button span,.task-member-empty{font-size:11px;color:#6d7871}.task-member-empty{padding:12px}.task-member-selected{margin-top:2px;border-radius:10px;background:#eaf5ed;padding:9px 11px;display:flex;flex-direction:column;gap:2px;color:#07572a}.task-member-selected span{font-size:11px;color:#536159;font-weight:500}
 
-.letter-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.letter-grid .task-field-wide{grid-column:1/-1}.letter-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:20px;padding-top:18px;border-top:1px solid #edf0ee}#letterEditor{padding:24px}#letterEditor input,#letterEditor textarea{width:100%;border:1px solid #ccd6cf;border-radius:12px;background:#fff;padding:13px 14px;font:inherit;color:#1d2520;outline:none}#letterEditor textarea{resize:vertical;line-height:1.5}#letterEditor input:focus,#letterEditor textarea:focus{border-color:#087b35;box-shadow:0 0 0 3px #087b3514}@media(max-width:700px){.letter-grid{grid-template-columns:1fr}.letter-grid .task-field-wide{grid-column:1}.letter-actions{display:grid}.letter-actions .btn{width:100%}}
+.letter-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.letter-grid .task-field-wide{grid-column:1/-1}.letter-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:20px;padding-top:18px;border-top:1px solid #edf0ee}.letter-actions .preview-btn{background:#fff;color:#07572a;border:1px solid #087b35;box-shadow:none}.letter-actions .preview-btn:hover{background:#f1f7f3}#letterEditor{padding:24px}#letterEditor input,#letterEditor textarea{width:100%;border:1px solid #ccd6cf;border-radius:12px;background:#fff;padding:13px 14px;font:inherit;color:#1d2520;outline:none}#letterEditor textarea{resize:vertical;line-height:1.5}#letterEditor input:focus,#letterEditor textarea:focus{border-color:#087b35;box-shadow:0 0 0 3px #087b3514}@media(max-width:700px){.letter-grid{grid-template-columns:1fr}.letter-grid .task-field-wide{grid-column:1}.letter-actions{display:grid}.letter-actions .btn{width:100%}}
 </style>
 <script>
 (function(){
@@ -209,7 +209,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 </div>
 <div class="task-reminder-note"><b>📄 Festes FKK-Briefpapier</b><span>Kopfbereich, Vorstandsspalte und Bankverbindung werden beim PDF automatisch ergänzt.</span></div>
 <div id="letterMessage" class="task-message"></div>
-<div class="letter-actions"><button class="btn gray" type="button" onclick="saveLetterDraft()">💾 Entwurf speichern</button><button class="btn" type="button" onclick="finalizeLetter()">✓ Brief fertigstellen & PDF erzeugen</button><button class="btn gray" type="button" onclick="closeLetterEditor()">Abbrechen</button></div>
+<div class="letter-actions"><button class="btn preview-btn" type="button" onclick="previewLetter()">👁️ Vorschau</button><button class="btn gray" type="button" onclick="saveLetterDraft()">💾 Entwurf speichern</button><button class="btn" type="button" onclick="finalizeLetter()">✓ Brief fertigstellen & PDF erzeugen</button><button class="btn gray" type="button" onclick="closeLetterEditor()">Abbrechen</button></div>
 </div>
 <div class="panel"><div class="panel-head"><h2>Schreiben & Entwürfe</h2><button class="btn gray" type="button" onclick="loadCorrespondence()">↻ Aktualisieren</button></div><div class="tablewrap"><table><thead><tr><th>Datum</th><th>Empfänger</th><th>Betreff</th><th>Status</th><th>Bearbeiter</th><th>Aktion</th></tr></thead><tbody id="letterRows"><tr><td colspan="6">Schriftverkehr wird geladen …</td></tr></tbody></table></div></div>
 </section>
@@ -444,6 +444,19 @@ async function loadCorrespondence(){
 }
 function editLetter(id){const l=correspondenceData.find(x=>Number(x.id)===Number(id));if(!l)return;letterId.value=l.id;letterMemberId.value=l.member_id||"";letterMemberSearch.value="";letterRecipient.value=l.recipient_name||"";letterEmail.value=l.recipient_email||"";letterAddress.value=l.recipient_address||"";letterDate.value=(l.letter_date||"").slice(0,10);letterSubject.value=l.subject||"";letterSalutation.value=l.salutation||"";letterBody.value=l.body||"";letterClosing.value=l.closing||"";letterSigner.value=l.signer||"";letterEditorTitle.textContent="Entwurf bearbeiten";letterMessage.textContent="";letterEditor.classList.remove("hidden");letterEditor.scrollIntoView({behavior:"smooth"})}
 function letterPayload(){return{id:letterId.value||null,member_id:letterMemberId.value||null,recipient_name:letterRecipient.value,recipient_email:letterEmail.value,recipient_address:letterAddress.value,letter_date:letterDate.value,subject:letterSubject.value,salutation:letterSalutation.value,body:letterBody.value,closing:letterClosing.value,signer:letterSigner.value}}
+async function previewLetter(){
+ const p=letterPayload();
+ if(!p.recipient_name.trim()||!p.subject.trim()){letterMessage.textContent="Für die Vorschau bitte Empfänger und Betreff eintragen.";return}
+ letterMessage.textContent="Vorschau wird erstellt …";
+ try{
+  const r=await api("/api/portal/correspondence/preview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)});
+  if(!r.ok){const d=await r.json().catch(()=>({}));letterMessage.textContent=d.error||"Vorschau konnte nicht erstellt werden.";return}
+  const blob=await r.blob(),url=URL.createObjectURL(blob);
+  window.open(url,"_blank");
+  setTimeout(()=>URL.revokeObjectURL(url),120000);
+  letterMessage.textContent="👁️ Vorschau geöffnet – es wurde noch nichts gespeichert.";
+ }catch(e){letterMessage.textContent="Vorschau konnte nicht geöffnet werden."}
+}
 async function saveLetterDraft(silent=false){letterMessage.textContent="Entwurf wird gespeichert …";const r=await api("/api/portal/correspondence",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(letterPayload())});const d=await r.json();if(!r.ok){letterMessage.textContent=d.error||"Speichern nicht möglich.";return null}letterId.value=d.id;letterMessage.textContent=silent?"":"✓ Entwurf gespeichert.";await loadCorrespondence();return d.id}
 async function finalizeLetter(){const id=await saveLetterDraft(true);if(!id)return;if(!confirm("Brief jetzt fertigstellen? Danach wird das PDF unveränderlich unter Dokumente → Schriftverkehr gespeichert."))return;letterMessage.textContent="PDF wird erstellt und archiviert …";const r=await api("/api/portal/correspondence/"+id+"/finalize",{method:"POST"});const d=await r.json();if(!r.ok){letterMessage.textContent=d.error||"PDF konnte nicht erstellt werden.";return}letterMessage.textContent="✓ Brief wurde erstellt und unter Dokumente → Schriftverkehr gespeichert.";await loadCorrespondence();await loadDocuments();setTimeout(()=>openStoredDocument(d.document_id),300)}
 async function deleteLetter(id){if(!confirm("Diesen Entwurf wirklich löschen?"))return;const r=await api("/api/portal/correspondence/"+id,{method:"DELETE"});if(r.ok)await loadCorrespondence()}
