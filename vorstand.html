@@ -675,7 +675,7 @@ async function loadDonationReceipts(){
   const body=document.getElementById("donationRows");if(!body)return;
   body.innerHTML=donationReceipts.length?donationReceipts.map(function(x){
     const cancelled=!!x.cancelled_at;
-    return '<tr><td><b>'+esc(x.receipt_no)+'</b></td><td>'+esc(x.donor_name)+'<br><small>'+esc(x.donor_address)+'</small></td><td>'+moneyEuro(x.amount_cents)+'</td><td>'+esc(x.donation_date)+'</td><td>'+(cancelled?'<span class="badge miss">Storniert</span>':'<span class="badge">Gültig</span>')+'</td><td><button class="btn" type="button" onclick="downloadDonationPdf('+x.id+')" '+(cancelled?'disabled':'')+'>PDF</button> '+(!cancelled?'<button class="btn red" type="button" onclick="cancelDonationReceipt('+x.id+')">Storno</button>':'')+'</td></tr>';
+    return '<tr><td><b>'+esc(x.receipt_no)+'</b></td><td>'+esc(x.donor_name)+'<br><small>'+esc(x.donor_address)+'</small></td><td>'+moneyEuro(x.amount_cents)+'</td><td>'+esc(x.donation_date)+'</td><td>'+(cancelled?'<span class="badge miss">Storniert</span>':'<span class="badge">Gültig</span>')+'</td><td><button class="btn" type="button" onclick="downloadDonationPdf('+x.id+')" '+(cancelled?'disabled':'')+'>PDF</button> '+(!cancelled?'<button class="btn red" type="button" onclick="cancelDonationReceipt('+x.id+')">Storno</button> ':'')+'<button class="btn red" type="button" onclick="deleteDonationReceipt('+x.id+')">Löschen</button></td></tr>';
   }).join(""):'<tr><td colspan="6">Noch keine Spendenquittungen vorhanden.</td></tr>';
 }
 async function downloadDonationPdf(id){
@@ -687,6 +687,14 @@ async function cancelDonationReceipt(id){
   const reason=prompt("Stornogrund:");if(!reason)return;
   const r=await api("/api/portal/donation-receipts/"+id+"/cancel",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({reason:reason})});
   const d=await r.json();if(!r.ok){alert(d.error||"Storno nicht möglich.");return}await loadDonationReceipts();
+}
+async function deleteDonationReceipt(id){
+  const x=donationReceipts.find(v=>Number(v.id)===Number(id));if(!x)return;
+  if(!confirm("Spendenquittung "+x.receipt_no+" wirklich endgültig löschen?\n\nDer Datensatz und das zugehörige Dokument werden entfernt."))return;
+  const confirmation=prompt('Zur Sicherheit bitte exakt eingeben:\nSPENDENQUITTUNG LÖSCHEN');if(confirmation!=="SPENDENQUITTUNG LÖSCHEN")return;
+  const r=await api("/api/portal/donation-receipts/"+id,{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({confirmation})});
+  const d=await r.json();if(!r.ok){alert(d.error||"Löschen nicht möglich.");return}
+  await Promise.all([loadDonationReceipts(),loadDocuments()]);
 }
 async function saveDonationReceipt(){
   const btn=document.getElementById("saveDonationReceipt"),msg=document.getElementById("donationMessage");btn.disabled=true;msg.textContent="Spendenquittung wird sicher gespeichert …";
