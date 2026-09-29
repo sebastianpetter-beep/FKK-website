@@ -179,7 +179,16 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label>Name des Zuwendenden<input id="donorName" style="width:100%;padding:10px;margin-top:5px"></label><label>Tag der Zuwendung<input id="donationDate" type="date" style="width:100%;padding:10px;margin-top:5px"></label><label style="grid-column:1/-1">Anschrift<textarea id="donorAddress" rows="2" style="width:100%;padding:10px;margin-top:5px"></textarea></label><label>Betrag in Euro<input id="donationAmount" inputmode="decimal" placeholder="100,00" style="width:100%;padding:10px;margin-top:5px"></label></div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" type="button" id="saveDonationReceipt">Sicher speichern</button><button class="btn gray" type="button" id="cancelDonationForm">Abbrechen</button></div><div id="donationMessage" style="margin-top:10px"></div></div>
 <div class="tablewrap"><table><thead><tr><th>Beleg</th><th>Zuwendender</th><th>Betrag</th><th>Spendendatum</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="donationRows"><tr><td colspan="6">Spendenquittungen werden geladen …</td></tr></tbody></table></div></div></section>
-<section id="activity" class="page"><div class="panel"><h2>🕘 Aktivitäten</h2><p>Änderungen werden mit Zeitpunkt und Bearbeiter nachvollziehbar protokolliert.</p></div></section>
+<section id="activity" class="page">
+<div class="panel"><div class="panel-head"><div><h2>🕘 Aktivitäten & Aufgaben</h2><p style="margin-bottom:0">Gemeinsame Aufgabenverwaltung des geschäftsführenden Vorstands.</p></div><button class="btn" type="button" onclick="toggleTaskForm(true)">+ Neue Aufgabe</button></div></div>
+<div id="taskForm" class="panel hidden"><h2>Neue Aufgabe</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="grid-column:1/-1">Aufgabe<input id="taskTitle" placeholder="z. B. Genehmigung Sessionseröffnung beantragen"></label>
+<label>Verantwortlich<select id="taskAssignee"></select></label><label>Fällig bis (optional)<input id="taskDue" type="date"></label>
+<label style="grid-column:1/-1">Beschreibung<textarea id="taskDescription" rows="4" placeholder="Weitere Informationen zur Aufgabe …"></textarea></label></div>
+<div id="taskMessage" style="margin-top:10px"></div><div class="toolbar" style="margin-top:14px"><button class="btn" onclick="saveTask()" type="button">Aufgabe zuweisen</button><button class="btn gray" onclick="toggleTaskForm(false)" type="button">Abbrechen</button></div></div>
+<div class="panel"><div class="panel-head"><h2>Offene Aufgaben</h2><span class="badge" id="openTaskCount">0 offen</span></div><div id="openTasks"><p>Aufgaben werden geladen …</p></div></div>
+<div class="panel"><div class="panel-head"><h2>✓ Erledigte Aufgaben</h2></div><div id="doneTasks"><p>Noch keine erledigten Aufgaben.</p></div></div>
+</section>
 </main></div>
 <div id="newMemberModal" class="loginGate hidden" style="z-index:1001"><div class="loginBox" style="width:min(760px,100%);max-height:94vh;overflow:auto"><h1>Mitglied manuell anlegen</h1><p>Der Datensatz wird direkt im geschützten Mitgliederregister gespeichert.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="newMemberFields"><label>Vorname<input id="nFirst"></label><label>Nachname<input id="nLast"></label><label>Geburtsdatum<input id="nBirth" type="date"></label><label>Telefon<input id="nPhone" type="tel"></label><label>E-Mail<input id="nEmail" type="email"></label><label>Straße / Hausnummer<input id="nStreet"></label><label>PLZ<input id="nZip"></label><label>Ort<input id="nCity"></label><label>Eintrittsdatum<input id="nEntry" type="date"></label><label>Eintrittsjahr<input id="nEntryYear" type="number"></label><label>Status<select id="nStatus"><option>Aktiv</option><option>Passiv</option><option>Ungeklärt</option></select></label><label>Zahlungsart<input id="nPayment"></label><label style="grid-column:1/-1">IBAN (optional)<input id="nIban" autocomplete="off" placeholder="DE00 0000 0000 0000 0000 00"></label></div><div id="newMemberMessage" style="margin-top:12px"></div><div class="toolbar" style="margin-top:16px"><button class="btn" type="button" id="saveNewMember">Mitglied speichern</button><button class="btn red" type="button" id="cancelNewMember">Abbrechen</button></div></div></div><div id="memberModal" class="loginGate hidden" style="z-index:2100;background:rgba(0,0,0,.65)">
   <div class="loginBox" style="max-width:760px;width:min(94vw,760px);text-align:left;max-height:90vh;overflow:auto">
@@ -237,6 +246,34 @@ async function api(path,options={}){
 }
 function esc(v){return String(v??"").replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[s]))}
 function fmtDate(v){if(!v)return "–";const d=new Date(v+"T00:00:00");return d.toLocaleDateString("de-DE")}
+let taskData=[];
+async function loadTasks(){
+  const [tr,ur]=await Promise.all([api("/api/portal/tasks"),api("/api/portal/tasks/users")]);
+  if(!tr.ok||!ur.ok)return;
+  const td=await tr.json(),ud=await ur.json();taskData=td.tasks||[];
+  const sel=document.getElementById("taskAssignee");if(sel)sel.innerHTML=(ud.users||[]).map(u=>'<option value="'+u.id+'">'+esc(u.display_name)+'</option>').join("");
+  renderTasks();
+}
+function taskCard(t){
+  const overdue=t.status==="open"&&t.due_date&&t.due_date<new Date().toISOString().slice(0,10);
+  return '<div class="card" style="margin-bottom:10px;display:block;border-left:5px solid '+(overdue?'#c91432':'#087d3e')+'"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap"><div><strong style="font-size:1.08rem">'+esc(t.title)+'</strong><div style="margin-top:6px">'+esc(t.description||"")+'</div><small style="display:block;margin-top:8px">Verantwortlich: <b>'+esc(t.assignee_name)+'</b> · Beauftragt von '+esc(t.creator_name||"Vorstand")+' am '+fmtDate(t.assigned_date)+(t.due_date?' · Fällig: '+fmtDate(t.due_date):'')+'</small>'+(overdue?'<span class="badge miss" style="margin-top:7px">Überfällig</span>':'')+(t.status==="done"?'<small style="display:block;margin-top:7px">✓ Erledigt '+(t.completed_at?new Date(t.completed_at).toLocaleString("de-DE"):"")+' durch '+esc(t.completed_by_name||"Vorstand")+'</small>':'')+'</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+(t.status==="open"?'<button class="btn" onclick="completeTask('+t.id+')">✓ Erledigt</button>':'')+'<button class="btn red" onclick="deleteTask('+t.id+')">Löschen</button></div></div></div>';
+}
+function renderTasks(){
+  const open=taskData.filter(x=>x.status==="open"),done=taskData.filter(x=>x.status==="done");
+  document.getElementById("openTaskCount").textContent=open.length+" offen";
+  document.getElementById("openTasks").innerHTML=open.length?open.map(taskCard).join(""):'<p class="empty">Aktuell sind keine Aufgaben offen.</p>';
+  document.getElementById("doneTasks").innerHTML=done.length?done.map(taskCard).join(""):'<p class="empty">Noch keine erledigten Aufgaben.</p>';
+}
+function toggleTaskForm(show){document.getElementById("taskForm").classList.toggle("hidden",!show);if(show)document.getElementById("taskTitle").focus()}
+async function saveTask(){
+ const body={title:taskTitle.value,description:taskDescription.value,assigned_to:taskAssignee.value,due_date:taskDue.value};
+ taskMessage.textContent="Aufgabe wird gespeichert und der Verantwortliche benachrichtigt …";
+ const r=await api("/api/portal/tasks",{method:"POST",body:JSON.stringify(body)}),d=await r.json();
+ if(!r.ok){taskMessage.textContent="⚠️ "+(d.error||"Speichern nicht möglich.");return}
+ taskTitle.value="";taskDescription.value="";taskDue.value="";taskMessage.textContent="✓ Aufgabe wurde zugewiesen und gespeichert.";await loadTasks();setTimeout(()=>toggleTaskForm(false),700);
+}
+async function completeTask(id){if(!confirm("Diese Aufgabe wirklich als erledigt bestätigen?"))return;const r=await api("/api/portal/tasks/"+id+"/complete",{method:"POST"});const d=await r.json();if(!r.ok)return alert(d.error||"Nicht möglich.");await loadTasks()}
+async function deleteTask(id){if(!confirm("Diese Aufgabe wirklich löschen?"))return;const r=await api("/api/portal/tasks/"+id,{method:"DELETE"});const d=await r.json();if(!r.ok)return alert(d.error||"Nicht möglich.");await loadTasks()}
 async function loadDashboard(){
   const r=await api("/api/portal/dashboard");if(!r.ok)return;
   const d=await r.json();memberCount.textContent=d.member_count;missingCount.textContent=d.incomplete_count;appCount.textContent=d.application_count;resignationCount.textContent=d.resignation_count;
@@ -274,7 +311,7 @@ async function sendBirthdayMail(id,button){
   try{
     const r=await api("/api/portal/members/"+id+"/birthday-email",{method:"POST"});const d=await r.json();
     if(!r.ok){out.textContent=d.error||"Versand nicht möglich.";button.disabled=false;return}
-    out.textContent="✓ "+d.message;await loadDashboard();
+    out.textContent="✓ "+d.message;await loadDashboard();loadTasks();
   }catch(e){out.textContent="Versand derzeit nicht möglich.";button.disabled=false}
 }
 async function runMemberImport(){
