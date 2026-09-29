@@ -58,6 +58,8 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 
 /* Aufgabenformular: robuste Feldgestaltung unabhängig von Browser-Defaults */
 #taskForm .task-form-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:18px!important}#taskForm .task-field{display:flex!important;flex-direction:column!important;gap:7px!important}#taskForm .task-field-wide{grid-column:1/-1!important}#taskForm input,#taskForm select,#taskForm textarea{display:block!important;width:100%!important;min-height:48px!important;padding:12px 14px!important;border:1px solid #c9d4cc!important;border-radius:12px!important;background:#fff!important;font-family:inherit!important;font-size:15px!important;line-height:1.3!important;color:#1d2520!important;appearance:auto}#taskForm textarea{min-height:125px!important;resize:vertical!important}#taskForm select{cursor:pointer!important}#taskForm input:focus,#taskForm select:focus,#taskForm textarea:focus{outline:none!important;border-color:#087b35!important;box-shadow:0 0 0 3px rgba(8,123,53,.10)!important}@media(max-width:700px){#taskForm .task-form-grid{grid-template-columns:1fr!important}#taskForm .task-field-wide{grid-column:1!important}}
+
+.task-assignee-field{position:relative}.task-member-results{position:absolute;z-index:120;top:76px;left:0;right:0;background:#fff;border:1px solid #d7e0da;border-radius:13px;padding:6px;box-shadow:0 14px 35px rgba(22,60,38,.16);max-height:300px;overflow:auto}.task-member-results button{display:flex;width:100%;border:0;background:#fff;padding:10px 11px;border-radius:9px;text-align:left;cursor:pointer;flex-direction:column;gap:2px;color:#26322a}.task-member-results button:hover{background:#edf7f0}.task-member-results button b{font-size:14px}.task-member-results button span,.task-member-empty{font-size:11px;color:#6d7871}.task-member-empty{padding:12px}.task-member-selected{margin-top:2px;border-radius:10px;background:#eaf5ed;padding:9px 11px;display:flex;flex-direction:column;gap:2px;color:#07572a}.task-member-selected span{font-size:11px;color:#536159;font-weight:500}
 </style>
 <script>
 (function(){
@@ -192,7 +194,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <div class="task-editor-head"><div class="task-editor-icon">✓</div><div><h2>Neue Aufgabe</h2><p>Aufgabe erstellen und einem Vorstandsmitglied zuweisen.</p></div></div>
 <div class="task-form-grid">
 <label class="task-field task-field-wide"><span>Aufgabe</span><input id="taskTitle" placeholder="z. B. Genehmigung für die Sessionseröffnung beantragen"></label>
-<label class="task-field"><span>Verantwortlich</span><select id="taskAssignee"></select><small>Diese Person erhält direkt eine E-Mail.</small></label>
+<label class="task-field task-assignee-field"><span>Verantwortlich</span><input id="taskAssigneeSearch" type="search" autocomplete="off" placeholder="Mitglied suchen, z. B. Jörg …"><input id="taskAssignee" type="hidden"><div id="taskAssigneeResults" class="task-member-results hidden"></div><div id="taskAssigneeSelected" class="task-member-selected hidden"></div><small>Mitglied suchen und anklicken – Name und E-Mail werden automatisch übernommen.</small></label>
 <label class="task-field"><span>Fällig bis <em>optional</em></span><input id="taskDue" type="date"><small>Ohne Datum bleibt die Aufgabe einfach offen.</small></label>
 <label class="task-field task-field-wide"><span>Beschreibung <em>optional</em></span><textarea id="taskDescription" rows="5" placeholder="Was genau soll erledigt werden? Hier können alle wichtigen Informationen zur Aufgabe eingetragen werden."></textarea></label>
 </div>
@@ -262,11 +264,8 @@ function esc(v){return String(v??"").replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&l
 function fmtDate(v){if(!v)return "–";const d=new Date(v+"T00:00:00");return d.toLocaleDateString("de-DE")}
 let taskData=[];
 async function loadTasks(){
-  const [tr,ur]=await Promise.all([api("/api/portal/tasks"),api("/api/portal/tasks/users")]);
-  if(!tr.ok||!ur.ok)return;
-  const td=await tr.json(),ud=await ur.json();taskData=td.tasks||[];
-  const sel=document.getElementById("taskAssignee");if(sel){const users=ud.users||[];sel.innerHTML='<option value="">Bitte auswählen …</option>'+users.map(u=>'<option value="'+(u.id||'')+'" '+(!u.id||!u.email?'disabled':'')+'>'+esc(u.display_name)+' – '+esc(u.role||'Vorstand')+(!u.id?' (Mitglied nicht gefunden)':(!u.email?' (E-Mail fehlt)':''))+'</option>').join("");}
-  renderTasks();
+  const tr=await api("/api/portal/tasks");if(!tr.ok)return;
+  const td=await tr.json();taskData=td.tasks||[];renderTasks();
 }
 function taskCard(t){
   const overdue=t.status==="open"&&t.due_date&&t.due_date<new Date().toISOString().slice(0,10);
@@ -278,13 +277,27 @@ function renderTasks(){
   document.getElementById("openTasks").innerHTML=open.length?open.map(taskCard).join(""):'<p class="empty">Aktuell sind keine Aufgaben offen.</p>';
   document.getElementById("doneTasks").innerHTML=done.length?done.map(taskCard).join(""):'<p class="empty">Noch keine erledigten Aufgaben.</p>';
 }
+function searchTaskMembers(){
+ const q=(document.getElementById("taskAssigneeSearch").value||"").trim().toLowerCase(),box=document.getElementById("taskAssigneeResults");
+ if(q.length<1){box.classList.add("hidden");box.innerHTML="";return}
+ const list=(window.portalMembers||[]).filter(m=>!m.archived&&((m.first_name+" "+m.last_name).toLowerCase().includes(q))).slice(0,8);
+ box.innerHTML=list.length?list.map(m=>'<button type="button" onclick="selectTaskMember('+m.id+')"><b>'+esc(m.first_name+" "+m.last_name)+'</b><span>'+(m.email?esc(m.email):'⚠ Keine E-Mail hinterlegt')+'</span></button>').join(""):'<div class="task-member-empty">Kein Mitglied gefunden.</div>';
+ box.classList.remove("hidden");
+}
+function selectTaskMember(id){
+ const m=(window.portalMembers||[]).find(x=>Number(x.id)===Number(id));if(!m)return;
+ document.getElementById("taskAssignee").value=m.id;document.getElementById("taskAssigneeSearch").value=m.first_name+" "+m.last_name;
+ document.getElementById("taskAssigneeResults").classList.add("hidden");
+ const selected=document.getElementById("taskAssigneeSelected");selected.innerHTML='<b>✓ '+esc(m.first_name+" "+m.last_name)+'</b><span>'+(m.email?esc(m.email):'⚠ Für dieses Mitglied ist keine E-Mail hinterlegt.')+'</span>';selected.classList.remove("hidden");
+}
+document.getElementById("taskAssigneeSearch").addEventListener("input",function(){document.getElementById("taskAssignee").value="";document.getElementById("taskAssigneeSelected").classList.add("hidden");searchTaskMembers()});
 function toggleTaskForm(show){document.getElementById("taskForm").classList.toggle("hidden",!show);if(show)document.getElementById("taskTitle").focus()}
 async function saveTask(){
  const body={title:taskTitle.value,description:taskDescription.value,assigned_to:taskAssignee.value,due_date:taskDue.value};
  taskMessage.textContent="Aufgabe wird gespeichert und der Verantwortliche benachrichtigt …";
  const r=await api("/api/portal/tasks",{method:"POST",body:JSON.stringify(body)}),d=await r.json();
  if(!r.ok){taskMessage.textContent="⚠️ "+(d.error||"Speichern nicht möglich.");return}
- taskTitle.value="";taskDescription.value="";taskDue.value="";taskMessage.textContent="✓ Aufgabe wurde zugewiesen und gespeichert.";await loadTasks();setTimeout(()=>toggleTaskForm(false),700);
+ taskTitle.value="";taskDescription.value="";taskDue.value="";taskAssignee.value="";taskAssigneeSearch.value="";taskAssigneeSelected.classList.add("hidden");taskMessage.textContent="✓ Aufgabe wurde zugewiesen und gespeichert.";await loadTasks();setTimeout(()=>toggleTaskForm(false),700);
 }
 async function completeTask(id){if(!confirm("Diese Aufgabe wirklich als erledigt bestätigen?"))return;const r=await api("/api/portal/tasks/"+id+"/complete",{method:"POST"});const d=await r.json();if(!r.ok)return alert(d.error||"Nicht möglich.");await loadTasks()}
 async function deleteTask(id){if(!confirm("Diese Aufgabe wirklich löschen?"))return;const r=await api("/api/portal/tasks/"+id,{method:"DELETE"});const d=await r.json();if(!r.ok)return alert(d.error||"Nicht möglich.");await loadTasks()}
