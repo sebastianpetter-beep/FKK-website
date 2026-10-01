@@ -173,7 +173,8 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <button data-page="invoices">🧾 Rechnungen</button>
 <button data-page="donations">🧾 Spendenquittungen</button>
 <button data-page="activity">🕘 Aktivitäten</button>
-<button data-page="ceremonies">🎖️ Zeremonien</button>\n<button data-page="mail" id="mailNav" class="hidden">📧 E-Mail</button>
+<button data-page="ceremonies">🎖️ Zeremonien</button>
+<button data-page="mail" id="mailNav" class="hidden">📧 E-Mail</button>
 <button data-page="useradmin" id="userAdminNav" class="hidden">⚙️ Benutzer & Rechte</button>
 </nav></aside>
 <main>
@@ -1010,7 +1011,8 @@ async function sendPortalMail(){
  const r=await api("/api/portal/mail/"+key+"/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({to:mailTo.value,subject:mailSubject.value,body:mailBody.value})}),d=await r.json();
  result.textContent=(r.ok?"✓ ":"⚠️ ")+(d.message||d.error||"Versand abgeschlossen.");if(r.ok){mailTo.value="";mailSubject.value="";mailBody.value="";setTimeout(()=>mailComposer.classList.add("hidden"),900)}
 }
-\nconst ACCESS_AREAS=[["dashboard","Dashboard"],["members","Mitglieder"],["applications","Aufnahmeanträge"],["anniversaries","Jubiläen"],["resignations","Kündigungen"],["communication","Kommunikation"],["documents","Dokumente"],["correspondence","Schriftverkehr"],["invoices","Rechnungen"],["donation_receipts","Spendenquittungen"],["activities","Aktivitäten"],["ceremonies","Zeremonien"],["mail","E-Mail"]];
+
+const ACCESS_AREAS=[["dashboard","Dashboard"],["members","Mitglieder"],["applications","Aufnahmeanträge"],["anniversaries","Jubiläen"],["resignations","Kündigungen"],["communication","Kommunikation"],["documents","Dokumente"],["correspondence","Schriftverkehr"],["invoices","Rechnungen"],["donation_receipts","Spendenquittungen"],["activities","Aktivitäten"],["ceremonies","Zeremonien"],["mail","E-Mail"]];
 let portalAccess=null;
 function rightsHtml(p={}){
   const rows=ACCESS_AREAS.map(([k,n])=>'<tr><td><b>'+n+'</b></td><td><input type="checkbox" data-right="'+k+'" data-kind="view" '+((p[k]||{}).view?'checked':'')+'></td><td><input type="checkbox" data-right="'+k+'" data-kind="edit" '+((p[k]||{}).edit?'checked':'')+'></td></tr>').join('');
