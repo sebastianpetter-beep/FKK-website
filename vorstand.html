@@ -67,6 +67,27 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 .letter-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.letter-grid .task-field-wide{grid-column:1/-1}.letter-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:20px;padding-top:18px;border-top:1px solid #edf0ee}.letter-actions .preview-btn{background:#fff;color:#07572a;border:1px solid #087b35;box-shadow:none}.letter-actions .preview-btn:hover{background:#f1f7f3}#letterEditor{padding:24px}#letterEditor input,#letterEditor textarea{width:100%;border:1px solid #ccd6cf;border-radius:12px;background:#fff;padding:13px 14px;font:inherit;color:#1d2520;outline:none}#letterEditor textarea{resize:vertical;line-height:1.5}#letterEditor input:focus,#letterEditor textarea:focus{border-color:#087b35;box-shadow:0 0 0 3px #087b3514}@media(max-width:700px){.letter-grid{grid-template-columns:1fr}.letter-grid .task-field-wide{grid-column:1}.letter-actions{display:grid}.letter-actions .btn{width:100%}}
 
 .login-progress{display:none;margin-top:12px}.login-progress.show{display:block}.login-progress-track{height:12px;background:#e6ece8;border-radius:999px;overflow:hidden;border:1px solid #d3ddd6}.login-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#087b35,#16a34a);border-radius:999px;transition:width .28s ease}.login-progress-label{margin-top:7px;text-align:center;font-weight:800;color:#07572a;font-size:13px}.loginBox #loginButton:disabled{cursor:not-allowed;opacity:.72;filter:saturate(.75)}
+
+/* Mobile Rechteverwaltung */
+.rights-mobile{display:none}
+@media(max-width:700px){
+  #accessEditor{padding:16px}
+  #accessEditor .formgrid{grid-template-columns:1fr!important;gap:12px}
+  #accessEditor .formgrid label{display:block;width:100%}
+  #accessEditor .formgrid select,#accessEditor .formgrid input{width:100%;max-width:none;margin-top:6px}
+  .rights-desktop{display:none!important}
+  .rights-mobile{display:grid;gap:12px;margin:16px 0}
+  .rights-card{border:1px solid #dfe8e2;border-radius:16px;background:#fff;overflow:hidden;box-shadow:0 3px 10px #163c2608}
+  .rights-card-title{padding:14px 16px;font-size:17px;font-weight:900;color:#163d27;background:#f8fbf9}
+  .rights-choice{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;border-top:1px solid #edf2ee;font-weight:750;font-size:15px;cursor:pointer}
+  .rights-choice input{width:25px!important;height:25px!important;min-width:25px;margin:0!important;accent-color:var(--g)}
+  #accessEditor>label{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #dfe8e2;border-radius:14px;padding:14px 16px;font-weight:750}
+  #accessEditor>label input{width:25px;height:25px;min-width:25px;accent-color:var(--g)}
+  #accessEditor .letter-actions{margin-top:14px}
+  #accessEditor .letter-actions .btn{width:100%;margin:4px 0}
+  [id^="userRights"] .rights-desktop{display:none!important}
+  [id^="userRights"] .rights-mobile{display:grid}
+}
 </style>
 <script>
 (function(){
@@ -931,8 +952,12 @@ async function saveCeremony(id,key,val){const m=ceremonyData.members.find(x=>x.i
 async function newCeremonySession(){const label=prompt("Neue Session eingeben, z. B. 2027/2028:");if(!label)return;const r=await api("/api/portal/ceremonies/sessions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({label:label.trim()})}),d=await r.json();if(!r.ok){alert(d.error||"Session konnte nicht angelegt werden.");return}await loadCeremonies(d.id)}
 const ACCESS_AREAS=[["dashboard","Dashboard"],["members","Mitglieder"],["applications","Aufnahmeanträge"],["anniversaries","Jubiläen"],["resignations","Kündigungen"],["communication","Kommunikation"],["documents","Dokumente"],["correspondence","Schriftverkehr"],["invoices","Rechnungen"],["donation_receipts","Spendenquittungen"],["activities","Aktivitäten"],["ceremonies","Zeremonien"]];
 let portalAccess=null;
-function rightsHtml(p={}){return '<div class="tablewrap"><table style="min-width:520px"><thead><tr><th>Bereich</th><th>Ansehen</th><th>Bearbeiten</th></tr></thead><tbody>'+ACCESS_AREAS.map(([k,n])=>'<tr><td><b>'+n+'</b></td><td><input type="checkbox" data-right="'+k+'" data-kind="view" '+((p[k]||{}).view?'checked':'')+'></td><td><input type="checkbox" data-right="'+k+'" data-kind="edit" '+((p[k]||{}).edit?'checked':'')+'></td></tr>').join('')+'</tbody></table></div>'}
-function collectRights(root){const p={};ACCESS_AREAS.forEach(([k])=>{p[k]={view:!!root.querySelector('[data-right="'+k+'"][data-kind="view"]')?.checked,edit:!!root.querySelector('[data-right="'+k+'"][data-kind="edit"]')?.checked};if(p[k].edit)p[k].view=true});return p}
+function rightsHtml(p={}){
+  const rows=ACCESS_AREAS.map(([k,n])=>'<tr><td><b>'+n+'</b></td><td><input type="checkbox" data-right="'+k+'" data-kind="view" '+((p[k]||{}).view?'checked':'')+'></td><td><input type="checkbox" data-right="'+k+'" data-kind="edit" '+((p[k]||{}).edit?'checked':'')+'></td></tr>').join('');
+  const cards=ACCESS_AREAS.map(([k,n])=>'<div class="rights-card"><div class="rights-card-title">'+n+'</div><label class="rights-choice"><span>👁️ Ansehen</span><input type="checkbox" data-right-mobile="'+k+'" data-kind-mobile="view" '+((p[k]||{}).view?'checked':'')+'></label><label class="rights-choice"><span>✏️ Bearbeiten</span><input type="checkbox" data-right-mobile="'+k+'" data-kind-mobile="edit" '+((p[k]||{}).edit?'checked':'')+'></label></div>').join('');
+  return '<div class="tablewrap rights-desktop"><table style="min-width:520px"><thead><tr><th>Bereich</th><th>Ansehen</th><th>Bearbeiten</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="rights-mobile">'+cards+'</div>'
+}
+function collectRights(root){const p={};const mobile=window.matchMedia&&window.matchMedia("(max-width:700px)").matches;ACCESS_AREAS.forEach(([k])=>{const v=mobile?root.querySelector('[data-right-mobile="'+k+'"][data-kind-mobile="view"]'):root.querySelector('[data-right="'+k+'"][data-kind="view"]');const e=mobile?root.querySelector('[data-right-mobile="'+k+'"][data-kind-mobile="edit"]'):root.querySelector('[data-right="'+k+'"][data-kind="edit"]');p[k]={view:!!v?.checked,edit:!!e?.checked};if(p[k].edit)p[k].view=true});return p}
 function applyPortalAccess(p,role){portalAccess=p||{};const admin=role==="admin";userAdminNav.classList.toggle("hidden",!admin);const map={dashboard:"dashboard",members:"members",applications:"applications",jubilee:"anniversaries",terminations:"resignations",communication:"communication",documents:"documents",correspondence:"correspondence",invoices:"invoices",donations:"donation_receipts",activity:"activities",ceremonies:"ceremonies"};document.querySelectorAll("nav button[data-page]").forEach(b=>{if(b.id==="userAdminNav")return;const a=map[b.dataset.page];if(a)b.classList.toggle("hidden",!admin&&!((p[a]||{}).view))});const finance=document.getElementById("dashboardContributions");if(finance&&!admin&&!p.dashboard_finances)finance.closest(".panel")?.classList.add("hidden")}
 async function loadAccess(){const r=await api("/api/portal/access"),d=await r.json();if(!r.ok)throw new Error(d.error||"Rechte konnten nicht geladen werden.");applyPortalAccess(d.permissions,d.role);return d}
 function openAccessEditor(){accessEditor.classList.remove("hidden");accessRights.innerHTML=rightsHtml({});accessFinance.checked=false;accessMember.innerHTML='<option value="">Mitglied auswählen …</option>'+window.portalMembers.filter(m=>!m.archived).map(m=>'<option value="'+m.id+'">'+esc(m.first_name+' '+m.last_name)+(m.email?' · '+esc(m.email):' · keine E-Mail')+'</option>').join('')}
