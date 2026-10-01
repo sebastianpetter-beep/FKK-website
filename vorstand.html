@@ -65,6 +65,8 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 .task-assignee-field{position:relative}.task-member-results{position:absolute;z-index:120;top:76px;left:0;right:0;background:#fff;border:1px solid #d7e0da;border-radius:13px;padding:6px;box-shadow:0 14px 35px rgba(22,60,38,.16);max-height:300px;overflow:auto}.task-member-results button{display:flex;width:100%;border:0;background:#fff;padding:10px 11px;border-radius:9px;text-align:left;cursor:pointer;flex-direction:column;gap:2px;color:#26322a}.task-member-results button:hover{background:#edf7f0}.task-member-results button b{font-size:14px}.task-member-results button span,.task-member-empty{font-size:11px;color:#6d7871}.task-member-empty{padding:12px}.task-member-selected{margin-top:2px;border-radius:10px;background:#eaf5ed;padding:9px 11px;display:flex;flex-direction:column;gap:2px;color:#07572a}.task-member-selected span{font-size:11px;color:#536159;font-weight:500}
 
 .letter-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.letter-grid .task-field-wide{grid-column:1/-1}.letter-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:20px;padding-top:18px;border-top:1px solid #edf0ee}.letter-actions .preview-btn{background:#fff;color:#07572a;border:1px solid #087b35;box-shadow:none}.letter-actions .preview-btn:hover{background:#f1f7f3}#letterEditor{padding:24px}#letterEditor input,#letterEditor textarea{width:100%;border:1px solid #ccd6cf;border-radius:12px;background:#fff;padding:13px 14px;font:inherit;color:#1d2520;outline:none}#letterEditor textarea{resize:vertical;line-height:1.5}#letterEditor input:focus,#letterEditor textarea:focus{border-color:#087b35;box-shadow:0 0 0 3px #087b3514}@media(max-width:700px){.letter-grid{grid-template-columns:1fr}.letter-grid .task-field-wide{grid-column:1}.letter-actions{display:grid}.letter-actions .btn{width:100%}}
+
+.login-progress{display:none;margin-top:12px}.login-progress.show{display:block}.login-progress-track{height:12px;background:#e6ece8;border-radius:999px;overflow:hidden;border:1px solid #d3ddd6}.login-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#087b35,#16a34a);border-radius:999px;transition:width .28s ease}.login-progress-label{margin-top:7px;text-align:center;font-weight:800;color:#07572a;font-size:13px}.loginBox #loginButton:disabled{cursor:not-allowed;opacity:.72;filter:saturate(.75)}
 </style>
 <script>
 (function(){
@@ -84,7 +86,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 })();
 </script>
 </head>
-<body><div id="activateGate" class="loginGate hidden"><form id="activateForm" class="loginBox"><img src="assets/fkk-logo.jpeg" alt="FKK"><h1>Zugang aktivieren</h1><p>Lege jetzt dein persönliches Passwort für die FKK Vorstandszentrale fest.</p><label for="newPassword">Neues Passwort · mindestens 12 Zeichen</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required><label for="newPassword2">Passwort wiederholen</label><input id="newPassword2" type="password" minlength="12" autocomplete="new-password" required><button class="btn" type="submit">Passwort festlegen</button><div id="activateError" class="loginError"></div></form></div><div id="loginGate" class="loginGate"><form id="loginForm" class="loginBox"><img src="assets/fkk-logo.jpeg" alt="FKK"><h1>Vorstandszentrale</h1><p>Geschützter Bereich des FKK</p><label for="loginUser">Benutzername oder E-Mail</label><input id="loginUser" autocomplete="username" required><label for="loginPassword">Passwort</label><input id="loginPassword" type="password" autocomplete="current-password" required><button class="btn" id="loginButton" type="button">Sicher anmelden</button><div id="loginError" class="loginError"></div></form></div>
+<body><div id="activateGate" class="loginGate hidden"><form id="activateForm" class="loginBox"><img src="assets/fkk-logo.jpeg" alt="FKK"><h1>Zugang aktivieren</h1><p>Lege jetzt dein persönliches Passwort für die FKK Vorstandszentrale fest.</p><label for="newPassword">Neues Passwort · mindestens 12 Zeichen</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required><label for="newPassword2">Passwort wiederholen</label><input id="newPassword2" type="password" minlength="12" autocomplete="new-password" required><button class="btn" type="submit">Passwort festlegen</button><div id="activateError" class="loginError"></div></form></div><div id="loginGate" class="loginGate"><form id="loginForm" class="loginBox"><img src="assets/fkk-logo.jpeg" alt="FKK"><h1>Vorstandszentrale</h1><p>Geschützter Bereich des FKK</p><label for="loginUser">Benutzername oder E-Mail</label><input id="loginUser" autocomplete="username" required><label for="loginPassword">Passwort</label><input id="loginPassword" type="password" autocomplete="current-password" required><button class="btn" id="loginButton" type="button">Sicher anmelden</button><div id="loginProgress" class="login-progress" aria-live="polite"><div class="login-progress-track"><div id="loginProgressFill" class="login-progress-fill"></div></div><div id="loginProgressLabel" class="login-progress-label">0 %</div></div><div id="loginError" class="loginError"></div></form></div>
 <script>
 (function(){
   var form=document.getElementById("loginForm");
@@ -92,12 +94,26 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
   var userInput=document.getElementById("loginUser");
   var passInput=document.getElementById("loginPassword");
   var err=document.getElementById("loginError");
+  var progress=document.getElementById("loginProgress"),fill=document.getElementById("loginProgressFill"),progressLabel=document.getElementById("loginProgressLabel");
+  var progressTimer=null,progressValue=0;
+  function setProgress(v){progressValue=Math.max(0,Math.min(100,Math.round(v)));if(fill)fill.style.width=progressValue+"%";if(progressLabel)progressLabel.textContent=progressValue+" %";}
+  function startProgress(){
+    if(progress)progress.classList.add("show");setProgress(4);
+    clearInterval(progressTimer);
+    progressTimer=setInterval(function(){
+      var step=progressValue<45?Math.random()*7+2:progressValue<75?Math.random()*4+1:Math.random()*1.5+.3;
+      setProgress(Math.min(92,progressValue+step));
+    },420);
+  }
+  function finishProgress(){clearInterval(progressTimer);setProgress(100);}
+  function resetProgress(){clearInterval(progressTimer);setProgress(0);if(progress)progress.classList.remove("show");}
   if(!form||!button||!userInput||!passInput||!err)return;
   async function loginNow(){
     var username=userInput.value.trim(),password=passInput.value;
     if(!username||!password){err.textContent="Bitte Benutzername und Passwort eingeben.";return;}
     err.textContent="Anmeldung wird geprüft … Beim ersten Start kann das Laden der Vorstandszentrale bis zu 30 Sekunden dauern.";
     button.disabled=true;
+    startProgress();
     try{
       var r=await fetch("https://fkk-mitgliedsantrag-backend.onrender.com/api/portal/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:username,password:password})});
       var d=await r.json();
@@ -106,11 +122,15 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
       sessionStorage.setItem("fkk_portal_token",d.token);
       err.textContent="✓ Anmeldung erfolgreich – Vorstandszentrale wird geöffnet …";
       document.getElementById("portalUser").textContent="🔒 "+((d.user&&d.user.display_name)||"Vorstand");
-      document.getElementById("loginGate").classList.add("hidden");
+      setProgress(Math.max(progressValue,94));
       if(window.fkkPortalReady&&typeof window.fkkOpenPortal==="function"){await window.fkkOpenPortal();}else{window.fkkLoginPending=true;}
+      finishProgress();
+      await new Promise(function(resolve){setTimeout(resolve,260);});
+      document.getElementById("loginGate").classList.add("hidden");
     }catch(ex){
       err.textContent=ex.message||"Anmeldung derzeit nicht möglich.";
       button.disabled=false;
+      resetProgress();
     }
   }
   button.addEventListener("click",loginNow);
