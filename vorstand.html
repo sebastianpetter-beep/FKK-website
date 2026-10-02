@@ -287,7 +287,7 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <div id="taskMessage" class="task-message"></div>
 <div class="task-actions"><button class="btn task-save" onclick="saveTask()" type="button">✓ Aufgabe zuweisen</button><button class="btn gray task-cancel" onclick="toggleTaskForm(false)" type="button">Abbrechen</button></div>
 </div>
-<div class="panel"><div class="panel-head"><h2>Offene Aufgaben</h2><span class="badge" id="openTaskCount">0 offen</span></div><div id="openTasks"><p>Aufgaben werden geladen …</p></div></div>
+<div class="panel"><div class="panel-head"><h2>Offene Aufgaben</h2><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="badge" id="openTaskCount">0 offen</span><button class="btn" type="button" id="taskReminderTestButton" onclick="testTaskReminders()">✉️ Erinnerungen jetzt testen</button></div></div><div id="taskReminderTestResult" style="margin-bottom:10px"></div><div id="openTasks"><p>Aufgaben werden geladen …</p></div></div>
 <div class="panel"><div class="panel-head"><h2>✓ Erledigte Aufgaben</h2></div><div id="doneTasks"><p>Noch keine erledigten Aufgaben.</p></div></div>
 </section>
 </main></div>
@@ -368,6 +368,19 @@ function renderTasks(){
   document.getElementById("openTaskCount").textContent=open.length+" offen";
   document.getElementById("openTasks").innerHTML=open.length?open.map(taskCard).join(""):'<p class="empty">Aktuell sind keine Aufgaben offen.</p>';
   document.getElementById("doneTasks").innerHTML=done.length?done.map(taskCard).join(""):'<p class="empty">Noch keine erledigten Aufgaben.</p>';
+}
+async function testTaskReminders(){
+  const b=document.getElementById("taskReminderTestButton"),out=document.getElementById("taskReminderTestResult");
+  if(!confirm("Jetzt für alle offenen Aufgaben eine Erinnerungsmail versenden?"))return;
+  b.disabled=true;out.innerHTML="<small>Erinnerungen werden versendet …</small>";
+  try{
+    const r=await api("/api/portal/tasks/reminders/test",{method:"POST"});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||("HTTP "+r.status));
+    out.innerHTML='<div class="task-reminder-note"><b>✓ Test abgeschlossen</b><span>'+Number(d.sent||0)+' Erinnerung(en) versendet · '+Number(d.open||0)+' offene Aufgabe(n)'+(d.skipped_no_email?' · '+Number(d.skipped_no_email)+' ohne E-Mail':'')+'</span></div>';
+    await loadTasks();
+  }catch(e){out.innerHTML='<p style="color:#c91432;font-weight:700">⚠️ '+esc(e.message||"Test fehlgeschlagen.")+'</p>'}
+  finally{b.disabled=false}
 }
 function searchTaskMembers(){
  const q=(document.getElementById("taskAssigneeSearch").value||"").trim().toLowerCase(),box=document.getElementById("taskAssigneeResults");
