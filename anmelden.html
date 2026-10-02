@@ -66,9 +66,9 @@ footer{background:#053d1d;color:#fff;padding:20px}.foot{max-width:900px;margin:a
 
 <section class="section" data-i="1"><h2>Persönliche Angaben</h2><div class="grid">
 <div><label>Vorname *</label><input name="vorname" required></div><div><label>Nachname *</label><input name="nachname" required></div>
-<div class="full"><label>Adresse *</label><input name="adresse" placeholder="Straße, Hausnummer, PLZ, Ort" required></div>
+<div><label>Straße *</label><input name="strasse" required></div><div><label>Hausnummer *</label><input name="hausnummer" required></div><div><label>PLZ *</label><input name="plz" inputmode="numeric" maxlength="5" required></div><div><label>Ort *</label><input name="ort" required></div>
 <div><label>Telefonnummer *</label><input name="telefon" required></div><div><label>E-Mail *</label><input type="email" name="email" required></div>
-<div><label>Geburtsdatum *</label><input type="date" name="geburt" required></div>
+<div><label>Geburtsdatum *</label><input type="date" name="geburt" required><div id="personalFee" class="fee" style="margin-top:10px">Bitte Geburtsdatum eintragen – dein Beitrag wird hier direkt berechnet.</div></div>
 <div><label>Ehepartner dabei?</label><select name="ehepartner_dabei" id="ehepartnerDabei"><option value="Nein">Nein</option><option value="Ja">Ja</option></select></div>
 <div id="ehepartnerNameWrap" style="display:none"><label>Ehepartner – Vorname *</label><input name="ehe_vorname" id="eheVorname"></div>
 <div id="ehepartnerNachnameWrap" style="display:none"><label>Ehepartner – Nachname *</label><input name="ehe_nachname" id="eheNachname"></div>
@@ -108,7 +108,7 @@ root.querySelectorAll('.next').forEach(b=>b.addEventListener('click',()=>{if(val
 function val(n){const e=form.elements[n];return e?e.value:''}
 function fmtDate(v){if(!v)return '—';const [y,m,d]=v.split('-');return `${d}.${m}.${y}`}
 function review(){const art=form.querySelector('input[name=art]:checked').value;const rows=[
-['Mitgliedschaft',art],['Jahresbeitrag',(()=>{const x=calculatedFee();return x.amount!==null?(x.amount+',- €'):'nach Geburtsdatum'})()],['Vorname, Nachname',`${val('vorname')} ${val('nachname')}`],['Adresse',val('adresse')],['Telefon',val('telefon')],['E-Mail',val('email')],['Geburtsdatum',fmtDate(val('geburt'))],['Ehepartner',val('ehepartner_dabei')==='Ja'?((val('ehe_vorname')+' '+val('ehe_nachname')).trim()):'—'],['Ehepartner Geburtsdatum',val('ehepartner_dabei')==='Ja'?fmtDate(val('ehe')):'—'],['IBAN',val('iban')],['SEPA-Zustimmung','Ja'],['Antragsdatum',new Date().toLocaleDateString('de-DE')]];
+['Mitgliedschaft',art],['Jahresbeitrag',(()=>{const x=calculatedFee();return x.amount!==null?(x.amount+',- €'):'nach Geburtsdatum'})()],['Vorname, Nachname',`${val('vorname')} ${val('nachname')}`],['Adresse',val('strasse')+' '+val('hausnummer')+', '+val('plz')+' '+val('ort')],['Telefon',val('telefon')],['E-Mail',val('email')],['Geburtsdatum',fmtDate(val('geburt'))],['Ehepartner',val('ehepartner_dabei')==='Ja'?((val('ehe_vorname')+' '+val('ehe_nachname')).trim()):'—'],['Ehepartner Geburtsdatum',val('ehepartner_dabei')==='Ja'?fmtDate(val('ehe')):'—'],['IBAN',val('iban')],['SEPA-Zustimmung','Ja'],['Antragsdatum',new Date().toLocaleDateString('de-DE')]];
 root.getElementById('summary').innerHTML=rows.map(r=>`<div class="row"><b>${r[0]}</b><span>${r[1]||'—'}</span></div>`).join('')}
 
 const ibanEl=document.getElementById('iban');
@@ -163,7 +163,7 @@ const payload={
   art: form.querySelector('input[name=art]:checked').value,
   vorname: val('vorname'),
   nachname: val('nachname'),
-  adresse: val('adresse'),
+  adresse: val('strasse')+' '+val('hausnummer')+', '+val('plz')+' '+val('ort'),
   telefon: val('telefon'),
   email: val('email'),
   geburt: val('geburt'),
@@ -208,7 +208,7 @@ const eheSelect=document.getElementById('ehepartnerDabei');function toggleEhepar
 
 function ageOnToday(v){if(!v)return null;const b=new Date(v+"T12:00:00"),t=new Date();let a=t.getFullYear()-b.getFullYear();if((t.getMonth()<b.getMonth())||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))a--;return a}
 function calculatedFee(){const art=form.querySelector('input[name=art]:checked').value;if(art==='Passiv')return {label:'Passives Mitglied',amount:15};if(val('ehepartner_dabei')==='Ja')return {label:'Ehepaar · gemeinsamer Jahresbeitrag',amount:99};const age=ageOnToday(val('geburt'));if(age===null)return {label:'Aktives Mitglied · Beitrag nach Geburtsdatum',amount:null};if(age<16)return {label:'Aktiv · unter 16 Jahre',amount:22};if(age<18)return {label:'Aktiv · 16 bis unter 18 Jahre',amount:33};return {label:'Aktiv · ab 18 Jahre',amount:66}}
-function refreshFee(){const x=calculatedFee(),fee=document.getElementById('fee');fee.innerHTML=x.amount===null?'<b>'+x.label+'</b><br>Bitte Geburtsdatum eintragen, damit dein Jahresbeitrag automatisch angezeigt wird.':'<b>'+x.label+': '+x.amount+',- € jährlich</b><br>Einzug in zwei Raten zum 1. Mai und 1. November.'}
+function refreshFee(){const x=calculatedFee(),fee=document.getElementById('fee'),personal=document.getElementById('personalFee');const c=x.amount===null?'<b>'+x.label+'</b><br>Bitte Geburtsdatum eintragen, damit dein Jahresbeitrag automatisch angezeigt wird.':'<b>Dein Jahresbeitrag: '+x.amount+',- €</b><br>'+x.label+' · Einzug in zwei Raten zum 1. Mai und 1. November.';fee.innerHTML=c;if(personal)personal.innerHTML=c}
 document.querySelectorAll('input[name=art]').forEach(r=>r.addEventListener('change',refreshFee));
 form.elements['geburt'].addEventListener('change',refreshFee);eheSelect.addEventListener('change',refreshFee);refreshFee();
 </script>
