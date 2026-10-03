@@ -74,6 +74,7 @@ footer{background:#053d1d;color:#fff;padding:20px}.foot{max-width:900px;margin:a
 <div id="ehepartnerNameWrap" style="display:none"><label>Ehepartner – Vorname *</label><input name="ehe_vorname" id="eheVorname"></div>
 <div id="ehepartnerNachnameWrap" style="display:none"><label>Ehepartner – Nachname *</label><input name="ehe_nachname" id="eheNachname"></div>
 <div id="ehepartnerGeburtWrap" style="display:none"><label>Ehepartner – Geburtsdatum *</label><input type="date" name="ehe" id="eheGeburt"></div>
+<div id="ehepartnerGeschlechtWrap" style="display:none"><label>Ehepartner – Geschlecht *</label><div class="choice gender-choice"><label><input type="radio" name="ehe_geschlecht" value="female"> Weiblich</label><label><input type="radio" name="ehe_geschlecht" value="male"> Männlich</label><label><input type="radio" name="ehe_geschlecht" value="diverse"> Divers</label></div></div>
 </div><div class="actions"><button type="button" class="secondary prev">← Zurück</button><button type="button" class="primary next">Weiter →</button></div></section>
 
 <section class="section" data-i="2"><h2>Bankverbindung & Zustimmung</h2><div class="grid"><div class="full"><label>IBAN *</label><input name="iban" id="iban" inputmode="text" autocomplete="off" maxlength="34" required></div></div>
@@ -173,6 +174,7 @@ const payload={
   ehe_vorname: val('ehe_vorname'),
   ehe_nachname: val('ehe_nachname'),
   ehe: val('ehe'),
+  ehe_geschlecht: form.querySelector('input[name=ehe_geschlecht]:checked')?.value || '',
   iban: val('iban'),
   sepa: !!form.elements['sepa'].checked,
   zeremonie: !!form.elements['zeremonie'].checked,
@@ -206,7 +208,7 @@ try{
 }
 });
 
-const eheSelect=document.getElementById('ehepartnerDabei');function toggleEhepartner(){const yes=eheSelect.value==='Ja';['ehepartnerNameWrap','ehepartnerNachnameWrap','ehepartnerGeburtWrap'].forEach(id=>document.getElementById(id).style.display=yes?'block':'none');['eheVorname','eheNachname','eheGeburt'].forEach(id=>{const el=document.getElementById(id);el.required=yes;if(!yes){el.value='';el.setCustomValidity('')}})}eheSelect.addEventListener('change',toggleEhepartner);toggleEhepartner();
+const eheSelect=document.getElementById('ehepartnerDabei');function toggleEhepartner(){const yes=eheSelect.value==='Ja';['ehepartnerNameWrap','ehepartnerNachnameWrap','ehepartnerGeburtWrap','ehepartnerGeschlechtWrap'].forEach(id=>document.getElementById(id).style.display=yes?'block':'none');['eheVorname','eheNachname','eheGeburt'].forEach(id=>{const el=document.getElementById(id);el.required=yes;if(!yes){el.value='';el.setCustomValidity('')}});document.querySelectorAll('input[name=ehe_geschlecht]').forEach(el=>{el.required=yes;if(!yes)el.checked=false})}eheSelect.addEventListener('change',toggleEhepartner);toggleEhepartner();
 
 function ageOnToday(v){if(!v)return null;const b=new Date(v+"T12:00:00"),t=new Date();let a=t.getFullYear()-b.getFullYear();if((t.getMonth()<b.getMonth())||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))a--;return a}
 function calculatedFee(){const art=form.querySelector('input[name=art]:checked').value;if(art==='Passiv')return {label:'Passives Mitglied',amount:15};if(val('ehepartner_dabei')==='Ja')return {label:'Ehepaar · gemeinsamer Jahresbeitrag',amount:99};const age=ageOnToday(val('geburt'));if(age===null)return {label:'Aktives Mitglied · Beitrag nach Geburtsdatum',amount:null};if(age<16)return {label:'Aktiv · unter 16 Jahre',amount:22};if(age<18)return {label:'Aktiv · 16 bis unter 18 Jahre',amount:33};return {label:'Aktiv · ab 18 Jahre',amount:66}}
