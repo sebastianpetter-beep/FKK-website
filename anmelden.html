@@ -37,7 +37,7 @@ header{background:#fff;border-bottom:1px solid #e4e9e5}.nav{max-width:1050px;mar
 .steps{display:grid;grid-template-columns:repeat(4,1fr);background:#fafafa;border-bottom:1px solid #e5e9e6}.step{padding:15px 8px;text-align:center;font-weight:700;color:#888;font-size:13px}.step.on{color:var(--gd);border-bottom:4px solid var(--y);background:#fff}
 form{padding:28px}.section{display:none}.section.on{display:block}h2{color:var(--gd);margin-top:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.full{grid-column:1/-1}
 label{font-weight:700;font-size:14px;display:block;margin-bottom:6px}input,select{width:100%;padding:13px;border:1px solid #dce3de;border-radius:12px;font:inherit;font-size:16px}
-.choice{display:grid;grid-template-columns:1fr 1fr;gap:12px}.choice label{border:2px solid #dce3de;border-radius:14px;padding:15px;cursor:pointer}.choice input{width:auto;margin-right:8px}.fee{margin-top:15px;background:var(--gs);border-left:5px solid var(--g);padding:14px;border-radius:10px;line-height:1.5}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:12px}.choice label{border:2px solid #dce3de;border-radius:14px;padding:15px;cursor:pointer}.choice input{width:auto;margin-right:8px}.gender-choice{grid-template-columns:repeat(3,1fr);gap:8px}.gender-choice label{padding:13px 9px;text-align:center;font-size:13px}.gender-choice input{margin-right:4px}@media(max-width:620px){.gender-choice{grid-template-columns:1fr}.gender-choice label{text-align:left}}.fee{margin-top:15px;background:var(--gs);border-left:5px solid var(--g);padding:14px;border-radius:10px;line-height:1.5}
 .check{display:flex;gap:10px;align-items:flex-start;margin:14px 0}.check input{width:auto;margin-top:4px}.actions{display:flex;justify-content:space-between;gap:10px;margin-top:25px;flex-wrap:wrap}
 button{border:0;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer}.primary{background:var(--y);color:#243024}.secondary{background:var(--gs);color:var(--gd)}
 .summary{border:1px solid #dce3de;border-radius:15px;overflow:hidden}.row{display:grid;grid-template-columns:190px 1fr;border-bottom:1px solid #e8ece9}.row:last-child{border:0}.row b,.row span{padding:10px}.row b{background:var(--gs);color:var(--gd)}
@@ -69,6 +69,7 @@ footer{background:#053d1d;color:#fff;padding:20px}.foot{max-width:900px;margin:a
 <div><label>Straße *</label><input name="strasse" required></div><div><label>Hausnummer *</label><input name="hausnummer" required></div><div><label>PLZ *</label><input name="plz" inputmode="numeric" maxlength="5" required></div><div><label>Ort *</label><input name="ort" required></div>
 <div><label>Telefonnummer *</label><input name="telefon" required></div><div><label>E-Mail *</label><input type="email" name="email" required></div>
 <div><label>Geburtsdatum *</label><input type="date" name="geburt" required><div id="personalFee" class="fee" style="margin-top:10px">Bitte Geburtsdatum eintragen – dein Beitrag wird hier direkt berechnet.</div></div>
+<div><label>Geschlecht *</label><div class="choice gender-choice"><label><input type="radio" name="geschlecht" value="female" required> Weiblich</label><label><input type="radio" name="geschlecht" value="male" required> Männlich</label><label><input type="radio" name="geschlecht" value="diverse" required> Divers</label></div></div>
 <div><label>Ehepartner dabei?</label><select name="ehepartner_dabei" id="ehepartnerDabei"><option value="Nein">Nein</option><option value="Ja">Ja</option></select></div>
 <div id="ehepartnerNameWrap" style="display:none"><label>Ehepartner – Vorname *</label><input name="ehe_vorname" id="eheVorname"></div>
 <div id="ehepartnerNachnameWrap" style="display:none"><label>Ehepartner – Nachname *</label><input name="ehe_nachname" id="eheNachname"></div>
@@ -167,6 +168,7 @@ const payload={
   telefon: val('telefon'),
   email: val('email'),
   geburt: val('geburt'),
+  geschlecht: form.querySelector('input[name=geschlecht]:checked')?.value || '',
   ehepartner_dabei: val('ehepartner_dabei'),
   ehe_vorname: val('ehe_vorname'),
   ehe_nachname: val('ehe_nachname'),
