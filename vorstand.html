@@ -605,20 +605,26 @@ function quickPayload(id){
 async function saveAllQuickMembers(){
  const ids=[...quickDirty];const st=document.getElementById("quickEditStatus"),btn=document.getElementById("quickSaveAll");
  if(!ids.length){if(st)st.textContent="Keine ungespeicherten Änderungen.";return}
- if(btn){btn.disabled=true;btn.textContent="⏳ Speichert…"} if(st)st.innerHTML='<b>Speichere '+ids.length+' Mitglied'+(ids.length===1?"":"er")+'…</b>';
- let ok=0,failed=[];
- for(const id of ids){
-   const payload=quickPayload(id),state=document.getElementById("quickState"+id);if(!payload){failed.push(id);continue}
-   if(state)state.innerHTML="<small>⏳</small>";
-   try{
-     const r=await api("/api/portal/members/"+id,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}),d=await r.json().catch(()=>({}));
-     if(!r.ok){failed.push(id);if(state)state.innerHTML='<small style="color:#b20d2b">⚠ '+esc(d.error||"Fehler")+'</small>'}
-     else{ok++;quickDirty.delete(id);if(state)state.innerHTML='<small style="color:#087b35;font-weight:800">✓ Gespeichert</small>'}
-   }catch(e){failed.push(id);if(state)state.innerHTML='<small style="color:#b20d2b">⚠ Fehler</small>'}
+ const members=ids.map(id=>{const p=quickPayload(id);return p?{id,...p}:null}).filter(Boolean);
+ if(members.length!==ids.length){if(st)st.innerHTML='<span style="color:#b20d2b">⚠ Mindestens eine Tabellenzeile konnte nicht gelesen werden. Es wurde nichts gespeichert.</span>';return}
+ if(btn){btn.disabled=true;btn.textContent="⏳ Speichert…"}
+ if(st)st.innerHTML='<b>Speichere '+members.length+' Mitglied'+(members.length===1?"":"er")+' gemeinsam…</b>';
+ ids.forEach(id=>{const state=document.getElementById("quickState"+id);if(state)state.innerHTML="<small>⏳</small>"});
+ try{
+   const r=await api("/api/portal/members/bulk",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({members})});
+   const d=await r.json().catch(()=>({}));
+   if(!r.ok)throw new Error(d.error||"Sammelspeicherung fehlgeschlagen.");
+   quickDirty.clear();
+   ids.forEach(id=>{const state=document.getElementById("quickState"+id);if(state)state.innerHTML='<small style="color:#087b35;font-weight:800">✓ Gespeichert</small>'});
+   await loadMembers();await loadDashboard();
+   renderQuickEditMembers();
+   if(st)st.innerHTML='<b style="color:#087b35">✓ '+d.saved+' Mitglied'+(d.saved===1?"":"er")+' erfolgreich in der Datenbank gespeichert und neu geladen.</b>';
+ }catch(e){
+   ids.forEach(id=>{const state=document.getElementById("quickState"+id);if(state)state.innerHTML='<small style="color:#b20d2b">⚠ nicht gespeichert</small>'});
+   if(st)st.innerHTML='<b style="color:#b20d2b">⚠ Nichts wurde gespeichert.</b> '+esc(e.message||"Bitte Verbindung prüfen.");
+ }finally{
+   if(btn){btn.disabled=false;btn.textContent="💾 Alle Änderungen speichern"}
  }
- await loadMembers();await loadDashboard();
- if(st)st.innerHTML=failed.length?'<b>✓ '+ok+' gespeichert.</b> <span style="color:#b20d2b">'+failed.length+' konnten nicht gespeichert werden.</span>':'<b style="color:#087b35">✓ '+ok+' Mitglieder erfolgreich gespeichert und vom Server neu geladen.</b>';
- if(btn){btn.disabled=false;btn.textContent="💾 Alle Änderungen speichern"}
 }
 function openQuickEdit(){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById("memberQuickEdit").classList.add("active");renderQuickEditMembers();window.scrollTo({top:0,behavior:"smooth"})}
 let selectedMemberId=null;
