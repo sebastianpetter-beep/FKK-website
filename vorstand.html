@@ -862,16 +862,36 @@ async function sendMemberEmail(){
   if(!recipients.length){result.textContent="Keine Mitglieder mit E-Mail ausgewählt.";return;}
   if(!subject||!message){result.textContent="Bitte Betreff und Nachricht ausfüllen.";return;}
   const attachmentCount=mailSelectedDocumentIds.size+mailLocalFiles.length;
-  if(!confirm("E-Mail wirklich an "+recipients.length+" Mitglied(er) senden?"+(attachmentCount?"\n\n📎 "+attachmentCount+" Anhang/Anhänge werden mitgesendet.":""))) return;
-  memberEmailSending=true;button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="⏳ Wird versendet …";button.style.opacity=".55";button.style.cursor="not-allowed";result.textContent="Bitte warten – E-Mails werden nacheinander versendet. Den Bereich nicht schließen …";
+  if(!confirm("E-Mail wirklich an "+recipients.length+" Mitglied(er) senden?"+(attachmentCount?"\n\n📎 "+attachmentCount+" Anhang/Anhänge werden mitgesendet.":"")))return;
+  memberEmailSending=true;button.disabled=true;button.dataset.originalText=button.textContent;button.style.opacity=".55";button.style.cursor="not-allowed";
+  result.style.whiteSpace="pre-line";
+  const BATCH_SIZE=10,total=recipients.length;
+  let sent=0,skipped=0,failed=0,issues=[],completed=0;
   try{
     const uploadAttachments=await Promise.all(mailLocalFiles.map(fileToAttachment));
-    const r=await api("/api/portal/members/email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({member_ids:recipients.map(function(m){return m.id;}),subject:subject,message:message,greeting_user_id:document.getElementById("mailGreeting").value,document_ids:[...mailSelectedDocumentIds],upload_attachments:uploadAttachments})});
-    const d=await r.json();
-    let details="Ausgewählt: "+(d.selected??recipients.length)+" · Erfolgreich: "+(d.sent||0)+" · Ohne E-Mail: "+(d.skipped_no_email||0)+" · Fehlgeschlagen: "+(d.failed||0);const issues=[...(d.skipped_members||[]),...(d.failed_members||[])];if(issues.length)details+="\n"+issues.map(x=>x.name+" – "+x.reason).join("\n");if((d.missing_selected||[]).length)details+="\n"+d.missing_selected.length+" ausgewählte Mitglied(er) waren nicht mehr aktiv/verfügbar.";result.style.whiteSpace="pre-line";result.textContent=details;
-    if(r.ok){document.getElementById("mailSubject").value="";document.getElementById("mailMessage").value="";mailSelectedDocumentIds.clear();mailLocalFiles=[];document.getElementById("mailLocalFiles").value="";renderMailAttachments();}
-  }catch(e){result.textContent="Versand derzeit nicht möglich.";}
-  memberEmailSending=false;button.disabled=false;button.textContent=button.dataset.originalText||"E-Mail senden";button.style.opacity="";button.style.cursor="";
+    for(let start=0;start<total;start+=BATCH_SIZE){
+      const batch=recipients.slice(start,start+BATCH_SIZE);
+      button.textContent="⏳ "+completed+"/"+total+" versendet …";
+      result.textContent="Versand läuft … "+completed+" von "+total+" verarbeitet.\nBitte die Seite geöffnet lassen.";
+      const r=await api("/api/portal/members/email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({member_ids:batch.map(m=>m.id),subject:subject,message:message,greeting_user_id:document.getElementById("mailGreeting").value,document_ids:[...mailSelectedDocumentIds],upload_attachments:uploadAttachments})});
+      let d={};try{d=await r.json()}catch(_){}
+      if(!r.ok&&r.status!==207){
+        throw new Error("Paket "+(Math.floor(start/BATCH_SIZE)+1)+" konnte nicht abgeschlossen werden"+(d.error?": "+d.error:"."));
+      }
+      sent+=d.sent||0;skipped+=d.skipped_no_email||0;failed+=d.failed||0;
+      issues.push(...(d.skipped_members||[]),...(d.failed_members||[]));
+      if((d.missing_selected||[]).length)issues.push(...d.missing_selected.map(id=>({name:"Mitglied #"+id,reason:"nicht mehr aktiv/verfügbar"})));
+      completed+=batch.length;
+    }
+    let details="✓ Versand abgeschlossen.\nAusgewählt: "+total+" · Erfolgreich: "+sent+" · Ohne E-Mail: "+skipped+" · Fehlgeschlagen: "+failed;
+    if(issues.length)details+="\n\n"+issues.map(x=>x.name+" – "+x.reason).join("\n");
+    result.textContent=details;
+    document.getElementById("mailSubject").value="";document.getElementById("mailMessage").value="";mailSelectedDocumentIds.clear();mailLocalFiles=[];document.getElementById("mailLocalFiles").value="";renderMailAttachments();
+  }catch(e){
+    result.textContent="⚠️ Versand unterbrochen nach "+completed+" von "+total+" verarbeiteten Mitgliedern.\n"+(e.message||"Unbekannter Fehler")+"\n\nBereits erfolgreich versendete Pakete werden nicht automatisch erneut gesendet.";
+  }finally{
+    memberEmailSending=false;button.disabled=false;button.textContent=button.dataset.originalText||"E-Mail senden";button.style.opacity="";button.style.cursor="";
+  }
 }
 
 function refreshSmsMembers(){
