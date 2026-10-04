@@ -832,9 +832,9 @@ function refreshMailRecipients(){
 
 
 let mailGreetingUsers=[];
-async function loadMailGreetings(){try{const r=await api("/api/portal/mail-greetings");if(!r.ok)return;const d=await r.json();mailGreetingUsers=d.users||[];const sel=document.getElementById("mailGreeting");if(sel)sel.innerHTML='<option value="board">Der Vorstand</option>'+mailGreetingUsers.map(u=>{const role={sebastian:"Präsident",kelly:"Schatzmeisterin",joerg:"Geschäftsführer"}[String(u.username||"").toLowerCase()];return '<option value="'+u.id+'">'+esc(u.display_name+(role?" · "+role:""))+'</option>'}).join("")}catch(e){}}
+async function loadMailGreetings(){try{const r=await api("/api/portal/mail-greetings");if(!r.ok)throw new Error("HTTP "+r.status);const d=await r.json();mailGreetingUsers=d.users||[];const sel=document.getElementById("mailGreeting");if(sel)sel.innerHTML='<option value="board">Der Vorstand</option>'+mailGreetingUsers.map(u=>{const role={sebastian:"Präsident",kelly:"Schatzmeisterin",joerg:"Geschäftsführer"}[String(u.username||"").toLowerCase()];return '<option value="'+u.id+'">'+esc(u.display_name+(role?" · "+role:""))+'</option>'}).join("")}catch(e){}}
 function selectedMailGreeting(){const v=document.getElementById("mailGreeting")?.value||"board";if(v==="board")return "Der Vorstand";const u=mailGreetingUsers.find(x=>String(x.id)===String(v));if(!u)return "Der Vorstand";const role={sebastian:"Präsident",kelly:"Schatzmeisterin",joerg:"Geschäftsführer"}[String(u.username||"").toLowerCase()];return u.display_name+(role?" · "+role:"")}
-function linkifyMailPreview(text){let safe=esc(text);safe=safe.replace(/(https?:\/\/[^\\s&lt;&gt;]+)/gi,function(url){return '<a href="'+url+'" target="_blank" rel="noopener" style="color:#07552c;text-decoration:underline;font-weight:600">'+url+'</a>'});return safe.replace(/\n/g,"<br>")}
+function linkifyMailPreview(text){let safe=esc(text);safe=safe.replace(/https?:\/\/[^\s<>"']+/gi,function(url){return '<a href="'+url+'" target="_blank" rel="noopener" style="color:#07552c;text-decoration:underline;font-weight:600">'+url+'</a>'});return safe.replace(/\n/g,"<br>")});return safe.replace(/\n/g,"<br>")}
 function previewMemberEmail(){
  const recipients=mailRecipients(),subject=document.getElementById("mailSubject").value.trim(),message=document.getElementById("mailMessage").value.trim();if(!subject||!message){document.getElementById("mailResult").textContent="Bitte Betreff und Nachricht ausfüllen.";return}
  const first="[Vorname]",greeting=selectedMailGreeting(),body=linkifyMailPreview(message);
@@ -1210,7 +1210,7 @@ async function saveResignation(){
  await loadResignations();await loadMembers();loadResignations();loadMailGreetings();await loadDashboard();setTimeout(closeResignationForm,1800);
 }
 
-function go(id,filter){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));if(filter&&document.getElementById('filter'))document.getElementById('filter').value=filter;window.scrollTo({top:0,behavior:'smooth'})}
+function go(id,filter){if(id==="communication")loadMailGreetings();document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));if(filter&&document.getElementById('filter'))document.getElementById('filter').value=filter;window.scrollTo({top:0,behavior:'smooth'})}
 function nextJubilee(entry){if(!entry)return null;const y=new Date(entry).getFullYear(),now=new Date().getFullYear(),years=now-y;const n=JUB.find(v=>v>=years);return n?{years:n,year:y+n}:null}
 
 document.getElementById("quickEditMembersButton")?.addEventListener("click",openQuickEdit);
