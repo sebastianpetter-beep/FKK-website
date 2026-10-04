@@ -855,21 +855,23 @@ document.getElementById("mailDocumentSearch")?.addEventListener("input",renderMa
 document.getElementById("mailLocalFiles")?.addEventListener("change",function(){mailLocalFiles=[...this.files].slice(0,10);renderMailAttachments()});
 function fileToAttachment(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve({name:file.name,content:String(r.result).split(",")[1]||""});r.onerror=reject;r.readAsDataURL(file)})}
 
+let memberEmailSending=false;
 async function sendMemberEmail(){
+  if(memberEmailSending)return;
   const recipients=mailRecipients(),subject=document.getElementById("mailSubject").value.trim(),message=document.getElementById("mailMessage").value.trim(),result=document.getElementById("mailResult"),button=document.getElementById("sendMemberMail");
   if(!recipients.length){result.textContent="Keine Mitglieder mit E-Mail ausgewählt.";return;}
   if(!subject||!message){result.textContent="Bitte Betreff und Nachricht ausfüllen.";return;}
   const attachmentCount=mailSelectedDocumentIds.size+mailLocalFiles.length;
   if(!confirm("E-Mail wirklich an "+recipients.length+" Mitglied(er) senden?"+(attachmentCount?"\n\n📎 "+attachmentCount+" Anhang/Anhänge werden mitgesendet.":""))) return;
-  button.disabled=true;result.textContent="E-Mails werden versendet …";
+  memberEmailSending=true;button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="⏳ Wird versendet …";button.style.opacity=".55";button.style.cursor="not-allowed";result.textContent="Bitte warten – E-Mails werden nacheinander versendet. Den Bereich nicht schließen …";
   try{
     const uploadAttachments=await Promise.all(mailLocalFiles.map(fileToAttachment));
     const r=await api("/api/portal/members/email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({member_ids:recipients.map(function(m){return m.id;}),subject:subject,message:message,greeting_user_id:document.getElementById("mailGreeting").value,document_ids:[...mailSelectedDocumentIds],upload_attachments:uploadAttachments})});
     const d=await r.json();
-    result.textContent=(d.sent||0)+" E-Mail(s) versendet"+((d.skipped_no_email||0)?", "+d.skipped_no_email+" ohne E-Mail übersprungen":"")+((d.failed||0)?", "+d.failed+" fehlgeschlagen":"")+".";
+    let details="Ausgewählt: "+(d.selected??recipients.length)+" · Erfolgreich: "+(d.sent||0)+" · Ohne E-Mail: "+(d.skipped_no_email||0)+" · Fehlgeschlagen: "+(d.failed||0);const issues=[...(d.skipped_members||[]),...(d.failed_members||[])];if(issues.length)details+="\n"+issues.map(x=>x.name+" – "+x.reason).join("\n");if((d.missing_selected||[]).length)details+="\n"+d.missing_selected.length+" ausgewählte Mitglied(er) waren nicht mehr aktiv/verfügbar.";result.style.whiteSpace="pre-line";result.textContent=details;
     if(r.ok){document.getElementById("mailSubject").value="";document.getElementById("mailMessage").value="";mailSelectedDocumentIds.clear();mailLocalFiles=[];document.getElementById("mailLocalFiles").value="";renderMailAttachments();}
   }catch(e){result.textContent="Versand derzeit nicht möglich.";}
-  button.disabled=false;
+  memberEmailSending=false;button.disabled=false;button.textContent=button.dataset.originalText||"E-Mail senden";button.style.opacity="";button.style.cursor="";
 }
 
 function refreshSmsMembers(){
