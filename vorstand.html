@@ -1254,7 +1254,25 @@ function searchResignationMembers(){
 function selectResignationMember(id){const m=(window.portalMembers||[]).find(x=>Number(x.id)===Number(id));if(!m)return;resMemberId.value=m.id;resMemberSearch.value=(m.member_no?m.member_no+" · ":"")+m.last_name+", "+m.first_name;resMemberResults.classList.add("hidden");resMemberSelected.innerHTML='<b>✓ '+esc(m.first_name+" "+m.last_name)+'</b><br><small>Mitgliedsnummer '+esc(m.member_no||"–")+' · '+esc(m.current_status||"")+(m.email?" · "+esc(m.email):" · ⚠ Keine E-Mail hinterlegt")+'</small>';resMemberSelected.classList.remove("hidden");resSendEmail.disabled=!m.email;if(!m.email)resSendEmail.checked=false;updateResignationPreview()}
 function updateResignationPreview(){const m=(window.portalMembers||[]).find(x=>Number(x.id)===Number(resMemberId.value));resPreview.innerHTML=m?'<b>Vor dem Speichern prüfen</b><div style="margin-top:7px">'+esc((m.member_no||"ohne Nr.")+" · "+m.first_name+" "+m.last_name)+'<br>Eingang: '+esc(fmtDate(resReceived.value))+' · Wirksam: '+esc(fmtDate(resEnd.value))+'<br>Bestätigung: '+(resSendEmail.checked&&m.email?'📧 an '+esc(m.email):'keine E-Mail')+'</div>':'<b>Bitte zuerst ein Mitglied auswählen.</b>'}
 ["resReceived","resEnd","resSendEmail"].forEach(id=>document.getElementById(id)?.addEventListener("change",updateResignationPreview));
-async function loadResignations(){const r=await api("/api/portal/resignations");if(!r.ok)return;const d=await r.json();resignationData=d.resignations||[];resignationRows.innerHTML=resignationData.length?resignationData.map(x=>'<tr><td>'+fmtDate(x.received_date)+'</td><td><b>'+esc(x.last_name+", "+x.first_name)+'</b><br><small>'+esc(x.member_no||"–")+'</small></td><td>'+fmtDate(x.end_date)+'</td><td><span class="badge '+(x.status==="Abgeschlossen"?"":"passiv")+'">'+esc(x.status)+'</span></td><td>'+esc(x.created_by_name||"–")+'</td><td>'+(x.document_id?'<button class="btn gray" onclick="openStoredDocument('+x.document_id+')">PDF</button> ':'')+(x.confirmation_email_sent_at?'✓ E-Mail versendet':'–')+'</td></tr>').join(""):'<tr><td colspan="6" class="empty">Noch keine Kündigungen erfasst.</td></tr>'}
+async function loadResignations(){
+  const rows=document.getElementById("resignationRows");
+  if(!rows)return;
+  rows.innerHTML='<tr><td colspan="6" class="empty">Kündigungen werden geladen …</td></tr>';
+  try{
+    const r=await api("/api/portal/resignations");
+    if(!r.ok){
+      const d=await r.json().catch(()=>({}));
+      throw new Error(d.error||d.message||("Serverfehler HTTP "+r.status));
+    }
+    const d=await r.json();
+    if(!Array.isArray(d.resignations))throw new Error("Ungültige Serverantwort: Kündigungsliste fehlt.");
+    resignationData=d.resignations;
+    rows.innerHTML=resignationData.length?resignationData.map(x=>'<tr><td>'+fmtDate(x.received_date)+'</td><td><b>'+esc(x.last_name+", "+x.first_name)+'</b><br><small>'+esc(x.member_no||"–")+'</small></td><td>'+fmtDate(x.end_date)+'</td><td><span class="badge '+(x.status==="Abgeschlossen"?"":"passiv")+'">'+esc(x.status)+'</span></td><td>'+esc(x.created_by_name||"–")+'</td><td>'+(x.document_id?'<button class="btn gray" onclick="openStoredDocument('+Number(x.document_id)+')">PDF</button> ':'')+(x.confirmation_email_sent_at?'✓ E-Mail versendet':'–')+'</td></tr>').join(""):'<tr><td colspan="6" class="empty">Noch keine Kündigungen erfasst.</td></tr>';
+  }catch(e){
+    console.error("Kündigungen konnten nicht geladen werden:",e);
+    rows.innerHTML='<tr><td colspan="6" class="empty"><strong style="color:#b42318">⚠️ Kündigungen konnten nicht geladen werden.</strong><div style="margin:8px 0">'+esc(e.message||"Unbekannter Fehler")+'</div><button class="btn gray" type="button" onclick="loadResignations()">Erneut versuchen</button></td></tr>';
+  }
+}
 async function saveResignation(){
  const m=(window.portalMembers||[]).find(x=>Number(x.id)===Number(resMemberId.value));if(!m)return alert("Bitte zuerst ein Mitglied auswählen.");if(!resReceived.value||!resEnd.value)return alert("Bitte Eingangs- und Wirksamkeitsdatum eintragen.");
  const summary=(m.member_no||"ohne Nr.")+" · "+m.first_name+" "+m.last_name+"\nKündigung eingegangen: "+fmtDate(resReceived.value)+"\nWirksam zum: "+fmtDate(resEnd.value)+(resSendEmail.checked?"\nBestätigung wird an "+m.email+" gesendet.":"");
@@ -1266,7 +1284,7 @@ async function saveResignation(){
  await loadResignations();await loadMembers();loadResignations();loadMailGreetings();await loadDashboard();setTimeout(closeResignationForm,1800);
 }
 
-function go(id,filter){if(id==="communication")loadMailGreetings();document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));if(filter&&document.getElementById('filter'))document.getElementById('filter').value=filter;window.scrollTo({top:0,behavior:'smooth'})}
+function go(id,filter){if(id==="communication")loadMailGreetings();if(id==="terminations")loadResignations();document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));if(filter&&document.getElementById('filter'))document.getElementById('filter').value=filter;window.scrollTo({top:0,behavior:'smooth'})}
 function nextJubilee(entry){if(!entry)return null;const y=new Date(entry).getFullYear(),now=new Date().getFullYear(),years=now-y;const n=JUB.find(v=>v>=years);return n?{years:n,year:y+n}:null}
 
 document.getElementById("quickEditMembersButton")?.addEventListener("click",openQuickEdit);
