@@ -30,6 +30,21 @@ a{color:inherit}.topbar{position:sticky;top:0;z-index:50;background:rgba(3,5,13,
 @media(max-width:900px){.hero{grid-template-columns:1fr;padding-top:28px}.poster{order:-1}.navlinks{display:none}.grid,.story,.artist-grid,.program-logos,.extra-program,.ticketbox,.tombola{grid-template-columns:1fr}.artist{grid-template-columns:130px 1fr}.artist img{width:130px;height:170px}}
 @media(max-width:560px){.section{padding:22px}.artist{grid-template-columns:1fr}.artist img{width:100%;height:auto;max-height:420px}h1{font-size:3rem}}
 </style>
+<style>
+.award-showcase{text-align:center;margin:36px auto 0;max-width:760px}
+.award-showcase h2{margin:0 0 12px}
+.award-showcase .lead{margin:0 auto 22px}
+.award-slider{width:min(100%,620px);margin:auto;overflow:hidden}
+.award-slides{display:flex;width:100%;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;touch-action:pan-x}
+.award-slides::-webkit-scrollbar{display:none}
+.award-slides figure{flex:0 0 100%;width:100%;margin:0;scroll-snap-align:start;min-width:0}
+.award-slides img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;border-radius:16px;background:#09051b}
+.award-slides figcaption{padding:12px 5px;font-weight:700}
+.award-navigation{display:flex;justify-content:center;align-items:center;gap:24px;margin-top:8px}
+.award-navigation button{width:44px;height:44px;border-radius:50%;background:#ed168f;color:#fff;border:0;font-size:19px;cursor:pointer}
+.award-navigation span{font-weight:700;min-width:48px}
+.award-hint{font-size:.85rem;opacity:.75;margin:12px 0}
+</style>
 </head>
 <body>
 <header class="topbar"><nav class="nav"><a class="brand" href="index.html"><img src="assets/fkk-logo.jpeg" alt="FKK Logo"><span>FKK Wesel</span></a><div class="navlinks"><a href="#event">Event</a><a href="#programm">Programm</a><a href="#preis">Charity-Preis</a><a href="#tombola">Tombola</a><a href="#tickets">Tickets</a><a href="index.html">FKK-Homepage</a></div></nav></header>
@@ -44,11 +59,38 @@ a{color:inherit}.topbar{position:sticky;top:0;z-index:50;background:rgba(3,5,13,
 
 <section class="section" id="programm"><div class="kicker">Live auf der Bühne</div><h2>Musik, Stimmung & <span>Herz</span></h2><div class="artist-grid"><div class="artist"><img src="assets/petra-fm.jpg" alt="Petra F.M."><div><h3>Petra F.M.</h3><p>Bereits zum dritten Mal mit dabei und von Anfang an eng mit der Charity verbunden.</p></div></div><div class="artist"><img src="assets/ben-mueller.jpg" alt="Ben Müller"><div><h3>Ben Müller</h3><p>Live auf der Bühne bei Pepe's großer Charity Night 2026.</p></div></div></div><div class="program-logos"><div class="logo-card"><img src="assets/vesalia-red-stars.png" alt="Vesalia Red Stars"><h3>Vesalia Red Stars</h3></div><div class="logo-card"><img src="assets/prinzengarde-wesel.png" alt="Prinzengarde der Stadt Wesel"><h3>Prinzengarde der Stadt Wesel</h3></div><div class="logo-card"><img src="assets/sweetys-fkk.png" alt="Sweetys vom FKK"><h3>Sweetys vom FKK</h3></div></div><div class="extra-program"><div class="extra">🎧 DJ Cioex</div><div class="extra">🥁 Fanfarencorps Wesel</div><div class="extra">🎶 Generation Lollipops</div></div></section>
 
-<section class="section" id="preis"><div class="prize"><div class="kicker">Ehrenamt verdient Anerkennung</div><div class="big">Der Charity-Preis <span>2026</span></div><p class="lead" style="margin:16px auto 0">Seit 2025 zeichnen wir Menschen aus Wesel aus, die sich in besonderer Weise ehrenamtlich oder sozial engagieren. Ein Komitee wählt gezielt Personen aus, deren Einsatz Aufmerksamkeit verdient. Der Preis ist nicht mit Geld dotiert – seine Botschaft ist wichtiger.</p></div></section>
+<section class="section" id="preis"><div class="prize"><div class="kicker">Ehrenamt verdient Anerkennung</div><div class="big">Der Charity-Preis <span>2026</span></div><p class="lead" style="margin:16px auto 0">Seit 2025 zeichnen wir Menschen aus Wesel aus, die sich in besonderer Weise ehrenamtlich oder sozial engagieren. Ein Komitee wählt gezielt Personen aus, deren Einsatz Aufmerksamkeit verdient. Der Preis ist nicht mit Geld dotiert – seine Botschaft ist wichtiger.</p></div>
+<div class="award-showcase" aria-label="Bildergalerie der Charity-Preisträger">
+  <h2>Unsere Charity-Preisträger 2026</h2>
+  <p class="lead">Denis Tahiri und Ali Ebaid – mit Musik, Herz und Perspektiven für junge Menschen.</p>
+  <div class="award-slider" id="award-slider">
+    <div class="award-slides" id="award-slides">
+      <figure><img src="Bild%201.jpg" alt="Der Charity Award 2026 geht an Denis Tahiri und Ali Ebaid" loading="lazy"><figcaption>Der Charity Award 2026</figcaption></figure>
+      <figure><img src="Bild%202.jpg" alt="Denis Tahiri und Ali Ebaid: Musik, Herz und Perspektive" loading="lazy"><figcaption>Musik. Herz. Perspektive.</figcaption></figure>
+      <figure><img src="Bild%203.jpg" alt="Mehr als nur Musik: Unterstützung junger Menschen" loading="lazy"><figcaption>Mehr als nur Musik</figcaption></figure>
+      <figure><img src="Bild%204.jpg" alt="Warum Denis Tahiri und Ali Ebaid den Charity Award verdienen" loading="lazy"><figcaption>Warum sie diesen Preis verdienen</figcaption></figure>
+    </div>
+    <div class="award-navigation"><button type="button" id="award-prev" aria-label="Vorheriges Bild">❮</button><span id="award-count" aria-live="polite">1 / 4</span><button type="button" id="award-next" aria-label="Nächstes Bild">❯</button></div>
+    <p class="award-hint">Automatischer Bildwechsel alle 10 Sekunden · Auf dem Handy wischen</p>
+  </div>
+</div></section>
 
 <section class="section" id="tombola"><div class="kicker">Unsere Tombola</div><h2>Gewinnen & dabei <span>Gutes tun</span></h2><div class="tombola"><div><p class="lead">Auch 2026 gibt es wieder unsere große Charity-Tombola. Viele tolle Preise sind bereits gesammelt – welche es sind, bleibt noch eine Überraschung. Sachspenden, Gutscheine und weitere Tombolapreise sind herzlich willkommen.</p><div class="tombola-box"><strong>Tombola-Erlös: 100 % Spende.</strong><br>Bereits unterstützt haben uns unter anderem Tierheim Wesel, Löwenzahn & Pusteblume Wesel sowie Ankerplatz.</div></div><div class="card"><div class="icon">🎟️</div><h3>Auch Unternehmen können helfen</h3><p>Geschäfte, Unternehmen und Privatpersonen können mit Sachspenden, Gutscheinen oder Tombolapreisen unterstützen. Aus vielen kleinen Beiträgen kann am Ende etwas ganz Großes entstehen.</p></div></div></section>
 
 <section class="section" id="tickets"><div class="kicker">Tickets / Vorverkauf</div><h2>Sei <span>dabei</span></h2><p class="lead">Eintritt: 10 € – und damit 100 % Spende.</p><div class="ticketbox"><div class="ticket"><h3>Sven Reitmeyer Frisöre</h3><p>Korbmacherstraße 7<br>46483 Wesel</p></div><div class="ticket"><h3>Feldmarker Eck</h3><p>Holzweg 34<br>46483 Wesel</p></div></div><div class="contactline"><a href="mailto:charity@fkkwesel.de">✉ charity@fkkwesel.de</a><a href="https://www.fkkwesel.de">🌐 www.fkkwesel.de</a></div></section>
 </main>
 <footer class="footer"><strong>Ein Abend. Eine Stadt. <span class="neon">Ein gemeinsames Ziel.</span></strong>Wesel hilft Wesel.<br><br>Präsentiert vom Feldmarker Karnevals-Komitee e.V. · Wesel<br><a href="index.html">Zurück zu fkkwesel.de</a></footer>
+<script>
+(function(){
+const track=document.getElementById('award-slides');if(!track)return;
+const slides=[...track.querySelectorAll('figure')],counter=document.getElementById('award-count');let current=0,timer;
+function update(){current=Math.max(0,Math.min(slides.length-1,Math.round(track.scrollLeft/Math.max(track.clientWidth,1))));counter.textContent=(current+1)+' / '+slides.length}
+function show(i){current=(i+slides.length)%slides.length;track.scrollTo({left:current*track.clientWidth,behavior:'smooth'});counter.textContent=(current+1)+' / '+slides.length}
+function reset(){clearInterval(timer);timer=setInterval(()=>{if(!document.hidden)show(current+1)},10000)}
+document.getElementById('award-prev').addEventListener('click',()=>{show(current-1);reset()});
+document.getElementById('award-next').addEventListener('click',()=>{show(current+1);reset()});
+track.addEventListener('scroll',update,{passive:true});track.addEventListener('touchend',reset,{passive:true});
+reset();
+})();
+</script>
 </body></html>
