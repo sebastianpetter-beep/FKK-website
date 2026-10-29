@@ -892,6 +892,20 @@
   } catch(e) {}
 })();
 </script>
+<style>
+.charity-award-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;gap:18px;scrollbar-width:none}
+.charity-award-track::-webkit-scrollbar{display:none}
+.charity-award-track figure{flex:0 0 min(100%,520px);margin:0;scroll-snap-align:center;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.09)}
+.charity-award-track img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain;background:#09051b;cursor:zoom-in}
+.charity-award-track figcaption{text-align:center;padding:15px;font-weight:800}
+.charity-award-controls{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:18px}
+.charity-award-controls button{border:0;border-radius:50%;background:#087b35;color:white;width:42px;height:42px;cursor:pointer;font-size:1.1rem}
+.charity-award-controls span{font-weight:700}
+.charity-award-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:none;align-items:center;justify-content:center;padding:45px 15px 15px}
+.charity-award-lightbox.open{display:flex}
+.charity-award-lightbox img{max-width:100%;max-height:100%;object-fit:contain}
+.charity-award-lightbox button{position:absolute;top:10px;right:20px;border:0;background:transparent;color:white;font-size:36px;cursor:pointer}
+</style>
 </head>
 <body>
 
@@ -1164,6 +1178,21 @@
     </div>
   </section>
 
+  <section id="charity-preistraeger" aria-labelledby="charity-award-title">
+    <div class="section-head">
+      <div><div class="kicker">Charity Night 2026</div><h2 id="charity-award-title">❤️ Unsere Charity-Preisträger</h2></div>
+      <p>Denis Tahiri und Ali Ebaid – Musik, Herz und Perspektiven für junge Menschen.</p>
+    </div>
+    <div class="charity-award-gallery" aria-label="Charity Award 2026 Bildergalerie">
+      <div class="charity-award-track" id="charity-award-track">
+        <figure><img src="Bild%201.jpg" alt="Charity Award 2026 für Denis Tahiri und Ali Ebaid" loading="lazy"><figcaption>Der Charity Award 2026</figcaption></figure>
+        <figure><img src="Bild%202.jpg" alt="Denis Tahiri und Ali Ebaid – Musik, Herz und Perspektive" loading="lazy"><figcaption>Musik. Herz. Perspektive.</figcaption></figure>
+        <figure><img src="Bild%203.jpg" alt="Mehr als nur Musik – Förderung junger Menschen" loading="lazy"><figcaption>Mehr als nur Musik</figcaption></figure>
+        <figure><img src="Bild%204.jpg" alt="Warum Denis Tahiri und Ali Ebaid den Charity Award verdienen" loading="lazy"><figcaption>Warum sie diesen Preis verdienen</figcaption></figure>
+      </div>
+      <div class="charity-award-controls"><button type="button" id="charity-award-prev" aria-label="Vorheriges Bild">❮</button><span id="charity-award-counter" aria-live="polite">1 / 4</span><button type="button" id="charity-award-next" aria-label="Nächstes Bild">❯</button></div>
+    </div>
+  </section>
   <section id="album" class="album-section">
     <div class="section-head">
       <div>
@@ -1613,5 +1642,25 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 
+<div class="charity-award-lightbox" id="charity-award-lightbox" role="dialog" aria-modal="true" aria-label="Charity-Bild vergrößert"><button type="button" aria-label="Schließen">×</button><img alt="Charity Award Bild in Großansicht"></div>
+<script>
+(function(){
+const track=document.getElementById('charity-award-track');
+if(!track)return;
+const slides=[...track.querySelectorAll('figure')],counter=document.getElementById('charity-award-counter');
+let current=0;
+function index(){const x=track.scrollLeft;return slides.reduce((best,slide,i)=>Math.abs(slide.offsetLeft-track.offsetLeft-x)<Math.abs(slides[best].offsetLeft-track.offsetLeft-x)?i:best,0)}
+function go(i){current=(i+slides.length)%slides.length;slides[current].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});counter.textContent=(current+1)+' / '+slides.length}
+document.getElementById('charity-award-prev').addEventListener('click',()=>go(index()-1));
+document.getElementById('charity-award-next').addEventListener('click',()=>go(index()+1));
+track.addEventListener('scroll',()=>{current=index();counter.textContent=(current+1)+' / '+slides.length},{passive:true});
+const lightbox=document.getElementById('charity-award-lightbox');
+function close(){lightbox.classList.remove('open');lightbox.querySelector('img').removeAttribute('src')}
+slides.forEach(slide=>slide.querySelector('img').addEventListener('click',e=>{lightbox.querySelector('img').src=e.currentTarget.src;lightbox.classList.add('open')}));
+lightbox.querySelector('button').addEventListener('click',close);
+lightbox.addEventListener('click',e=>{if(e.target===lightbox)close()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+})();
+</script>
 </body>
 </html>
