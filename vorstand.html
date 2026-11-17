@@ -541,9 +541,17 @@ function selectLetterMember(id){
 }
 async function loadCorrespondence(){
  const r=await api("/api/portal/correspondence");if(!r.ok)return;const d=await r.json();correspondenceData=d.letters||[];
- letterRows.innerHTML=correspondenceData.length?correspondenceData.map(l=>'<tr><td>'+esc(fmtDate(l.letter_date))+'</td><td><b>'+esc(l.recipient_name)+'</b></td><td>'+esc(l.subject)+'</td><td><span class="badge '+(l.status==="final"?"":"passiv")+'">'+(l.status==="final"?"✓ Fertig":"Entwurf")+'</span></td><td>'+esc(l.created_by_name||"–")+'</td><td>'+(l.status==="draft"?'<button class="btn" onclick="editLetter('+l.id+')">Bearbeiten</button> <button class="btn red" onclick="deleteLetter('+l.id+')">Löschen</button>':'<button class="btn" onclick="openStoredDocument('+l.document_id+')">PDF</button> <button class="btn gray" onclick="printStoredDocument('+l.document_id+')">🖨️</button> <button class="btn gray" onclick="openDocumentMail('+l.document_id+')">📧</button>')+'</td></tr>').join(""):'<tr><td colspan="6">Noch kein Schriftverkehr vorhanden.</td></tr>';
+ letterRows.innerHTML=correspondenceData.length?correspondenceData.map(l=>'<tr><td>'+esc(fmtDate(l.letter_date))+'</td><td><b>'+esc(l.recipient_name)+'</b></td><td>'+esc(l.subject)+'</td><td><span class="badge '+(l.status==="final"?"":"passiv")+'">'+(l.status==="final"?"✓ Fertig":"Entwurf")+'</span></td><td>'+esc(l.created_by_name||"–")+'</td><td>'+(l.status==="draft"?'<button class="btn" onclick="editLetter('+l.id+')">✏️ Bearbeiten</button> <button class="btn gray" onclick="copyLetter('+l.id+')">📋 Als Vorlage</button> <button class="btn red" onclick="deleteLetter('+l.id+')">Löschen</button>':'<button class="btn" onclick="copyLetter('+l.id+')">✏️ Bearbeiten / Kopie</button> <button class="btn gray" onclick="copyLetter('+l.id+')">📋 Als Vorlage</button> <button class="btn" onclick="openStoredDocument('+l.document_id+')">PDF</button> <button class="btn gray" onclick="printStoredDocument('+l.document_id+')">🖨️</button> <button class="btn gray" onclick="openDocumentMail('+l.document_id+')">📧</button>')+'</td></tr>').join(""):'<tr><td colspan="6">Noch kein Schriftverkehr vorhanden.</td></tr>';
 }
 function editLetter(id){const l=correspondenceData.find(x=>Number(x.id)===Number(id));if(!l)return;letterId.value=l.id;letterMemberId.value=l.member_id||"";letterMemberSearch.value="";letterRecipient.value=l.recipient_name||"";letterEmail.value=l.recipient_email||"";letterAddress.value=l.recipient_address||"";letterDate.value=(l.letter_date||"").slice(0,10);letterSubject.value=l.subject||"";letterSalutation.value=l.salutation||"";letterBody.value=l.body||"";letterClosing.value=l.closing||"";letterSigner.value=l.signer||"";letterEditorTitle.textContent="Entwurf bearbeiten";letterMessage.textContent="";letterEditor.classList.remove("hidden");letterEditor.scrollIntoView({behavior:"smooth"})}
+function copyLetter(id){
+ const original=correspondenceData.find(x=>Number(x.id)===Number(id));
+ if(!original)return;
+ editLetter(id);
+ letterId.value="";
+ letterEditorTitle.textContent=original.status==="final"?"Fertigen Brief als neue Kopie bearbeiten":"Briefvorlage bearbeiten";
+ letterMessage.textContent="📋 Neue, noch nicht gespeicherte Kopie. Das Original bleibt unverändert im Archiv. Bitte die Kopie als Entwurf speichern oder fertigstellen.";
+}
 function letterPayload(){return{id:letterId.value||null,member_id:letterMemberId.value||null,recipient_name:letterRecipient.value,recipient_email:letterEmail.value,recipient_address:letterAddress.value,letter_date:letterDate.value,subject:letterSubject.value,salutation:letterSalutation.value,body:letterBody.value,closing:letterClosing.value,signer:letterSigner.value}}
 async function previewLetter(){
  const p=letterPayload();
