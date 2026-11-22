@@ -185,8 +185,8 @@ html.device-mobile #memberEdit>div{grid-template-columns:1fr!important}
 <button data-page="useradmin" id="userAdminNav" class="hidden">⚙️ Benutzer & Rechte</button>
 </nav></aside>
 <main>
-<section id="salescash" class="page"><div class="panel"><div class="panel-head"><div><h2>🛒 Verkauf &amp; Kasse</h2><p>Interne Verwaltung der Adventsmarktkasse. Preise, Pfand, Kassenbestände und Berichte bleiben ausschließlich hier sichtbar.</p></div></div>
-<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" onclick="cashLoad()">↻ Aktualisieren</button><button class="btn" onclick="cashPdf('day')">📄 Tagesabschluss PDF</button><button class="btn" onclick="cashPdf('all')">📄 Gesamtabschluss PDF</button></div>
+<section id="salescash" class="page"><style>@keyframes cashSpin{to{transform:rotate(360deg)}}.cash-loading-spinner{display:inline-block;width:18px;height:18px;border:3px solid #c6dfcd;border-top-color:#087b35;border-radius:50%;animation:cashSpin .7s linear infinite}#cashRefreshBtn:disabled{opacity:.65;cursor:wait}</style><div class="panel"><div class="panel-head"><div><h2>🛒 Verkauf &amp; Kasse</h2><p>Interne Verwaltung der Adventsmarktkasse. Preise, Pfand, Kassenbestände und Berichte bleiben ausschließlich hier sichtbar.</p></div></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="cashRefreshBtn" onclick="cashLoad()"><span id="cashRefreshIcon">↻</span> <span id="cashRefreshLabel">Aktualisieren</span></button><span id="cashRefreshProgress" role="status" aria-live="polite" style="display:none;align-items:center;gap:7px;color:#087b35;font-weight:700"><span class="cash-loading-spinner" aria-hidden="true"></span> Daten werden geladen …</span><button class="btn" onclick="cashPdf('day')">📄 Tagesabschluss PDF</button><button class="btn" onclick="cashPdf('all')">📄 Gesamtabschluss PDF</button></div>
 <p><label>Tag für Tagesabschluss <input type="date" id="cashDay"></label></p>
 <h3>Artikel und Pfand verwalten</h3><div style="display:flex;flex-wrap:wrap;gap:8px"><input id="cashProductId" placeholder="Artikel-ID (z. B. glühwein)" style="min-width:170px"><input id="cashProductName" placeholder="Artikelname"><input id="cashProductPrice" type="number" step=".01" min="0" placeholder="Preis €"><input id="cashProductDeposit" type="number" step=".01" min="0" placeholder="Pfand €"><button class="btn" onclick="cashSaveProduct()">Artikel speichern</button><button class="btn gray" onclick="cashClearProduct()">Neue Eingabe</button></div>
 <div id="cashProducts" style="overflow-x:auto;margin:12px 0">Artikel werden geladen. Bitte auf „Aktualisieren“ klicken.</div><h3>Kassenbestand / Wechselgeld</h3><p>Startbestand je Verkaufsstand. Entnahmen und Einlagen werden separat protokolliert.</p>
@@ -1319,12 +1319,18 @@ const cashEuro=n=>(Number(n||0)/100).toLocaleString("de-DE",{style:"currency",cu
 const cashCents=id=>Math.round(Number(document.getElementById(id).value)*100);
 function cashMsg(s){document.getElementById("cashMessage").textContent=s}
 async function cashFetch(path,options){const r=await api("/api/adventskasse/"+path,options);const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||"Serverfehler");return d}
+let cashLoading=false;
 async function cashLoad(){
+ if(cashLoading)return;
+ cashLoading=true;
+ const btn=document.getElementById("cashRefreshBtn");const progress=document.getElementById("cashRefreshProgress");
+ btn.disabled=true;document.getElementById("cashRefreshLabel").textContent="Wird geladen …";document.getElementById("cashRefreshIcon").textContent="⏳";progress.style.display="inline-flex";cashMsg("Artikel und Verkaufszahlen werden aktualisiert …");
  try{const [a,b,c]=await Promise.all([cashFetch("admin"),cashFetch("admin/report"),cashFetch("admin/articles")]);window.cashProducts=a.products;window.cashAll=b;
  const trs=a.products.map(p=>'<tr><td>'+esc(p.name)+(p.active?'':' <em>(ausgeblendet)</em>')+'</td><td>'+cashEuro(p.price_cents)+'</td><td>'+cashEuro(p.deposit_cents)+'</td><td><button class="btn gray" onclick="cashEditProduct('+JSON.stringify(p.id).replace(/"/g,"&quot;")+')">Bearbeiten</button> '+(p.active?'<button class="btn gray" onclick="cashDeleteProduct('+JSON.stringify(p.id).replace(/"/g,"&quot;")+')">Löschen</button>':'')+'</td></tr>').join("");
  document.getElementById("cashProducts").innerHTML='<table><thead><tr><th>Artikel</th><th>Preis</th><th>Pfand</th><th>Aktionen</th></tr></thead><tbody>'+trs+'</tbody></table>';
  cashRenderReport(b);cashRenderArticles(c);cashLoadClosings();cashMsg("Daten aus der gemeinsamen Datenbank geladen.");
  }catch(e){cashMsg("Fehler: "+e.message+(e.message==="Anmeldung erforderlich."?" Bitte in der Vorstandszentrale neu anmelden.":""))}
+ finally{cashLoading=false;btn.disabled=false;document.getElementById("cashRefreshLabel").textContent="Aktualisieren";document.getElementById("cashRefreshIcon").textContent="↻";progress.style.display="none"}
 }
 
 function cashClearProduct(){for(const id of ["cashProductId","cashProductName","cashProductPrice","cashProductDeposit"])document.getElementById(id).value="";document.getElementById("cashProductId").readOnly=false}
