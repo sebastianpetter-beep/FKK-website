@@ -929,6 +929,33 @@ html[data-fkk-season="thanks"] .fkk-seasonal-thanks{display:block}
 .fkk-thanks-person img{display:block;max-width:100%;width:240px;height:115px;object-fit:contain;object-position:center bottom}
 .fkk-thanks-person span{font-size:.72rem;font-weight:800;color:#ffe29a;margin-top:2px}
 @media(max-width:700px){.fkk-thanks-portraits{gap:9px}.fkk-thanks-person img{width:100%;height:90px}.fkk-thanks-person span{font-size:.62rem}}
+
+/* Dankesbanner: gleiche dreispaltige Bildkomposition wie der Sessionsbanner */
+.fkk-seasonal-thanks .fkk-seasonal-inner{width:min(1500px,calc(100% - 28px));max-width:1500px;display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,1.8fr) minmax(0,1fr);gap:14px;min-height:180px;height:180px;padding:10px 0;align-items:stretch}
+.fkk-seasonal-thanks .fkk-seasonal-copy{grid-column:2;grid-row:1;align-self:center;min-width:0}
+.fkk-seasonal-thanks .fkk-seasonal-copy h2{font-size:clamp(1.08rem,1.65vw,1.6rem);margin:4px 0}
+.fkk-seasonal-thanks .fkk-seasonal-copy p{font-size:clamp(.7rem,.8vw,.88rem);line-height:1.32;margin:3px auto}
+.fkk-seasonal-thanks .fkk-thanks-timer{margin:6px auto 0;grid-template-columns:repeat(4,minmax(50px,72px));gap:5px}
+.fkk-seasonal-thanks .fkk-thanks-unit{padding:4px 5px;border-radius:9px}
+.fkk-seasonal-thanks .fkk-thanks-unit strong{font-size:1.02rem}
+.fkk-seasonal-thanks .fkk-thanks-unit span{font-size:.53rem}
+.fkk-seasonal-thanks .fkk-thanks-portraits{display:contents}
+.fkk-seasonal-thanks .fkk-thanks-person{height:160px;position:relative;overflow:hidden;align-self:center;justify-content:center}
+.fkk-seasonal-thanks .fkk-thanks-person:first-child{grid-column:1;grid-row:1}
+.fkk-seasonal-thanks .fkk-thanks-person:last-child{grid-column:3;grid-row:1}
+.fkk-seasonal-thanks .fkk-thanks-person img{position:absolute;inset:0;width:100%;max-width:none;height:100%;object-fit:cover;object-position:center top;-webkit-mask-image:radial-gradient(ellipse 72% 85% at 50% 43%,#000 48%,transparent 100%);mask-image:radial-gradient(ellipse 72% 85% at 50% 43%,#000 48%,transparent 100%)}
+.fkk-seasonal-thanks .fkk-thanks-person span{display:none}
+@media(max-width:850px){
+.fkk-seasonal-thanks .fkk-seasonal-inner{height:auto;min-height:0;display:flex;flex-direction:column;gap:8px;padding:13px 0}
+.fkk-seasonal-thanks .fkk-seasonal-copy{width:100%}
+.fkk-seasonal-thanks .fkk-seasonal-copy h2{font-size:1.18rem}
+.fkk-seasonal-thanks .fkk-seasonal-copy p{font-size:.77rem}
+.fkk-seasonal-thanks .fkk-thanks-portraits{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:440px;margin:0 auto}
+.fkk-seasonal-thanks .fkk-thanks-person{height:100px;position:relative}
+.fkk-seasonal-thanks .fkk-thanks-person img{height:100%;object-fit:contain;object-position:center bottom;-webkit-mask-image:linear-gradient(#000 0%,#000 80%,transparent);mask-image:linear-gradient(#000 0%,#000 80%,transparent)}
+.fkk-seasonal-thanks .fkk-thanks-timer{width:min(100%,330px);grid-template-columns:repeat(4,minmax(0,1fr));margin:3px auto 0}
+.fkk-seasonal-thanks .fkk-thanks-unit strong{font-size:1.13rem}
+}
 </style>
 
 <script>
@@ -1009,17 +1036,17 @@ html[data-fkk-season="thanks"] .fkk-seasonal-thanks{display:block}
 
 <section class="fkk-seasonal-banner fkk-seasonal-thanks" aria-label="Dankesgruss zur Session und Countdown zum 11.11.2027">
   <div class="fkk-seasonal-inner">
-    <div class="fkk-seasonal-copy">
+<div class="fkk-thanks-portraits">
+      <div class="fkk-thanks-person"><img src="assets/session-2026-elia-transparent.png" alt="Kinderprinzessin Elia I. mit ihren Pagen"><span>Elia I. &amp; ihre Pagen</span></div>
+      <div class="fkk-thanks-person"><img src="assets/Fünf Karnevalsuniformierte in festlicher Reihe.png" alt="Jörg II. und Anke I. mit ihren Pagen"><span>Jörg II. &amp; Anke I. mit Oli &amp; Eva</span></div>
+    </div>
+            <div class="fkk-seasonal-copy">
       <div class="fkk-seasonal-eyebrow">❤️💚💛 Danke für diese großartige Session! ❤️💚💛</div>
       <h2>Was für eine unvergessliche gemeinsame Zeit!</h2>
       <p>Von Herzen danken wir unserem Prinzenpaar <strong>Jörg II. &amp; Anke I.</strong>, ihren Pagen <strong>Oli und Eva</strong>, unserer Kinderprinzessin <strong>Elia I.</strong> und ihren Pagen – und allen, die diese Session so besonders gemacht haben. <strong>Nach der Session ist vor der Session: Wir freuen uns auf euch!</strong></p>
       <p><strong>Unser Countdown zum 11.11.2027 · 11:11 Uhr</strong></p>
     </div>
-<div class="fkk-thanks-portraits">
-      <div class="fkk-thanks-person"><img src="assets/session-2026-elia-transparent.png" alt="Kinderprinzessin Elia I. mit ihren Pagen"><span>Elia I. &amp; ihre Pagen</span></div>
-      <div class="fkk-thanks-person"><img src="assets/Fünf Karnevalsuniformierte in festlicher Reihe.png" alt="Jörg II. und Anke I. mit ihren Pagen"><span>Jörg II. &amp; Anke I. mit Oli &amp; Eva</span></div>
-    </div>
-        <div class="fkk-thanks-timer" role="timer" aria-label="Countdown bis zur neuen Karnevalssession">
+<div class="fkk-thanks-timer" role="timer" aria-label="Countdown bis zur neuen Karnevalssession">
       <div class="fkk-thanks-unit"><strong data-fkk-timer="days">–</strong><span>Tage</span></div>
       <div class="fkk-thanks-unit"><strong data-fkk-timer="hours">–</strong><span>Stunden</span></div>
       <div class="fkk-thanks-unit"><strong data-fkk-timer="minutes">–</strong><span>Minuten</span></div>
