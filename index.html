@@ -923,6 +923,12 @@ html[data-fkk-season="thanks"] .fkk-seasonal-thanks{display:block}
 .fkk-thanks-unit strong{display:block;font-size:1.35rem;font-variant-numeric:tabular-nums;color:#ffe29a}
 .fkk-thanks-unit span{display:block;font-size:.66rem;font-weight:800;text-transform:uppercase}
 @media(max-width:700px){.fkk-seasonal-thanks .fkk-seasonal-inner{gap:8px;padding:14px 0}.fkk-thanks-timer{grid-template-columns:repeat(4,minmax(55px,1fr));width:min(100%,330px);gap:5px}.fkk-thanks-unit{padding:6px 4px}.fkk-thanks-unit strong{font-size:1.15rem}.fkk-thanks-unit span{font-size:.59rem}}
+
+.fkk-thanks-portraits{display:flex;justify-content:center;align-items:end;gap:22px;width:100%;max-width:590px;margin:1px auto}
+.fkk-thanks-person{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center}
+.fkk-thanks-person img{display:block;max-width:100%;width:240px;height:115px;object-fit:contain;object-position:center bottom}
+.fkk-thanks-person span{font-size:.72rem;font-weight:800;color:#ffe29a;margin-top:2px}
+@media(max-width:700px){.fkk-thanks-portraits{gap:9px}.fkk-thanks-person img{width:100%;height:90px}.fkk-thanks-person span{font-size:.62rem}}
 </style>
 
 <script>
@@ -1009,7 +1015,11 @@ html[data-fkk-season="thanks"] .fkk-seasonal-thanks{display:block}
       <p>Von Herzen danken wir unserem Prinzenpaar <strong>Jörg II. &amp; Anke I.</strong>, ihren Pagen <strong>Oli und Eva</strong>, unserer Kinderprinzessin <strong>Elia I.</strong> und ihren Pagen – und allen, die diese Session so besonders gemacht haben. <strong>Nach der Session ist vor der Session: Wir freuen uns auf euch!</strong></p>
       <p><strong>Unser Countdown zum 11.11.2027 · 11:11 Uhr</strong></p>
     </div>
-    <div class="fkk-thanks-timer" role="timer" aria-label="Countdown bis zur neuen Karnevalssession">
+<div class="fkk-thanks-portraits">
+      <div class="fkk-thanks-person"><img src="assets/session-2026-elia-transparent.png" alt="Kinderprinzessin Elia I. mit ihren Pagen"><span>Elia I. &amp; ihre Pagen</span></div>
+      <div class="fkk-thanks-person"><img src="assets/Fünf Karnevalsuniformierte in festlicher Reihe.png" alt="Jörg II. und Anke I. mit ihren Pagen"><span>Jörg II. &amp; Anke I. mit Oli &amp; Eva</span></div>
+    </div>
+        <div class="fkk-thanks-timer" role="timer" aria-label="Countdown bis zur neuen Karnevalssession">
       <div class="fkk-thanks-unit"><strong data-fkk-timer="days">–</strong><span>Tage</span></div>
       <div class="fkk-thanks-unit"><strong data-fkk-timer="hours">–</strong><span>Stunden</span></div>
       <div class="fkk-thanks-unit"><strong data-fkk-timer="minutes">–</strong><span>Minuten</span></div>
