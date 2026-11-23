@@ -1132,6 +1132,19 @@ html[data-fkk-season="thanks"] .fkk-seasonal-thanks{display:block}
 .fkk-seasonal-thanks .fkk-thanks-timer{width:min(100%,330px);grid-template-columns:repeat(4,minmax(0,1fr));margin:3px auto 0}
 .fkk-seasonal-thanks .fkk-thanks-unit strong{font-size:1.13rem}
 }
+
+/* Feinschliff: Dankesbanner ohne abgeschnittenen Countdown */
+@media(min-width:851px){
+  .fkk-seasonal-thanks .fkk-seasonal-inner{height:auto;min-height:224px;padding:12px 0 14px;align-items:center}
+  .fkk-seasonal-thanks .fkk-thanks-person{height:198px;align-self:end}
+  .fkk-seasonal-thanks .fkk-seasonal-copy{align-self:center;padding:2px 0}
+  .fkk-seasonal-thanks .fkk-seasonal-copy h2{margin:3px 0 5px}
+  .fkk-seasonal-thanks .fkk-seasonal-copy p{margin:3px auto;line-height:1.28}
+  .fkk-seasonal-thanks .fkk-thanks-timer{margin:8px auto 0}
+  .fkk-seasonal-thanks .fkk-thanks-unit{padding:7px 6px}
+  .fkk-seasonal-thanks .fkk-thanks-unit strong{font-size:1.18rem}
+  .fkk-seasonal-thanks .fkk-thanks-unit span{font-size:.58rem}
+}
 </style>
 <script>
 /* Datumssteuerung nach deutscher Ortszeit; aktualisiert sich auch bei geoeffneter Seite. */
