@@ -887,6 +887,31 @@
 .history-feature{margin:28px auto;max-width:1180px;padding:0 16px}
 .history-feature-inner{background:linear-gradient(135deg,#fffaf0,#ffffff);border:2px solid #f4c400;border-radius:28px;padding:30px;box-shadow:0 14px 36px rgba(0,0,0,.07)}
 .history-feature h2{margin:.2rem 0 .8rem}.history-feature p{max-width:850px}
+
+/* FKK Saisonbanner 2026: automatische Weihnachts-/Jahreswechsel-Ansicht */
+html[data-fkk-season="christmas"] .session-countdown,
+html[data-fkk-season="yearend"] .session-countdown{display:none!important}
+.fkk-seasonal-banner{display:none;position:relative;overflow:hidden;color:#fff;border-bottom:4px solid #e8bd62;background:linear-gradient(105deg,#0a4b36 0%,#0b6749 43%,#6d1726 100%)}
+html[data-fkk-season="christmas"] .fkk-seasonal-christmas,
+html[data-fkk-season="yearend"] .fkk-seasonal-yearend{display:block}
+.fkk-seasonal-inner{width:min(1180px,calc(100% - 30px));min-height:180px;margin:auto;display:flex;gap:24px;align-items:center;justify-content:center;text-align:center;padding:12px 0}
+.fkk-seasonal-copy{flex:1;min-width:0}
+.fkk-seasonal-eyebrow{font-size:.75rem;letter-spacing:.13em;text-transform:uppercase;font-weight:900;color:#f9db87}
+.fkk-seasonal-copy h2{font-size:clamp(1.15rem,2.1vw,1.85rem);margin:5px 0;color:#fff;line-height:1.16}
+.fkk-seasonal-copy p{font-size:clamp(.78rem,1.1vw,.96rem);line-height:1.45;margin:4px auto 0;max-width:680px;color:#fff}
+.fkk-advent-wreath{flex:0 0 220px;display:flex;justify-content:center;align-items:end;gap:13px;position:relative;height:112px;padding-bottom:17px}
+.fkk-advent-wreath:after{content:"";position:absolute;bottom:5px;left:0;right:0;height:28px;border-radius:50%;border:10px solid #125a39;background:repeating-linear-gradient(115deg,#24794b 0 12px,#125d3b 12px 23px);box-shadow:0 4px 0 #073b2a}
+.fkk-candle{position:relative;z-index:1;width:31px;height:63px;border-radius:5px 5px 2px 2px;background:linear-gradient(90deg,#a81c29,#ec4551 48%,#a71a2a);box-shadow:inset -4px 0 5px #6e1723}
+.fkk-candle:nth-child(even){height:76px}
+.fkk-candle:before{content:"";position:absolute;top:-7px;left:14px;width:3px;height:9px;background:#2c201a}
+.fkk-candle .fkk-flame{display:none;position:absolute;top:-29px;left:9px;width:14px;height:24px;background:linear-gradient(#fff7b1,#ffd253 45%,#ff8c20);border-radius:80% 10% 65% 65%;transform:rotate(45deg);box-shadow:0 0 15px 5px rgba(255,192,55,.5)}
+html[data-fkk-advent="1"] .fkk-candle:nth-child(-n+1) .fkk-flame,
+html[data-fkk-advent="2"] .fkk-candle:nth-child(-n+2) .fkk-flame,
+html[data-fkk-advent="3"] .fkk-candle:nth-child(-n+3) .fkk-flame,
+html[data-fkk-advent="4"] .fkk-candle:nth-child(-n+4) .fkk-flame{display:block}
+.fkk-seasonal-yearend{background:linear-gradient(105deg,#123f37,#2c5261,#503d66)}
+@media(max-width:700px){.fkk-seasonal-inner{min-height:0;flex-direction:column;gap:4px;padding:13px 0 9px}.fkk-advent-wreath{flex:0 0 93px;height:93px;transform:scale(.8);transform-origin:center center;margin-top:-2px}.fkk-seasonal-copy h2{font-size:1.24rem}.fkk-seasonal-copy p{font-size:.78rem}.fkk-seasonal-eyebrow{font-size:.66rem}}
+
 </style>
 
 <script>
@@ -906,6 +931,23 @@
 })();
 </script>
 
+<script>
+/* Datumssteuerung nach deutscher Ortszeit; aktualisiert sich auch bei geoeffneter Seite. */
+(function(){
+  function updateFkkSeason(){
+    const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+    const val=k=>Number(parts.find(p=>p.type===k).value);
+    const y=val('year'),m=val('month'),d=val('day');
+    const christmas=(y===2026&&m===12&&d<=26);
+    const yearend=(y===2026&&m===12&&d>=27);
+    document.documentElement.dataset.fkkSeason=christmas?'christmas':yearend?'yearend':'carnival';
+    if(christmas)document.documentElement.dataset.fkkAdvent=String(d>=20?4:d>=13?3:d>=6?2:1);
+    else delete document.documentElement.dataset.fkkAdvent;
+  }
+  updateFkkSeason();
+  setInterval(updateFkkSeason,30000);
+})();
+</script>
 </head>
 <body>
 
@@ -918,6 +960,22 @@
 </div>
 <div class="carnival-strip"></div>
 
+
+<section class="fkk-seasonal-banner fkk-seasonal-christmas" aria-label="Weihnachtsgruss des FKK">
+  <div class="fkk-seasonal-inner">
+    <div class="fkk-seasonal-copy">
+      <div class="fkk-seasonal-eyebrow">✨ Adventszeit beim FKK ✨</div>
+      <h2>Wir wünschen euch eine wundervolle Weihnachtszeit!</h2>
+      <p>Besinnliche Momente, leuchtende Augen und viel Zeit mit euren Liebsten. Euer Feldmarker Karnevals-Komitee wünscht von Herzen einen schönen Advent und frohe Weihnachten! ❤️</p>
+    </div>
+    <div class="fkk-advent-wreath" role="img" aria-label="Vier Adventskerzen, die nach jedem Adventssonntag automatisch angezündet werden">
+      <div class="fkk-candle"><i class="fkk-flame"></i></div><div class="fkk-candle"><i class="fkk-flame"></i></div><div class="fkk-candle"><i class="fkk-flame"></i></div><div class="fkk-candle"><i class="fkk-flame"></i></div>
+    </div>
+  </div>
+</section>
+<section class="fkk-seasonal-banner fkk-seasonal-yearend" aria-label="Gruss zum Jahreswechsel">
+  <div class="fkk-seasonal-inner"><div class="fkk-seasonal-copy"><div class="fkk-seasonal-eyebrow">✨ Zwischen den Jahren ✨</div><h2>Danke für ein wunderbares gemeinsames Jahr!</h2><p>Wir wünschen euch erholsame Tage und einen guten Rutsch ins neue Jahr. Ab dem 1. Januar begrüßen wir euch wieder mit unserem Sessionsbanner! ❤️💚💛</p></div></div>
+</section>
 
 <div class="session-countdown" aria-label="Karnevalssession 2026/2027 eröffnet">
   <div class="session-countdown-inner session-regents-inner">
