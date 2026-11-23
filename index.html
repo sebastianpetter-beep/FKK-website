@@ -938,10 +938,11 @@ html[data-fkk-advent="4"] .fkk-candle:nth-child(-n+4) .fkk-flame{display:block}
     const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
     const val=k=>Number(parts.find(p=>p.type===k).value);
     const y=val('year'),m=val('month'),d=val('day');
-    const christmas=(y===2026&&m===12&&d<=26);
-    const yearend=(y===2026&&m===12&&d>=27);
+    const preview=new URLSearchParams(window.location.search).get('fkk_preview');
+    const christmas=preview==='weihnachten'||(y===2026&&m===12&&d<=26&&preview!=='karneval');
+    const yearend=preview==='jahreswechsel'||(y===2026&&m===12&&d>=27&&preview!=='karneval');
     document.documentElement.dataset.fkkSeason=christmas?'christmas':yearend?'yearend':'carnival';
-    if(christmas)document.documentElement.dataset.fkkAdvent=String(d>=20?4:d>=13?3:d>=6?2:1);
+    if(christmas)document.documentElement.dataset.fkkAdvent=String(preview==='weihnachten'?1:d>=20?4:d>=13?3:d>=6?2:1);
     else delete document.documentElement.dataset.fkkAdvent;
   }
   updateFkkSeason();
