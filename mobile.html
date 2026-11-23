@@ -1051,6 +1051,18 @@
 .history-feature{margin:28px auto;max-width:1180px;padding:0 16px}
 .history-feature-inner{background:linear-gradient(135deg,#fffaf0,#ffffff);border:2px solid #f4c400;border-radius:28px;padding:30px;box-shadow:0 14px 36px rgba(0,0,0,.07)}
 .history-feature h2{margin:.2rem 0 .8rem}.history-feature p{max-width:850px}
+
+    /* Eigenstaendiger kompakter Sessionsbanner fuer die mobile Website */
+    .mobile-session-banner .mobile-session-inner{position:relative;z-index:1;width:min(600px,calc(100% - 24px));margin:auto;padding:12px 0 8px}
+    .mobile-session-copy{text-align:center}
+    .mobile-session-copy .small{font-size:.69rem;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:var(--yellow)}
+    .mobile-session-copy h2{font-size:clamp(1.1rem,4.4vw,1.5rem);line-height:1.15;margin:5px 0 4px;color:white}
+    .mobile-session-copy p{font-size:.78rem;line-height:1.35;margin:0;color:#fff}
+    .mobile-session-portraits{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:9px}
+    .mobile-session-person{min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center}
+    .mobile-session-person img{display:block;width:100%;height:94px;object-fit:cover;object-position:center 12%;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 78%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 78%,transparent 100%)}
+    .mobile-session-person span{font-size:.68rem;line-height:1.25;font-weight:800;color:var(--yellow);margin-top:3px}
+    @media(min-width:600px){.mobile-session-person img{height:115px}}
 </style>
 </head>
 <body class="mobile-site">
@@ -1066,18 +1078,16 @@
 <div class="carnival-strip"></div>
 
 
-<div class="session-countdown" aria-label="Countdown zur neuen Karnevalssession">
-  <div class="session-countdown-inner">
-    <div class="session-countdown-copy">
-      <div class="small">🎭 Countdown zur neuen Session</div>
-      <h2>11.11.2026 · 11:11 Uhr – dann geht’s wieder los!</h2>
-      <p>Unserem designierten Prinzenpaar <strong>Jörg II. &amp; Anke I.</strong> wünschen wir schon jetzt eine unvergessliche und erfolgreiche Session.</p>
+<div class="session-countdown mobile-session-banner" aria-label="Die Karnevalssession 2026/2027 hat begonnen">
+  <div class="mobile-session-inner">
+    <div class="mobile-session-copy">
+      <div class="small">🎉 Die Session 2026/2027 hat begonnen!</div>
+      <h2>Eine unvergessliche Session!</h2>
+      <p>Wir wünschen unseren Regenten eine wunderschöne Zeit. <strong>Wesel Helau!</strong></p>
     </div>
-    <div class="countdown-grid" id="sessionCountdown" aria-live="polite">
-      <div class="countdown-unit"><strong id="cdDays">–</strong><span>Tage</span></div>
-      <div class="countdown-unit"><strong id="cdHours">–</strong><span>Stunden</span></div>
-      <div class="countdown-unit"><strong id="cdMinutes">–</strong><span>Minuten</span></div>
-      <div class="countdown-unit"><strong id="cdSeconds">–</strong><span>Sekunden</span></div>
+    <div class="mobile-session-portraits">
+      <div class="mobile-session-person"><img src="assets/session-2026-elia-transparent.png" alt="Kinderprinzessin Elia I. mit ihren Pagen" loading="eager"><span>Elia I. &amp; ihre Pagen</span></div>
+      <div class="mobile-session-person"><img src="assets/Fünf Karnevalsuniformierte in festlicher Reihe.png" alt="Jörg II. und Anke I. mit Oli und Eva" loading="eager"><span>Jörg II. &amp; Anke I.</span></div>
     </div>
   </div>
 </div>
@@ -1643,34 +1653,7 @@
     });
   })();
 
-  // Countdown zur Sessionseröffnung am 11.11.2026 um 11:11 Uhr (Deutschland)
-  (function(){
-    const target = new Date('2026-11-11T11:11:00+01:00').getTime();
-    const box = document.getElementById('sessionCountdown');
-    const days = document.getElementById('cdDays');
-    const hours = document.getElementById('cdHours');
-    const minutes = document.getElementById('cdMinutes');
-    const seconds = document.getElementById('cdSeconds');
-    if(!box || !days || !hours || !minutes || !seconds) return;
 
-    function updateCountdown(){
-      const diff = target - Date.now();
-      if(diff <= 0){
-        box.innerHTML = '<div class="countdown-finished">🎉 Die neue Session ist eröffnet – Helau!</div>';
-        return false;
-      }
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const sec = Math.floor((diff % 60000) / 1000);
-      days.textContent = d;
-      hours.textContent = String(h).padStart(2,'0');
-      minutes.textContent = String(m).padStart(2,'0');
-      seconds.textContent = String(sec).padStart(2,'0');
-      return true;
-    }
-    if(updateCountdown()) setInterval(updateCountdown,1000);
-  })();
 
 
 
