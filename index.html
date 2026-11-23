@@ -715,11 +715,11 @@
     .session-regents-inner .session-countdown-copy h2{font-size:clamp(1.15rem,1.8vw,1.65rem);color:#fff}
     .session-regents-inner .session-countdown-copy p{font-size:clamp(.75rem,.9vw,.91rem);line-height:1.38}
     .session-regent{height:156px;display:flex;align-items:center;justify-content:center;flex-direction:column;min-width:0;overflow:hidden;position:relative}
-    .session-regent img{display:block;width:100%;height:100%;object-fit:contain;object-position:center top;position:absolute;inset:0;max-width:none;transform:scale(2.35);transform-origin:50% 16%}
-    .session-regent-kids img{transform:scale(2.4);transform-origin:50% 20%}
-    .session-regent-adults img{transform:scale(2.2);transform-origin:50% 18%}
+    .session-regent img{display:block;width:100%;height:100%;object-fit:cover;object-position:center top;position:absolute;inset:0;max-width:none;transform:none;filter:none;mix-blend-mode:normal;-webkit-mask-image:radial-gradient(ellipse 72% 85% at 50% 43%,#000 48%,transparent 100%);mask-image:radial-gradient(ellipse 72% 85% at 50% 43%,#000 48%,transparent 100%)}
+    .session-regent-kids img{object-position:center 8%}
+    .session-regent-adults img{object-position:center 0%}
     .session-regent span{display:none}
-    @media(max-width:850px){.session-regents-inner{height:auto;min-height:0;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0}.session-regents-inner .session-countdown-copy{grid-column:1/-1;grid-row:1}.session-regent{height:115px}.session-regent-kids img{transform:scale(2.1)}.session-regent-adults img{transform:scale(2)}}
+    @media(max-width:850px){.session-regents-inner{height:auto;min-height:0;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0}.session-regents-inner .session-countdown-copy{grid-column:1/-1;grid-row:1}.session-regent{height:115px}.session-regent-kids img{object-position:center top}.session-regent-adults img{object-position:center top}}
     @media(max-width:480px){.session-regents-inner .session-countdown-copy h2{font-size:1.1rem}.session-regents-inner .session-countdown-copy p{font-size:.76rem}.session-regent{height:95px}}
         .contact-section{padding-top:10px}
     .contact-wrap{display:grid;grid-template-columns:.8fr 1.2fr;gap:28px;align-items:start;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:24px;padding:28px;box-shadow:0 14px 38px rgba(0,0,0,.08)}
