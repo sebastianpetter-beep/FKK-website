@@ -1088,6 +1088,17 @@ html[data-fkk-advent="4"] .fkk-candle:nth-child(-n+4) .fkk-flame{display:block}
 .fkk-seasonal-yearend{background:linear-gradient(105deg,#123f37,#2c5261,#503d66)}
 @media(max-width:700px){.fkk-seasonal-inner{min-height:0;flex-direction:column;gap:4px;padding:13px 0 9px}.fkk-advent-wreath{flex:0 0 93px;height:93px;transform:scale(.8);transform-origin:center center;margin-top:-2px}.fkk-seasonal-copy h2{font-size:1.24rem}.fkk-seasonal-copy p{font-size:.78rem}.fkk-seasonal-eyebrow{font-size:.66rem}}
 
+
+/* Ab Aschermittwoch 2027: Dankesbanner und Countdown */
+html[data-fkk-season="thanks"] .session-countdown{display:none!important}
+html[data-fkk-season="thanks"] .fkk-seasonal-thanks{display:block}
+.fkk-seasonal-thanks{background:linear-gradient(105deg,#951b2e,#5e213e 50%,#11683e)}
+.fkk-seasonal-thanks .fkk-seasonal-inner{min-height:180px;flex-direction:column;gap:8px;padding:15px 0}
+.fkk-thanks-timer{display:grid;grid-template-columns:repeat(4,minmax(64px,95px));gap:8px;justify-content:center}
+.fkk-thanks-unit{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:7px 10px;text-align:center}
+.fkk-thanks-unit strong{display:block;font-size:1.35rem;font-variant-numeric:tabular-nums;color:#ffe29a}
+.fkk-thanks-unit span{display:block;font-size:.66rem;font-weight:800;text-transform:uppercase}
+@media(max-width:700px){.fkk-seasonal-thanks .fkk-seasonal-inner{gap:8px;padding:14px 0}.fkk-thanks-timer{grid-template-columns:repeat(4,minmax(55px,1fr));width:min(100%,330px);gap:5px}.fkk-thanks-unit{padding:6px 4px}.fkk-thanks-unit strong{font-size:1.15rem}.fkk-thanks-unit span{font-size:.59rem}}
 </style>
 <script>
 /* Datumssteuerung nach deutscher Ortszeit; aktualisiert sich auch bei geoeffneter Seite. */
@@ -1099,12 +1110,24 @@ html[data-fkk-advent="4"] .fkk-candle:nth-child(-n+4) .fkk-flame{display:block}
     const preview=new URLSearchParams(window.location.search).get('fkk_preview');
     const christmas=preview==='weihnachten'||(y===2026&&m===12&&d<=26&&preview!=='karneval');
     const yearend=preview==='jahreswechsel'||(y===2026&&m===12&&d>=27&&preview!=='karneval');
-    document.documentElement.dataset.fkkSeason=christmas?'christmas':yearend?'yearend':'carnival';
+    const now=Date.now();
+    const thanks=preview==='aschermittwoch'||(now>=new Date('2027-02-10T19:00:00+01:00').getTime()&&now<new Date('2027-11-11T11:11:00+01:00').getTime()&&!['weihnachten','jahreswechsel','karneval'].includes(preview));
+    document.documentElement.dataset.fkkSeason=christmas?'christmas':yearend?'yearend':thanks?'thanks':'carnival';
     if(christmas)document.documentElement.dataset.fkkAdvent=String(preview==='weihnachten'?1:d>=20?4:d>=13?3:d>=6?2:1);
     else delete document.documentElement.dataset.fkkAdvent;
   }
+  function updateFkkThanksCountdown(){
+    const target=new Date('2027-11-11T11:11:00+01:00').getTime();
+    const remaining=Math.max(0,target-Date.now());
+    const units={days:Math.floor(remaining/86400000),hours:Math.floor(remaining/3600000)%24,minutes:Math.floor(remaining/60000)%60,seconds:Math.floor(remaining/1000)%60};
+    for(const [key,value] of Object.entries(units)){
+      document.querySelectorAll('[data-fkk-timer="'+key+'"]').forEach(el=>{el.textContent=key==='days'?String(value):String(value).padStart(2,'0')});
+    }
+  }
   updateFkkSeason();
-  setInterval(updateFkkSeason,30000);
+  updateFkkThanksCountdown();
+  setInterval(updateFkkSeason,1000);
+  setInterval(updateFkkThanksCountdown,1000);
 })();
 </script>
 </head>
@@ -1137,6 +1160,22 @@ html[data-fkk-advent="4"] .fkk-candle:nth-child(-n+4) .fkk-flame{display:block}
   <div class="fkk-seasonal-inner"><div class="fkk-seasonal-copy"><div class="fkk-seasonal-eyebrow">✨ Zwischen den Jahren ✨</div><h2>Danke für ein wunderbares gemeinsames Jahr!</h2><p>Wir wünschen euch erholsame Tage und einen guten Rutsch ins neue Jahr. Ab dem 1. Januar begrüßen wir euch wieder mit unserem Sessionsbanner! ❤️💚💛</p></div></div>
 </section>
 
+<section class="fkk-seasonal-banner fkk-seasonal-thanks" aria-label="Dankesgruss zur Session und Countdown zum 11.11.2027">
+  <div class="fkk-seasonal-inner">
+    <div class="fkk-seasonal-copy">
+      <div class="fkk-seasonal-eyebrow">❤️💚💛 Danke für diese großartige Session! ❤️💚💛</div>
+      <h2>Was für eine unvergessliche gemeinsame Zeit!</h2>
+      <p>Von Herzen danken wir unserem Prinzenpaar <strong>Jörg II. &amp; Anke I.</strong>, ihren Pagen <strong>Oli und Eva</strong>, unserer Kinderprinzessin <strong>Elia I.</strong> und ihren Pagen – und allen, die diese Session so besonders gemacht haben. <strong>Nach der Session ist vor der Session: Wir freuen uns auf euch!</strong></p>
+      <p><strong>Unser Countdown zum 11.11.2027 · 11:11 Uhr</strong></p>
+    </div>
+    <div class="fkk-thanks-timer" role="timer" aria-label="Countdown bis zur neuen Karnevalssession">
+      <div class="fkk-thanks-unit"><strong data-fkk-timer="days">–</strong><span>Tage</span></div>
+      <div class="fkk-thanks-unit"><strong data-fkk-timer="hours">–</strong><span>Stunden</span></div>
+      <div class="fkk-thanks-unit"><strong data-fkk-timer="minutes">–</strong><span>Minuten</span></div>
+      <div class="fkk-thanks-unit"><strong data-fkk-timer="seconds">–</strong><span>Sekunden</span></div>
+    </div>
+  </div>
+</section>
 <div class="session-countdown mobile-session-banner" aria-label="Die Karnevalssession 2026/2027 hat begonnen">
   <div class="mobile-session-inner">
     <div class="mobile-session-copy">
