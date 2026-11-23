@@ -708,6 +708,17 @@
     @media(max-width:800px){.session-countdown-inner{grid-template-columns:1fr}.countdown-grid{grid-template-columns:repeat(4,1fr)}}
     @media(max-width:480px){.countdown-grid{gap:6px}.countdown-unit{padding:9px 4px;border-radius:12px}.countdown-unit strong{font-size:1.18rem}.countdown-unit span{font-size:.58rem}.session-countdown-copy p{font-size:.88rem}}
 
+
+    /* Regentenbanner Session 2026/27: transparente freigestellte PNGs */
+    .session-regents-inner{width:min(1500px,calc(100% - 28px));display:grid;grid-template-columns:minmax(150px,1fr) minmax(300px,1.55fr) minmax(150px,1fr);gap:18px;padding:12px 0;min-height:180px}
+    .session-regents-inner .session-countdown-copy{text-align:center;align-self:center}
+    .session-regents-inner .session-countdown-copy h2{font-size:clamp(1.25rem,2.1vw,1.9rem);color:#fff}
+    .session-regents-inner .session-countdown-copy p{font-size:clamp(.8rem,1vw,.98rem)}
+    .session-regent{height:172px;display:flex;align-items:center;justify-content:flex-end;flex-direction:column;min-width:0}
+    .session-regent img{width:100%;height:145px;object-fit:contain;object-position:center bottom;display:block}
+    .session-regent span{font-size:.76rem;font-weight:800;text-align:center;color:#ffdf52;line-height:1.25}
+    @media(max-width:850px){.session-regents-inner{grid-template-columns:1fr 1fr;gap:10px}.session-regents-inner .session-countdown-copy{grid-column:1/-1;grid-row:1}.session-regent{height:155px}.session-regent img{height:130px}}
+    @media(max-width:480px){.session-regents-inner{padding:15px 0}.session-regent{height:125px}.session-regent img{height:98px}.session-regent span{font-size:.66rem}}
     .contact-section{padding-top:10px}
     .contact-wrap{display:grid;grid-template-columns:.8fr 1.2fr;gap:28px;align-items:start;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:24px;padding:28px;box-shadow:0 14px 38px rgba(0,0,0,.08)}
     .contact-info{background:linear-gradient(145deg,var(--green),#124e2e);color:#fff;border-radius:20px;padding:26px;min-height:100%}
@@ -907,11 +918,19 @@
 
 
 <div class="session-countdown" aria-label="Karnevalssession 2026/2027 eröffnet">
-  <div class="session-countdown-inner">
+  <div class="session-countdown-inner session-regents-inner">
+    <div class="session-regent session-regent-kids">
+      <img src="assets/session-2026-elia-transparent.png" alt="Kinderprinzessin Elia I. mit ihren Pagen" onerror="this.style.display='none'">
+      <span>Kinderprinzessin Elia I. &amp; ihre Pagen</span>
+    </div>
     <div class="session-countdown-copy">
       <div class="small">🎉 Die Session 2026/2027 hat begonnen!</div>
       <h2>Eine wunderschöne und unvergessliche Session!</h2>
       <p>Wir wünschen unserem amtierenden Prinzenpaar <strong>Jörg II. &amp; Anke I.</strong> mit ihren Pagen <strong>Oli und Eva</strong> sowie unserer Kinderprinzessin <strong>Elia I.</strong> mit ihren Pagen eine wunderbare, erfolgreiche und unvergessliche Zeit. <strong>Wesel Helau!</strong></p>
+    </div>
+    <div class="session-regent session-regent-adults">
+      <img src="assets/session-2026-joerg-anke-transparent.png" alt="Prinzenpaar Jörg II. und Anke I. mit ihren Pagen Oli und Eva" onerror="this.style.display='none'">
+      <span>Jörg II. &amp; Anke I. mit Oli &amp; Eva</span>
     </div>
   </div>
 </div>
